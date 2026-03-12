@@ -97,7 +97,7 @@ def _normalize_entity(name: str) -> str:
     text = name.strip().lower()
     text = unicodedata.normalize("NFKD", text)
     # Strip non-word non-space characters (mirrors TS /[^\w\s]/g → ' ')
-    text = re.sub(r"[^\w\s]", " ", text)
+    text = re.sub(r"[^\w\s]", " ", text, flags=re.ASCII)
     text = CORPORATE_SUFFIX_PATTERN.sub(" ", text)
     # Collapse all whitespace to nothing (matches TS .replace(/\s+/g, ''))
     text = re.sub(r"\s+", "", text)
@@ -195,7 +195,7 @@ def _topic_cosine_similarity(
 def _compute_combined_score(
     emb_sim: float,
     shared_entities: List[str],
-    event_chain: bool,
+    event_chain_raw: float,
     topic_sim: float,
 ) -> float:
     """Weighted combination: embedding 40%, entities up to 42%, event chain 12%, topic 10%."""
@@ -204,7 +204,7 @@ def _compute_combined_score(
         (0.30 if len(shared_entities) >= 1 else 0.0)
         + min(len(shared_entities) - 1, 2) * 0.06
     ) if shared_entities else 0.0
-    chain_score = 0.12 if event_chain else 0.0
+    chain_score = min(event_chain_raw, 1.0) * 0.12
     topic_score = _clamp01(topic_sim) * 0.10
     return _clamp01(emb_score + entity_score + chain_score + topic_score)
 
@@ -390,7 +390,7 @@ def compute_cluster_relationships(
                     continue
 
             # --- Scoring ------------------------------------------------------
-            combined = _compute_combined_score(emb_sim, shared, event_chain, topic_sim)
+            combined = _compute_combined_score(emb_sim, shared, chain_raw, topic_sim)
             if combined <= 0:
                 continue
 
