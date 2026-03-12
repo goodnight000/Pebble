@@ -11,6 +11,7 @@ import numpy as np
 import yaml
 from fastapi import APIRouter, Depends, Query
 
+from app.clustering.relationships import compute_cluster_relationships
 from app.common.time import utcnow
 from app.db import get_db
 from app.llm.client import LLMClient
@@ -179,7 +180,7 @@ def get_signal_map(
     )
 
     if not clusters:
-        return {"clusters": [], "projection_seed": "", "generated_at": utcnow().isoformat()}
+        return {"clusters": [], "edges": [], "projection_seed": "", "generated_at": utcnow().isoformat()}
 
     cluster_ids = [c.id for c in clusters]
 
@@ -314,6 +315,38 @@ def get_signal_map(
         for j, orig_idx in enumerate(valid_indices):
             coords[orig_idx] = projected[j]
 
+    # Step 5b: Compute cluster relationship edges
+    relationship_inputs = []
+    for cd in cluster_data:
+        c = cd["cluster"]
+        relationship_inputs.append({
+            "id": str(c.id),
+            "centroid_embedding": c.centroid_embedding,
+            "entities": cd["entities"],
+            "dominant_event_type": cd["dominant_event_type"],
+            "dominant_topic": cd["dominant_topic"],
+            "topic_weights": cd["topic_weights"],
+            "age_hours": cd["age_hours"],
+        })
+
+    raw_edges = compute_cluster_relationships(
+        relationship_inputs,
+        entity_canon_map=None,
+    )
+
+    edges_payload = [
+        {
+            "id": f"{edge.source_cluster_id}::{edge.target_cluster_id}",
+            "source": edge.source_cluster_id,
+            "target": edge.target_cluster_id,
+            "type": edge.edge_type,
+            "score": round(edge.combined_score, 4),
+            "evidence": edge.evidence,
+            "embedding_similarity": round(edge.embedding_similarity, 4),
+        }
+        for edge in raw_edges
+    ]
+
     # Step 6: Build response
     result_clusters = []
     for i, cd in enumerate(cluster_data):
@@ -353,6 +386,7 @@ def get_signal_map(
 
     return {
         "clusters": localized_clusters,
+        "edges": edges_payload,
         "projection_seed": projection_seed,
         "generated_at": utcnow().isoformat(),
         "locale": locale,
