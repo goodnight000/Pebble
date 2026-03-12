@@ -1,4 +1,4 @@
-import { DigestResponse, Language, NewsItem, SignalMapResponse, TopicTrendsResponse } from '@/types';
+import { DigestResponse, Language, NewsItem, SignalMapResponse } from '@/types';
 import { createRealtimeSubscription, type RealtimeSubscription } from '@/services/realtimeService';
 
 export type LiveEvent =
@@ -189,6 +189,15 @@ export class AIService {
           summary: a.summary,
         })),
       })),
+      edges: (raw.edges ?? []).map((e: any) => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        type: e.type,
+        score: e.score,
+        evidence: e.evidence,
+        embeddingSimilarity: e.embedding_similarity,
+      })),
       projectionSeed: raw.projection_seed,
       generatedAt: raw.generated_at,
       locale: raw.locale,
@@ -197,23 +206,4 @@ export class AIService {
     };
   }
 
-  async fetchTopicTrends(locale: Language = 'en'): Promise<TopicTrendsResponse> {
-    const response = await this.fetchImpl(`/v1/signal-map/topic-trends?locale=${locale}`);
-    if (!response.ok) {
-      await failWithResponse(response, 'Failed to fetch topic trends');
-    }
-    const raw = await response.json();
-    return {
-      topics: (raw.topics ?? []).map((t: any) => ({
-        topic: t.topic,
-        label: t.label,
-        dailyIntensity: t.daily_intensity,
-        totalIntensity: t.total_intensity,
-      })),
-      generatedAt: raw.generated_at,
-      locale: raw.locale,
-      sourceLocale: raw.source_locale,
-      translationStatus: raw.translation_status,
-    };
-  }
 }

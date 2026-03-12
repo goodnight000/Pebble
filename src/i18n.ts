@@ -27,7 +27,7 @@ const NAV_LABELS: Record<string, Record<Language, string>> = {
   live: { en: 'Live Intelligence', zh: '实时情报' },
   weekly: { en: 'Weekly Signal', zh: '周度信号' },
   history: { en: 'History', zh: '历史存档' },
-  map: { en: 'Signal Map', zh: '信号图谱' },
+  map: { en: 'Relationship Graph', zh: '关系图谱' },
 };
 
 export function getNavLabel(language: Language, navId: string): string {
@@ -66,10 +66,14 @@ const UI_TEXT: Record<string, Record<Language, string>> = {
   languageToggleZh: { en: '中 / EN', zh: '中 / EN' },
   refresh: { en: 'Refresh', zh: '刷新' },
   retry: { en: 'Retry', zh: '重试' },
-  signalMap: { en: 'Signal Map', zh: '信号图谱' },
-  signalMapLoading: { en: 'Mapping Signal Constellation', zh: '构建信号图谱' },
-  signalMapError: { en: 'Failed to load signal map.', zh: '信号图谱加载失败。' },
-  sevenDayTopics: { en: '7-Day Topics', zh: '7日话题' },
+  relationshipGraph: { en: 'Relationship Graph', zh: '关系图谱' },
+  relationshipGraphLoading: { en: 'Linking Story Clusters', zh: '构建关系图谱' },
+  relationshipGraphError: { en: 'Failed to load relationship graph.', zh: '关系图加载失败。' },
+  relationshipGraphWindow: { en: 'Rolling Window', zh: '滚动时间窗' },
+  graphSharedEntity: { en: 'Shared Entity', zh: '共享实体' },
+  graphEventChain: { en: 'Event Chain', zh: '事件链' },
+  graphMarketAdjacency: { en: 'Market Adjacency', zh: '市场邻接' },
+  graphEmbeddingSimilarity: { en: 'Embedding Similarity', zh: '嵌入相似度' },
 };
 
 export function getUiText(language: Language, key: string): string {

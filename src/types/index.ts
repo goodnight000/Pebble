@@ -62,7 +62,7 @@ export enum AppStatus {
   ERROR = 'ERROR'
 }
 
-// ── Signal Map types ──
+// ── Cluster / Graph types ──
 
 export interface SignalMapEntity {
   name: string;
@@ -105,8 +105,19 @@ export interface SignalMapCluster {
   articles: SignalMapArticle[];
 }
 
+export interface SignalMapEdge {
+  id: string;
+  source: string;
+  target: string;
+  type: RelationshipEdgeType;
+  score: number;
+  evidence: string[];
+  embeddingSimilarity: number;
+}
+
 export interface SignalMapResponse {
   clusters: SignalMapCluster[];
+  edges?: SignalMapEdge[];
   projectionSeed: string;
   generatedAt: string;
   locale?: Language;
@@ -114,22 +125,6 @@ export interface SignalMapResponse {
   translationStatus?: TranslationStatus;
 }
 
-export interface TopicTrendItem {
-  topic: string;
-  label: string;
-  dailyIntensity: number[];
-  totalIntensity: number;
-}
-
-export interface TopicTrendsResponse {
-  topics: TopicTrendItem[];
-  generatedAt: string;
-  locale?: Language;
-  sourceLocale?: Language;
-  translationStatus?: TranslationStatus;
-}
-
-export type SignalMapViewMode = 'map' | 'graph';
 
 export type RelationshipGraphWindow = '7d' | '30d';
 
@@ -161,7 +156,8 @@ export interface RelationshipGraphNodeVisual {
 export type RelationshipEdgeType =
   | 'shared-entity'
   | 'event-chain'
-  | 'market-adjacency';
+  | 'market-adjacency'
+  | 'embedding-similarity';
 
 export interface RelationshipGraphNode {
   id: string;

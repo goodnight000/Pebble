@@ -10,11 +10,8 @@ import type {
   RelationshipGraphWindow,
   RelationshipGraphZoomLevel,
   SignalMapCluster,
-  SignalMapViewMode,
 } from '@/types';
 
-export const SIGNAL_MAP_VIEW_MODES = ['map', 'graph'] as const satisfies readonly SignalMapViewMode[];
-export const DEFAULT_SIGNAL_MAP_VIEW_MODE: SignalMapViewMode = 'map';
 export const RELATIONSHIP_GRAPH_WINDOWS = ['7d', '30d'] as const satisfies readonly RelationshipGraphWindow[];
 export const RELATIONSHIP_GRAPH_WINDOW_HOURS: Record<RelationshipGraphWindow, number> = {
   '7d': 168,
@@ -25,6 +22,7 @@ const EDGE_TYPE_PRIORITY: Record<RelationshipEdgeType, number> = {
   'shared-entity': 3,
   'event-chain': 2,
   'market-adjacency': 1,
+  'embedding-similarity': 0,
 };
 
 const TOPIC_ORDER = [
@@ -570,8 +568,8 @@ export function projectRelationshipGraphLayout(
   uniqueTopics.forEach((topic, index) => {
     const angle = (Math.PI * 2 * index) / Math.max(uniqueTopics.length, 1) - Math.PI / 2;
     topicAnchorByTopic.set(topic, {
-      x: centerX + Math.cos(angle) * radiusX * 0.9,
-      y: centerY + Math.sin(angle) * radiusY * 0.84,
+      x: centerX + Math.cos(angle) * radiusX * 0.96,
+      y: centerY + Math.sin(angle) * radiusY * 0.94,
     });
   });
 
@@ -602,19 +600,19 @@ export function projectRelationshipGraphLayout(
     const topicIndex = topicNodes.findIndex((candidate) => candidate.id === node.id);
     const baseAngle = Math.atan2(anchor.y - centerY, anchor.x - centerX);
     const importance = clamp01(node.importance);
-    const centerPull = 0.14 + importance * 0.46;
-    const continuityBlend = 0.08;
+    const centerPull = 0.06 + importance * 0.22;
+    const continuityBlend = 0.12;
     const seedX = padding + node.positionSeed.x * (width - padding * 2);
     const seedY = padding + node.positionSeed.y * (height - padding * 2);
     const jitter = hashString(node.id);
-    const jitterX = ((jitter % 17) - 8) * 2.2;
-    const jitterY = (((Math.floor(jitter / 17)) % 17) - 8) * 2;
-    const sectorSpread = Math.min((Math.PI / Math.max(uniqueTopics.length, 2)) * 0.72, 0.92);
+    const jitterX = ((jitter % 17) - 8) * 4.5;
+    const jitterY = (((Math.floor(jitter / 17)) % 17) - 8) * 4;
+    const sectorSpread = Math.min((Math.PI / Math.max(uniqueTopics.length, 2)) * 1.1, 1.4);
     const angleOffset = topicNodes.length <= 1
       ? 0
       : ((topicIndex / Math.max(topicNodes.length - 1, 1)) - 0.5) * sectorSpread;
     const orbitalAngle = baseAngle + angleOffset;
-    const localOrbitRadius = 32 + topicIndex * 14 + (1 - importance) * 60;
+    const localOrbitRadius = 72 + topicIndex * 38 + (1 - importance) * 110;
 
     const x = anchor.x * (1 - centerPull)
       + centerX * centerPull
@@ -623,7 +621,7 @@ export function projectRelationshipGraphLayout(
       + jitterX;
     const y = anchor.y * (1 - centerPull)
       + centerY * centerPull
-      + Math.sin(orbitalAngle) * localOrbitRadius * 0.82
+      + Math.sin(orbitalAngle) * localOrbitRadius * 0.86
       + (seedY - centerY) * continuityBlend
       + jitterY;
 
@@ -631,6 +629,36 @@ export function projectRelationshipGraphLayout(
       x: Math.max(padding, Math.min(width - padding, x)),
       y: Math.max(padding, Math.min(height - padding, y)),
     });
+  }
+
+  const minGap = 52;
+  const minGapSq = minGap * minGap;
+  const nodeIds = [...positions.keys()];
+
+  for (let pass = 0; pass < 6; pass += 1) {
+    for (let i = 0; i < nodeIds.length; i += 1) {
+      const posA = positions.get(nodeIds[i])!;
+      for (let j = i + 1; j < nodeIds.length; j += 1) {
+        const posB = positions.get(nodeIds[j])!;
+        const dx = posB.x - posA.x;
+        const dy = posB.y - posA.y;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq >= minGapSq || distSq < 0.01) {
+          continue;
+        }
+
+        const dist = Math.sqrt(distSq);
+        const overlap = (minGap - dist) / 2;
+        const nx = dx / dist;
+        const ny = dy / dist;
+
+        posA.x = Math.max(padding, Math.min(width - padding, posA.x - nx * overlap));
+        posA.y = Math.max(padding, Math.min(height - padding, posA.y - ny * overlap));
+        posB.x = Math.max(padding, Math.min(width - padding, posB.x + nx * overlap));
+        posB.y = Math.max(padding, Math.min(height - padding, posB.y + ny * overlap));
+      }
+    }
   }
 
   return positions;
@@ -664,10 +692,10 @@ export function applyRelationshipGraphPositionOverrides(
 }
 
 export function resolveRelationshipGraphZoomLevel(scale: number): RelationshipGraphZoomLevel {
-  if (scale >= 1.6) {
+  if (scale >= 1.4) {
     return 'detail';
   }
-  if (scale >= 0.95) {
+  if (scale >= 0.75) {
     return 'cluster';
   }
   return 'overview';
