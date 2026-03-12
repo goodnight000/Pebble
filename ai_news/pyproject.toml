@@ -1,0 +1,56 @@
+[project]
+name = "ai-news"
+version = "0.1.0"
+description = "AI news ingestion and ranking pipeline"
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "UNLICENSED"}
+
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "sqlalchemy>=2.0",
+  "psycopg[binary]",
+  "alembic",
+  "redis",
+  "celery",
+  "httpx",
+  "feedparser",
+  "beautifulsoup4",
+  "praw",
+  "twscrape",
+  "Mastodon.py",
+  "atproto",
+  "trafilatura",
+  "readability-lxml",
+  "playwright",
+  "sentence-transformers",
+  "numpy",
+  "faiss-cpu",
+  "spacy",
+  "orjson",
+  "pydantic>=2.0",
+  "pydantic-settings",
+  "python-dotenv",
+  "pyyaml",
+  "realtime",
+  "supabase",
+]
+
+[project.optional-dependencies]
+admin = ["typer"]
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I"]
+
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]

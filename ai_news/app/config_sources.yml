@@ -1,0 +1,3077 @@
+scrape_thresholds:
+  pre_fetch_full: 40
+  pre_fetch_full_priority: 70
+
+urgent:
+  min_global_score: 85
+  max_age_hours: 6
+  min_sources: 2
+
+clustering:
+  attach_similarity: 0.86
+  lookback_days: 7
+  novelty_lookback_days: 90
+
+weights:
+  global:
+    entity_prominence: 0.15
+    event_impact: 0.15
+    authority: 0.12
+    corroboration: 0.12
+    social_velocity: 0.10
+    cluster_velocity: 0.08
+    novelty: 0.08
+    event_rarity: 0.07
+    funding: 0.05
+    research_rigor: 0.05
+    source_diversity: 0.03
+  modifiers:
+    official_boost: 1.10
+    confirmed_impact_boost: 1.12
+    big_money_boost: 1.08
+
+EVENT_HALFLIFE_HOURS: 18
+
+trust:
+  weights:
+    source_authority: 0.20
+    corroboration: 0.30
+    official_confirmation: 0.25
+    claim_quality: 0.15
+    primary_document: 0.10
+  labels:
+    official_min_score: 80
+    confirmed_min_score: 65
+    confirmed_min_sources: 3
+    likely_min_score: 55
+    likely_min_sources: 2
+    developing_max_age_hours: 6
+    unverified_max_score: 40
+  content_type_floors:
+    RESEARCH_PAPER_with_doc: 65
+    OPEN_SOURCE_RELEASE_with_doc: 70
+  echo_detection:
+    text_similarity_threshold: 0.60
+    developing_penalty: 0.90
+
+keywords:
+  releases: 0.20
+  launches: 0.20
+  introduces: 0.20
+  announces: 0.20
+  open-source: 0.20
+  open source: 0.20
+  raises: 0.20
+  series a: 0.20
+  series b: 0.20
+  funding: 0.20
+  acquires: 0.20
+  acquisition: 0.20
+  merger: 0.20
+  security: 0.20
+  vulnerability: 0.20
+  leak: 0.20
+  arxiv: 0.20
+  paper: 0.15
+  benchmark: 0.15
+  sota: 0.15
+  gpu: 0.15
+  hbm: 0.15
+  inference chip: 0.15
+  training chip: 0.15
+  CVE: 0.25
+  zero-day: 0.25
+  zero day: 0.25
+  ransomware: 0.20
+  malware: 0.20
+  exploit: 0.20
+  data breach: 0.25
+  threat actor: 0.20
+  APT: 0.20
+  supply chain attack: 0.25
+  remote code execution: 0.25
+  RCE: 0.25
+  privilege escalation: 0.20
+  phishing: 0.20
+
+official_domains:
+  - openai.com
+  - deepmind.google
+  - ai.googleblog.com
+  - meta.com
+  - anthropic.com
+  - nvidia.com
+  - microsoft.com
+  - aws.amazon.com
+  - amd.com
+  - intel.com
+  - stability.ai
+  - together.ai
+  - mistral.ai
+  - cohere.com
+  - crowdstrike.com
+  - paloaltonetworks.com
+  - nist.gov
+  - cisa.gov
+  - mandiant.com
+  - elastic.co
+
+sources:
+  - name: "OpenAI Blog"
+    kind: "rss"
+    # /blog/rss/ is behind a Cloudflare challenge; /news/rss.xml is accessible.
+    feed_url: "https://openai.com/news/rss.xml"
+    authority: 1.0
+    always_scrape: true
+    priority_poll: true
+    enabled: true
+
+  - name: "Anthropic News"
+    kind: "rss"
+    # No official RSS; using community-maintained feed (taobojlen/anthropic-rss-feed on GitHub).
+    feed_url: "https://raw.githubusercontent.com/taobojlen/anthropic-rss-feed/main/anthropic_news_rss.xml"
+    authority: 0.98
+    always_scrape: true
+    priority_poll: true
+    enabled: true
+
+  - name: "Google AI Blog"
+    kind: "rss"
+    # ai.googleblog.com feeds have moved/404; use Google Research RSS.
+    feed_url: "https://research.google/blog/rss/"
+    authority: 0.95
+    always_scrape: true
+    priority_poll: true
+    enabled: true
+
+  - name: "Google Blog AI"
+    kind: "rss"
+    feed_url: "https://blog.google/technology/ai/rss/"
+    authority: 0.92
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "DeepMind Blog"
+    kind: "rss"
+    feed_url: "https://deepmind.google/blog/rss.xml"
+    authority: 0.95
+    always_scrape: true
+    priority_poll: true
+    enabled: true
+
+  - name: "Meta AI Blog"
+    kind: "rss"
+    # ai.meta.com has no RSS; about.fb.com/news/feed/ carries Meta AI announcements.
+    feed_url: "https://about.fb.com/news/feed/"
+    authority: 0.9
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "NVIDIA Blog - Deep Learning"
+    kind: "rss"
+    feed_url: "https://blogs.nvidia.com/blog/category/deep-learning/feed/"
+    authority: 0.9
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Microsoft AI Blog"
+    kind: "rss"
+    feed_url: "https://blogs.microsoft.com/ai/feed/"
+    authority: 0.9
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Microsoft AI Newsroom"
+    kind: "rss"
+    feed_url: "https://news.microsoft.com/source/topics/ai/feed/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "AWS ML Blog"
+    kind: "rss"
+    feed_url: "https://aws.amazon.com/blogs/machine-learning/feed/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Hugging Face Blog"
+    kind: "rss"
+    feed_url: "https://huggingface.co/blog/feed.xml"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Apple ML"
+    kind: "rss"
+    feed_url: "https://machinelearning.apple.com/rss.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "arXiv cs.LG"
+    kind: "arxiv"
+    base_url: "http://export.arxiv.org/api/query"
+    authority: 0.9
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Trending AI"
+    kind: "github"
+    base_url: "https://api.github.com"
+    authority: 0.7
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Hacker News"
+    kind: "hn"
+    base_url: "https://hn.algolia.com"
+    authority: 0.65
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Reddit AI"
+    kind: "reddit"
+    base_url: "https://www.reddit.com"
+    authority: 0.6
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Cybersecurity Sources ===
+
+  # --- Cybersecurity News (RSS) ---
+
+  - name: "The Hacker News (THN)"
+    kind: "rss"
+    feed_url: "https://feeds.feedburner.com/TheHackersNews"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "BleepingComputer"
+    kind: "rss"
+    feed_url: "https://www.bleepingcomputer.com/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Krebs on Security"
+    kind: "rss"
+    feed_url: "https://krebsonsecurity.com/feed/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Dark Reading"
+    kind: "rss"
+    feed_url: "https://www.darkreading.com/rss.xml"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "SecurityWeek"
+    kind: "rss"
+    feed_url: "https://www.securityweek.com/feed/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "CyberScoop"
+    kind: "rss"
+    feed_url: "https://cyberscoop.com/feed/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "The Record (Recorded Future)"
+    kind: "rss"
+    feed_url: "https://therecord.media/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "SC Media (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Ascworld.com+cybersecurity&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Government/Institutional Security (RSS) ---
+
+  - name: "CISA Cybersecurity Advisories"
+    kind: "rss"
+    feed_url: "https://www.cisa.gov/cybersecurity-advisories/all.xml"
+    authority: 0.95
+    always_scrape: true
+    priority_poll: true
+    enabled: true
+
+  - name: "NCSC UK"
+    kind: "rss"
+    feed_url: "https://www.ncsc.gov.uk/api/1/services/v1/report-rss-feed.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "SANS ISC Diary"
+    kind: "rss"
+    feed_url: "https://isc.sans.edu/rssfeed.xml"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "ENISA"
+    kind: "rss"
+    # Old URL dead; new feed at /rss.xml.
+    feed_url: "https://www.enisa.europa.eu/rss.xml"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Security Research Blogs (RSS) ---
+
+  - name: "Google Project Zero"
+    kind: "rss"
+    feed_url: "https://googleprojectzero.blogspot.com/feeds/posts/default"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Google TAG"
+    kind: "rss"
+    feed_url: "https://blog.google/threat-analysis-group/rss/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Microsoft Security Blog"
+    kind: "rss"
+    feed_url: "https://www.microsoft.com/en-us/security/blog/feed/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: false  # 403 bot-blocked; covered by Google News proxy below
+
+  - name: "Microsoft Security (via Google News)"
+    kind: "rss"
+    # Microsoft security blog blocks RSS bots; Google News proxy.
+    feed_url: "https://news.google.com/rss/search?q=site%3Amicrosoft.com+security+blog+vulnerability&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.86
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Cisco Talos"
+    kind: "rss"
+    # Old Blogspot-era URL dead; Ghost CMS now serves RSS at /rss/.
+    feed_url: "https://blog.talosintelligence.com/rss/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Palo Alto Unit 42"
+    kind: "rss"
+    feed_url: "https://unit42.paloaltonetworks.com/feed/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Cloudflare Security"
+    kind: "rss"
+    feed_url: "https://blog.cloudflare.com/tag/security/rss/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Elastic Security Labs"
+    kind: "rss"
+    feed_url: "https://www.elastic.co/security-labs/rss/feed.xml"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Trail of Bits"
+    kind: "rss"
+    feed_url: "https://blog.trailofbits.com/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Security Vendor Blogs (Sitemap) ---
+
+  - name: "CrowdStrike Blog"
+    kind: "rss"
+    # Sitemap 404 after site restructure; blog has RSS feed.
+    feed_url: "https://www.crowdstrike.com/blog/feed/"
+    authority: 0.84
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "SentinelOne Labs"
+    kind: "sitemap"
+    sitemap_url: "https://www.sentinelone.com/sitemap.xml"
+    path_filter: "/labs/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Wiz Blog"
+    kind: "sitemap"
+    sitemap_url: "https://www.wiz.io/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "HiddenLayer Research (via Google News)"
+    kind: "rss"
+    # Sitemap times out; Google News proxy.
+    feed_url: "https://news.google.com/rss/search?q=site%3Ahiddenlayer.com+research+AI+security&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Protect AI Blog"
+    kind: "sitemap"
+    sitemap_url: "https://protectai.com/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- AI Security Crossover (RSS) ---
+
+  - name: "GitHub Security Blog"
+    kind: "rss"
+    feed_url: "https://github.blog/tag/security/feed/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Schneier on Security"
+    kind: "rss"
+    feed_url: "https://www.schneier.com/feed/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "OWASP Blog"
+    kind: "rss"
+    feed_url: "https://owasp.org/feed.xml"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "OpenSSF Blog"
+    kind: "rss"
+    feed_url: "https://openssf.org/feed/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    browser_ua: true
+    enabled: true
+
+  - name: "Snyk Blog"
+    kind: "rss"
+    feed_url: "https://snyk.io/blog/feed/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Security Podcasts/Newsletters (RSS) ---
+
+  - name: "Risky Business"
+    kind: "rss"
+    feed_url: "https://risky.biz/feeds/risky-business/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "tl;dr sec"
+    kind: "rss"
+    feed_url: "https://tldrsec.com/feed/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Daniel Miessler"
+    kind: "rss"
+    feed_url: "https://danielmiessler.com/feed/"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Security Tool GitHub Releases (RSS) ---
+
+  - name: "Semgrep"
+    kind: "rss"
+    feed_url: "https://github.com/semgrep/semgrep/releases.atom"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Nuclei"
+    kind: "rss"
+    feed_url: "https://github.com/projectdiscovery/nuclei/releases.atom"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Garak (NVIDIA LLM scanner)"
+    kind: "rss"
+    feed_url: "https://github.com/NVIDIA/garak/releases.atom"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "LLM Guard"
+    kind: "rss"
+    feed_url: "https://github.com/protectai/llm-guard/releases.atom"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Guardrails AI"
+    kind: "rss"
+    feed_url: "https://github.com/guardrails-ai/guardrails/releases.atom"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Falco"
+    kind: "rss"
+    feed_url: "https://github.com/falcosecurity/falco/releases.atom"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "YARA"
+    kind: "rss"
+    feed_url: "https://github.com/VirusTotal/yara/releases.atom"
+    authority: 0.74
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- NVD API Source ---
+
+  - name: "NVD CVE API"
+    kind: "nvd"
+    base_url: "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Tech News Sites ===
+
+  - name: "TechCrunch AI"
+    kind: "rss"
+    feed_url: "https://techcrunch.com/category/artificial-intelligence/feed/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "VentureBeat AI"
+    kind: "rss"
+    feed_url: "https://venturebeat.com/category/ai/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "The Verge AI"
+    kind: "rss"
+    feed_url: "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Wired AI"
+    kind: "rss"
+    feed_url: "https://www.wired.com/feed/tag/ai/latest/rss"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Ars Technica"
+    kind: "rss"
+    feed_url: "https://feeds.arstechnica.com/arstechnica/technology-lab"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "MIT Technology Review"
+    kind: "rss"
+    feed_url: "https://www.technologyreview.com/feed/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "AI News"
+    kind: "rss"
+    feed_url: "https://www.artificialintelligence-news.com/feed/"
+    authority: 0.70
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === AI Startup Blogs ===
+
+  - name: "Stability AI"
+    kind: "rss"
+    feed_url: "https://stability.ai/news?format=rss"
+    authority: 0.88
+    always_scrape: true
+    priority_poll: true
+    enabled: true
+
+  - name: "Together AI Blog"
+    kind: "rss"
+    feed_url: "https://www.together.ai/blog/rss.xml"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === AI Startup Blogs (continued) ===
+
+  - name: "Mistral AI Blog"
+    kind: "sitemap"
+    sitemap_url: "https://mistral.ai/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Qwen Blog (EN Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://qwenlm.github.io/en/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.86
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "DeepSeek Releases: V3"
+    kind: "rss"
+    feed_url: "https://github.com/deepseek-ai/DeepSeek-V3/releases.atom"
+    authority: 0.84
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "DeepSeek Releases: R1"
+    kind: "rss"
+    feed_url: "https://github.com/deepseek-ai/DeepSeek-R1/releases.atom"
+    authority: 0.84
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Runway Research (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://runwayml.com/sitemap.xml"
+    path_filter: "/research/"
+    authority: 0.87
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Luma Blog News (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Alumalabs.ai+blog+OR+news&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.84
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Luma Changelog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://lumalabs.ai/changelog/sitemap.xml"
+    path_filter: "/changelog/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Luma Press (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=%22Luma+AI%22+OR+%22Luma+Labs%22&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Higgsfield Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://higgsfield.ai/blog/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Cursor Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://cursor.com/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Windsurf Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://windsurf.com/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: true
+    lastmod_optional: true
+    enabled: true
+
+  - name: "Replit Blog"
+    kind: "rss"
+    feed_url: "https://blog.replit.com/feed.xml"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Midjourney Updates"
+    kind: "rss"
+    feed_url: "https://updates.midjourney.com/rss/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Databricks Blog"
+    kind: "rss"
+    feed_url: "https://www.databricks.com/feed"
+    authority: 0.84
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Snowflake Blog"
+    kind: "rss"
+    feed_url: "https://www.snowflake.com/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Modal Blog"
+    kind: "rss"
+    feed_url: "https://modal.com/blog/atom.xml"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "LangChain Blog"
+    kind: "rss"
+    feed_url: "https://blog.langchain.dev/rss/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Groq Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://groq.com/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.84
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Lambda Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://lambda.ai/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Cerebras Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.cerebras.ai/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.84
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Pinecone Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.pinecone.io/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Tenstorrent Vision (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.tenstorrent.com/sitemap.xml"
+    path_filter: "/vision/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Kimi Updates (via Google News)"
+    kind: "rss"
+    # Sitemap times out; Google News proxy.
+    feed_url: "https://news.google.com/rss/search?q=site%3Awww.kimi.com+OR+%22Moonshot+AI%22+Kimi&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "01.AI Updates (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.01.ai/sitemap.xml"
+    path_filter: "/en"
+    authority: 0.74
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "MiniMax Updates (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.minimaxi.com/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.74
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "StepFun Updates (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.stepfun.com/sitemap.xml"
+    path_filter: "/docs/step-"
+    authority: 0.74
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Semafor"
+    kind: "rss"
+    feed_url: "https://www.semafor.com/rss.xml"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Government / Policy ===
+
+  - name: "White House AI"
+    kind: "rss"
+    feed_url: "https://www.whitehouse.gov/presidential-actions/feed/"
+    authority: 0.95
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "FTC Tech Blog"
+    kind: "rss"
+    feed_url: "https://www.ftc.gov/feeds/press-release.xml"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "NIST AI"
+    kind: "rss"
+    feed_url: "https://www.nist.gov/news-events/news/rss.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "EU Commission AI"
+    kind: "rss"
+    feed_url: "https://ec.europa.eu/commission/presscorner/api/rss?language=en"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "UK AI Safety Institute"
+    kind: "rss"
+    # The topics[]=artificial-intelligence filter was broken; AISI org filter returns focused AI safety content.
+    feed_url: "https://www.gov.uk/search/news-and-communications.atom?organisations%5B%5D=ai-safety-institute"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "UK DSIT (Dept for Science, Innovation & Technology)"
+    kind: "rss"
+    feed_url: "https://www.gov.uk/search/news-and-communications.atom?organisations%5B%5D=department-for-science-innovation-and-technology"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Journalism / Major Outlets ===
+
+  - name: "Reuters AI (via Google News)"
+    kind: "rss"
+    # Reuters direct RSS is gated (401); Google News RSS proxy for Reuters AI coverage.
+    feed_url: "https://news.google.com/rss/search?q=site%3Areuters.com+artificial+intelligence&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.92
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "NYT Technology"
+    kind: "rss"
+    feed_url: "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Bloomberg Technology"
+    kind: "rss"
+    feed_url: "https://feeds.bloomberg.com/technology/news.rss"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "BBC Technology"
+    kind: "rss"
+    feed_url: "http://feeds.bbci.co.uk/news/technology/rss.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "CNBC Technology"
+    kind: "rss"
+    feed_url: "https://www.cnbc.com/id/19854910/device/rss/rss.html"
+    authority: 0.86
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "WSJ Technology"
+    kind: "rss"
+    feed_url: "https://feeds.a.dj.com/rss/RSSWSJD.xml"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "FT Technology"
+    kind: "rss"
+    feed_url: "https://www.ft.com/technology?format=rss"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Guardian Technology"
+    kind: "rss"
+    feed_url: "https://www.theguardian.com/uk/technology/rss"
+    authority: 0.84
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Engadget"
+    kind: "rss"
+    feed_url: "https://www.engadget.com/rss.xml"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "ZDNet"
+    kind: "rss"
+    feed_url: "https://www.zdnet.com/news/rss.xml"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "The Register AI"
+    kind: "rss"
+    feed_url: "https://www.theregister.com/software/ai_ml/headlines.atom"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "404Media"
+    kind: "rss"
+    feed_url: "https://www.404media.co/rss/"
+    authority: 0.75
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Newsletters / Expert Blogs ===
+
+  - name: "Import AI"
+    kind: "rss"
+    feed_url: "https://importai.substack.com/feed"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "One Useful Thing"
+    kind: "rss"
+    feed_url: "https://www.oneusefulthing.org/feed"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Simon Willison"
+    kind: "rss"
+    feed_url: "https://simonwillison.net/atom/everything/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Interconnects"
+    kind: "rss"
+    feed_url: "https://www.interconnects.ai/feed"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "The Gradient"
+    kind: "rss"
+    feed_url: "https://thegradient.pub/rss/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "The Batch (DeepLearning.AI)"
+    kind: "sitemap"
+    # RSS dead after Next.js migration; sitemap has /the-batch/ URLs with lastmod dates.
+    sitemap_url: "https://www.deeplearning.ai/sitemap-0.xml"
+    path_filter: "/the-batch/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "TLDR AI"
+    kind: "rss"
+    feed_url: "https://tldr.tech/rss"
+    authority: 0.72
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Press Wires ===
+
+  - name: "PRNewswire AI"
+    kind: "rss"
+    # AI-specific PRNewswire feed returns 404; use general releases and rely on scoring filters.
+    feed_url: "https://www.prnewswire.com/rss/news-releases-list.rss"
+    authority: 0.55
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "BusinessWire Tech"
+    kind: "rss"
+    feed_url: "https://feed.businesswire.com/rss/home/?rss=G1QFDERJXkJeGVtRWw%3D%3D"
+    authority: 0.55
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Data Science / ML Community ===
+
+  - name: "Towards Data Science"
+    kind: "rss"
+    feed_url: "https://towardsdatascience.com/feed/"
+    authority: 0.65
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === arXiv (additional categories) ===
+
+  - name: "arXiv cs.AI"
+    kind: "arxiv"
+    base_url: "http://export.arxiv.org/api/query"
+    authority: 0.9
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "arXiv cs.CL"
+    kind: "arxiv"
+    base_url: "http://export.arxiv.org/api/query"
+    authority: 0.9
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === GitHub Releases (specific repos) ===
+
+  - name: "GitHub Releases: Transformers"
+    kind: "rss"
+    feed_url: "https://github.com/huggingface/transformers/releases.atom"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "GitHub Releases: LangChain"
+    kind: "rss"
+    feed_url: "https://github.com/langchain-ai/langchain/releases.atom"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: llama.cpp"
+    kind: "rss"
+    feed_url: "https://github.com/ggerganov/llama.cpp/releases.atom"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: vLLM"
+    kind: "rss"
+    feed_url: "https://github.com/vllm-project/vllm/releases.atom"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: PyTorch"
+    kind: "rss"
+    feed_url: "https://github.com/pytorch/pytorch/releases.atom"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "GitHub Releases: Ollama"
+    kind: "rss"
+    feed_url: "https://github.com/ollama/ollama/releases.atom"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: Open WebUI"
+    kind: "rss"
+    feed_url: "https://github.com/open-webui/open-webui/releases.atom"
+    authority: 0.75
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === GitHub Trending ===
+
+  - name: "GitHub Trending AI (Scraper)"
+    kind: "github_trending"
+    authority: 0.68
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Government API Sources ===
+
+  - name: "US Congress Bills API"
+    kind: "congress"
+    base_url: "https://api.congress.gov/v3"
+    authority: 0.95
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Sitemap Sources ===
+
+  - name: "Anthropic Research (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.anthropic.com/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.98
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Meta AI Research (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://ai.meta.com/sitemap.xml"
+    path_filter: "/blog"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    enabled: false
+
+  - name: "Apple ML (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://machinelearning.apple.com/sitemap.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: false
+
+  - name: "xAI (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://x.ai/sitemap.xml"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    # x.ai blocked by Cloudflare; no viable automated ingestion path.
+    enabled: false
+
+  - name: "Cohere Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://cohere.com/sitemap.xml"
+    path_filter: "/blog"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # === Community Social Sources ===
+
+  - name: "Twitter/X AI Accounts"
+    kind: "twitter"
+    authority: 0.65
+    always_scrape: false
+    priority_poll: false
+    # Requires twscrape sessions configured locally.
+    enabled: false
+
+  - name: "Mastodon AI Hashtags"
+    kind: "mastodon"
+    authority: 0.62
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Bluesky AI Search"
+    kind: "bluesky"
+    authority: 0.62
+    always_scrape: false
+    priority_poll: false
+    enabled: false
+
+  # ============================================================
+  # NEW SOURCES — AI Lab / Company Blogs
+  # ============================================================
+
+  - name: "AI2 Blog (Allen Institute)"
+    kind: "rss"
+    # Old Medium-era URL dead; new site at allenai.org/rss.xml.
+    feed_url: "https://allenai.org/rss.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Salesforce AI Research (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.salesforce.com/sitemap.xml"
+    path_filter: "/blog/category/ai/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Adobe Research (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://research.adobe.com/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Samsung AI Research (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://research.samsung.com/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Perplexity AI Blog (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aperplexity.ai+blog&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Baidu AI Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.baidu.com/sitemap.xml"
+    path_filter: "/ai/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    # May require adjustments — Chinese-language site.
+    enabled: false
+
+  - name: "Alibaba Qwen Blog"
+    kind: "rss"
+    feed_url: "https://github.com/QwenLM/Qwen/releases.atom"
+    authority: 0.84
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "ByteDance Doubao (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.volcengine.com/sitemap.xml"
+    path_filter: "/docs/"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    # Volcengine is ByteDance's cloud/AI platform; may need path_filter tuning.
+    enabled: false
+
+  - name: "Zhipu AI GLM Releases"
+    kind: "rss"
+    feed_url: "https://github.com/THUDM/GLM-4/releases.atom"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  # ============================================================
+  # AI Infrastructure / Chip Companies
+  # ============================================================
+
+  - name: "AMD AI Blog (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aamd.com+AI+blog&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Intel AI Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.intel.com/sitemap.xml"
+    path_filter: "/content/www/us/en/artificial-intelligence/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "SambaNova Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://sambanova.ai/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Qualcomm AI Research (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.qualcomm.com/sitemap.xml"
+    path_filter: "/research/artificial-intelligence/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # AI Safety / Alignment / Policy
+  # ============================================================
+
+  - name: "MIRI Blog"
+    kind: "rss"
+    feed_url: "https://intelligence.org/feed/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Center for AI Safety (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.safe.ai/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    lastmod_optional: true
+    enabled: true
+
+  - name: "Partnership on AI (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://partnershiponai.org/sitemap.xml"
+    path_filter: "/paper/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "UK AI Safety Institute (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.aisi.gov.uk/sitemap.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    lastmod_optional: true
+    enabled: true
+
+  - name: "Stanford HAI"
+    kind: "rss"
+    feed_url: "https://hai.stanford.edu/news/rss.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Georgetown CSET (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acset.georgetown.edu+AI+OR+technology&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # AI Venture / Funding / Business
+  # ============================================================
+
+  - name: "The Information"
+    kind: "rss"
+    feed_url: "https://www.theinformation.com/feed"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    # Paywalled, but Atom feed titles are useful for breaking scoops.
+    browser_ua: true
+    enabled: true
+
+  # ============================================================
+  # AI Developer Tools (GitHub Releases)
+  # ============================================================
+
+  - name: "GitHub Releases: Vercel AI SDK"
+    kind: "rss"
+    feed_url: "https://github.com/vercel/ai/releases.atom"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: Anthropic Python SDK"
+    kind: "rss"
+    feed_url: "https://github.com/anthropics/anthropic-sdk-python/releases.atom"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: OpenAI Python SDK"
+    kind: "rss"
+    feed_url: "https://github.com/openai/openai-python/releases.atom"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: CrewAI"
+    kind: "rss"
+    feed_url: "https://github.com/crewAIInc/crewAI/releases.atom"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: AutoGen"
+    kind: "rss"
+    feed_url: "https://github.com/microsoft/autogen/releases.atom"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: Dify"
+    kind: "rss"
+    feed_url: "https://github.com/langgenius/dify/releases.atom"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: Flowise"
+    kind: "rss"
+    feed_url: "https://github.com/FlowiseAI/Flowise/releases.atom"
+    authority: 0.74
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "GitHub Releases: LiteLLM"
+    kind: "rss"
+    feed_url: "https://github.com/BerriAI/litellm/releases.atom"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # Media / Creative AI Companies
+  # ============================================================
+
+  - name: "ElevenLabs Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://elevenlabs.io/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Suno Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://suno.com/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    lastmod_optional: true
+    enabled: true
+
+  - name: "Pika Blog (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Apika.art+blog&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Ideogram Blog (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aideogram.ai&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # Podcasts / Expert Content (RSS)
+  # ============================================================
+
+  - name: "Lex Fridman Podcast"
+    kind: "rss"
+    feed_url: "https://lexfridman.com/feed/podcast/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Latent Space Podcast"
+    kind: "rss"
+    feed_url: "https://www.latent.space/feed"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "No Priors Podcast"
+    kind: "rss"
+    feed_url: "https://www.nopriors.ai/feed"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Dwarkesh Patel Podcast"
+    kind: "rss"
+    feed_url: "https://www.dwarkeshpatel.com/feed"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # Academic Intelligence (custom connectors)
+  # ============================================================
+
+  - name: "Semantic Scholar Trending CS"
+    kind: "semantic_scholar"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Hugging Face Daily Papers"
+    kind: "hf_papers"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  # ============================================================
+  # US UNIVERSITIES — AI / CS / Robotics / Security
+  # ============================================================
+
+  # --- MIT ---
+
+  - name: "MIT News — AI"
+    kind: "rss"
+    feed_url: "https://news.mit.edu/rss/topic/artificial-intelligence2"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    enabled: false  # 403 bot-blocked; covered by Google News proxy below
+
+  - name: "MIT News — Machine Learning"
+    kind: "rss"
+    feed_url: "https://news.mit.edu/rss/topic/machine-learning"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: false
+    enabled: false  # 403 bot-blocked; covered by Google News proxy below
+
+  - name: "MIT News — Robotics"
+    kind: "rss"
+    feed_url: "https://news.mit.edu/rss/topic/robotics"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: false  # 403 bot-blocked; covered by Google News proxy below
+
+  - name: "MIT CSAIL"
+    kind: "rss"
+    feed_url: "https://news.mit.edu/rss/topic/computer-science-and-artificial-intelligence-laboratory-csail"
+    authority: 0.92
+    always_scrape: false
+    priority_poll: true
+    enabled: false  # 403 bot-blocked; covered by Google News proxy below
+
+  - name: "MIT Media Lab"
+    kind: "rss"
+    feed_url: "https://news.mit.edu/rss/topic/media-lab"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: false  # 403 bot-blocked; covered by Google News proxy below
+
+  - name: "MIT Lincoln Lab"
+    kind: "rss"
+    feed_url: "https://news.mit.edu/rss/topic/lincoln-laboratory"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: false  # 403 bot-blocked; covered by Google News proxy below
+
+  - name: "MIT News AI (via Google News)"
+    kind: "rss"
+    # All news.mit.edu RSS feeds return 403; using Google News proxy.
+    feed_url: "https://news.google.com/rss/search?q=site%3Anews.mit.edu+artificial+intelligence+OR+machine+learning+OR+robotics+OR+CSAIL&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  # --- Stanford ---
+
+  - name: "Stanford SAIL Blog"
+    kind: "rss"
+    feed_url: "https://ai.stanford.edu/blog/feed.xml"
+    authority: 0.92
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Stanford NLP Publications"
+    kind: "rss"
+    feed_url: "http://www-nlp.stanford.edu/rss/newpubs.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- CMU ---
+
+  - name: "CMU ML Blog"
+    kind: "rss"
+    feed_url: "https://blog.ml.cmu.edu/feed/"
+    authority: 0.92
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "CMU LTI News"
+    kind: "rss"
+    feed_url: "https://www.lti.cs.cmu.edu/news/feed/rss.xml"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: false  # 404; old feed dead after site migration
+
+  - name: "CMU LTI (via Google News)"
+    kind: "rss"
+    # Direct RSS dead; Google News proxy for LTI content.
+    feed_url: "https://news.google.com/rss/search?q=site%3Alti.cs.cmu.edu&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.86
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "CMU SEI Blog (Security)"
+    kind: "rss"
+    feed_url: "https://insights.sei.cmu.edu/blog/feed/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: false  # 404; old feed dead after site migration
+
+  - name: "CMU SEI Blog (via Google News)"
+    kind: "rss"
+    # Direct RSS dead; Google News proxy for SEI blog content.
+    feed_url: "https://news.google.com/rss/search?q=site%3Asei.cmu.edu+blog&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.83
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "CMU SCS News (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acsd.cmu.edu+OR+site%3Alti.cs.cmu.edu+AI+OR+computer+science&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "CMU Robotics Institute (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.ri.cmu.edu/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  # --- UC Berkeley ---
+
+  - name: "Berkeley BAIR Blog"
+    kind: "rss"
+    feed_url: "https://bair.berkeley.edu/blog/feed.xml"
+    authority: 0.92
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Berkeley News"
+    kind: "rss"
+    feed_url: "https://news.berkeley.edu/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UW ---
+
+  - name: "UW Allen School News"
+    kind: "rss"
+    feed_url: "https://news.cs.washington.edu/feed/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  # --- Georgia Tech ---
+
+  - name: "Georgia Tech Research Horizons (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aresearch.gatech.edu+AI+OR+technology&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- U Michigan ---
+
+  - name: "U Michigan Engineering — Robots (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Anews.engin.umich.edu+robots+OR+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "U Michigan AI Lab (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aai.engin.umich.edu+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Cornell ---
+
+  - name: "Cornell AI Initiative (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aai.cornell.edu+AI+research&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Cornell Tech (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Atech.cornell.edu+AI+OR+technology&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Princeton ---
+
+  - name: "Princeton NLP Blog (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://princeton-nlp.github.io/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Princeton University News"
+    kind: "rss"
+    feed_url: "https://www.princeton.edu/feed"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Columbia ---
+
+  - name: "Columbia AI (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aai.columbia.edu+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- NYU ---
+
+  - name: "NYU AI (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acims.nyu.edu+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- USC ---
+
+  - name: "USC ISI News (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Awww.isi.edu+AI+OR+research&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Johns Hopkins ---
+
+  - name: "JHU CLSP News (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Awww.clsp.jhu.edu+language+OR+speech+OR+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UPenn ---
+
+  - name: "Penn Engineering Blog"
+    kind: "rss"
+    feed_url: "https://blog.seas.upenn.edu/feed/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Harvard ---
+
+  - name: "Harvard Kempner Institute (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Akempnerinstitute.harvard.edu+OR+%22Kempner+Institute%22+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UT Austin ---
+
+  - name: "UT Austin AI (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aai.utexas.edu+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UChicago ---
+
+  - name: "UChicago DSI (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://datascience.uchicago.edu/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Brown ---
+
+  - name: "Brown CS Blog"
+    kind: "rss"
+    feed_url: "https://blog.cs.brown.edu/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # US UNIVERSITIES — Deep Lab / Center / Institute Sources
+  # ============================================================
+
+  # --- Stanford (additional labs) ---
+
+  - name: "Stanford CRFM (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acrfm.stanford.edu+OR+%22Stanford+CRFM%22+foundation+models&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.92
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Stanford Internet Observatory (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acyber.fsi.stanford.edu+OR+%22Stanford+Internet+Observatory%22&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Stanford RegLab (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Areglab.stanford.edu&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Princeton (additional labs) ---
+
+  - name: "Princeton CITP (Freedom to Tinker)"
+    kind: "rss"
+    feed_url: "https://blog.citp.princeton.edu/feed/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    browser_ua: true
+    enabled: true
+
+  - name: "Princeton Language & Intelligence (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://pli.princeton.edu/sitemap.xml"
+    path_filter: "/blog"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  # --- MIT (additional topics) ---
+
+  - name: "MIT News — Data Science"
+    kind: "rss"
+    feed_url: "https://news.mit.edu/rss/topic/data-science-and-big-data"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: false  # 403 bot-blocked; covered by MIT News AI Google News proxy
+
+  # --- CMU (additional labs) ---
+
+  - name: "CMU CyLab (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.cylab.cmu.edu/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "CMU HCII (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://hcii.cmu.edu/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Berkeley (additional labs) ---
+
+  - name: "Berkeley CHAI (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://humancompatible.ai/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Berkeley Sky Computing Lab (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://sky.cs.berkeley.edu/sitemap.xml"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Harvard (additional) ---
+
+  - name: "Harvard Berkman Klein Center (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acyber.harvard.edu+OR+%22Berkman+Klein%22+technology+policy&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Harvard Data Science Initiative (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Adatascience.harvard.edu+data+science&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Yale ---
+
+  - name: "Yale LILY Lab (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://yale-lily.github.io/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- USC (additional) ---
+
+  - name: "USC CAIS (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acais.usc.edu+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "USC Viterbi News (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aviterbischool.usc.edu+AI+OR+engineering&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- JHU (additional) ---
+
+  - name: "JHU Applied Physics Lab (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.jhuapl.edu/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UPenn (additional) ---
+
+  - name: "Penn ASSET Center (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://asset.seas.upenn.edu/sitemap.xml"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Georgia Tech (additional) ---
+
+  - name: "GT CyberSecurity (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acyber.gatech.edu+cybersecurity&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- U Michigan (additional) ---
+
+  - name: "Michigan Robotics News (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Arobotics.umich.edu+robotics&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Duke ---
+
+  - name: "Duke AI Health (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://aihealth.duke.edu/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Duke AI Hub (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://ai.duke.edu/sitemap.xml"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UCSD ---
+
+  - name: "UCSD Contextual Robotics (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acontextualrobotics.ucsd.edu+robotics&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "UCSD Halicioglu Data Science (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://datascience.ucsd.edu/sitemap.xml"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "UCSD Jacobs Engineering (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Ajacobsschool.ucsd.edu+AI+OR+engineering&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UMass Amherst ---
+
+  - name: "UMass CICS News (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.cics.umass.edu/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Virginia Tech ---
+
+  - name: "Virginia Tech Sanghani Center (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Asanghani.cs.vt.edu+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Northeastern ---
+
+  - name: "Northeastern Khoury College (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.khoury.northeastern.edu/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Rice ---
+
+  - name: "Rice Ken Kennedy Institute (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://kenkennedy.rice.edu/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UW-Madison ---
+
+  - name: "UW-Madison AI (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aai.cs.wisc.edu+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Oregon State ---
+
+  - name: "Oregon State CoRIS (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://engineering.oregonstate.edu/sitemap.xml"
+    path_filter: "/CoRIS"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Arizona State ---
+
+  - name: "ASU AI News (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://ai.asu.edu/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Minnesota ---
+
+  - name: "Minnesota Robotics Institute (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://cse.umn.edu/sitemap.xml"
+    path_filter: "/mnri/news"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Purdue ---
+
+  - name: "Purdue CS News (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.cs.purdue.edu/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UCLA (additional) ---
+
+  - name: "UCLA Samueli Engineering (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://samueli.ucla.edu/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Caltech (additional) ---
+
+  - name: "Caltech CAST (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acast.caltech.edu+OR+%22Caltech+CAST%22+autonomous+systems&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Caltech AI4Science (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aai4science.caltech.edu+OR+%22Caltech+AI%22+science&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- Brown (additional) ---
+
+  - name: "Brown HCRI Blog"
+    kind: "rss"
+    feed_url: "https://hcri.brown.edu/blog/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # --- UCI ---
+
+  - name: "UCI ML Center (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://cml.ics.uci.edu/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # US NATIONAL LABS & FEDERAL AGENCIES
+  # ============================================================
+
+  - name: "DARPA News"
+    kind: "rss"
+    feed_url: "https://www.darpa.mil/rss"
+    authority: 0.92
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "NSF News"
+    kind: "rss"
+    feed_url: "https://www.nsf.gov/rss/rss_www_news.xml"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "DOE Energy News"
+    kind: "rss"
+    feed_url: "https://www.energy.gov/listings/energy-news?page=1&view=rss"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Argonne National Lab (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aanl.gov+artificial+intelligence+OR+computing&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Lawrence Berkeley Lab"
+    kind: "rss"
+    feed_url: "https://newscenter.lbl.gov/feed/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "NASA JPL News"
+    kind: "rss"
+    feed_url: "https://www.jpl.nasa.gov/feeds/news"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # CANADA — Universities & AI Institutes
+  # ============================================================
+
+  - name: "Mila News (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://mila.quebec/sitemap.xml"
+    path_filter: "/en/news"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Vector Institute (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://vectorinstitute.ai/sitemap.xml"
+    path_filter: "/blog"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Amii (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.amii.ca/sitemap.xml"
+    path_filter: "/updates"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "U Toronto CS (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://web.cs.toronto.edu/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "U Waterloo AI (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://uwaterloo.ca/sitemap.xml"
+    path_filter: "/artificial-intelligence-institute/news"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # UK — Universities & Institutes
+  # ============================================================
+
+  - name: "Oxford CS (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Awww.cs.ox.ac.uk+AI+OR+computer+science&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Oxford Robotics Institute (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aori.ox.ac.uk+robotics&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Cambridge ML Group (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://mlg.eng.cam.ac.uk/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Imperial College ML (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.imperial.ac.uk/sitemap.xml"
+    path_filter: "/machine-learning/news/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    lastmod_optional: true
+    enabled: true
+
+  - name: "UCL AI Centre (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aucl.ac.uk+%22AI+Centre%22+OR+artificial+intelligence&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Edinburgh Informatics (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Ainformatics.ed.ac.uk+AI+OR+research&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Alan Turing Institute (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aturing.ac.uk+AI+OR+research&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  # ============================================================
+  # EUROPE — Universities & Institutes
+  # ============================================================
+
+  - name: "EPFL News"
+    kind: "rss"
+    feed_url: "https://actu.epfl.ch/feeds/rss/en/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Max Planck Intelligent Systems (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://is.mpg.de/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Max Planck Informatics (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.mpi-inf.mpg.de/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "INRIA (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.inria.fr/sitemap.xml"
+    path_filter: "/en/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "DFKI (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Adfki.de+AI+OR+research&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "CISPA Helmholtz Security (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://cispa.de/sitemap.xml"
+    path_filter: "/en/news"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Helsinki NLP"
+    kind: "rss"
+    feed_url: "https://blogs.helsinki.fi/language-technology/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "ELLIS Network (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://ellis.eu/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # ASIA — Universities & Institutes
+  # ============================================================
+
+  - name: "Tsinghua AIR (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aair.tsinghua.edu.cn+OR+%22Tsinghua+AIR%22+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "CAS Research News (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aenglish.cas.cn+AI+OR+research&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "KAIST News (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://news.kaist.ac.kr/sitemap.xml"
+    path_filter: "/newsen/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "RIKEN AIP (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aaip.riken.jp+OR+%22RIKEN+AIP%22+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "NUS News (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://news.nus.edu.sg/sitemap.xml"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "NTU Singapore (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Awww.ntu.edu.sg+AI+OR+research&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # ISRAEL / AUSTRALIA
+  # ============================================================
+
+  - name: "Technion Blog (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Awww.technion.ac.il+AI+OR+technology&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Weizmann Institute (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://wis-wander.weizmann.ac.il/sitemap.xml"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "CSIRO Data61 (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.csiro.au/sitemap.xml"
+    path_filter: "/en/news/topics-pages/topic-ai"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # SCIENCE JOURNALS & ACADEMIC PUBLISHERS
+  # ============================================================
+
+  - name: "Nature Machine Intelligence"
+    kind: "rss"
+    feed_url: "http://feeds.nature.com/natmachintell/rss/current"
+    authority: 0.92
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Nature Computational Science"
+    kind: "rss"
+    feed_url: "http://feeds.nature.com/natcomputsci/rss/current"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Science Robotics"
+    kind: "rss"
+    feed_url: "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=scirobotics"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "IEEE Spectrum"
+    kind: "rss"
+    feed_url: "https://spectrum.ieee.org/rss/fulltext"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "IEEE Spectrum — Robotics"
+    kind: "rss"
+    feed_url: "https://spectrum.ieee.org/rss/blog/automaton/fulltext"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Communications of the ACM (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Acacm.acm.org&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "ACM TechNews"
+    kind: "rss"
+    feed_url: "https://rss.acm.org/technews/TechNews.xml"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Quanta Magazine"
+    kind: "rss"
+    feed_url: "https://api.quantamagazine.org/feed/"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "ScienceDaily — AI"
+    kind: "rss"
+    feed_url: "https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "ScienceDaily — Robotics"
+    kind: "rss"
+    feed_url: "https://www.sciencedaily.com/rss/computers_math/robotics.xml"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "ScienceDaily — Computer Science"
+    kind: "rss"
+    feed_url: "https://www.sciencedaily.com/rss/computers_math/computer_science.xml"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Phys.org — AI/ML"
+    kind: "rss"
+    feed_url: "https://phys.org/rss-feed/technology-news/machine-learning-ai/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "EurekAlert Engineering (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Aeurekalert.org+engineering+technology+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.75
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "EurekAlert Tech (via Google News)"
+    kind: "rss"
+    # Direct RSS restructured; Google News proxy for EurekAlert tech.
+    feed_url: "https://news.google.com/rss/search?q=site%3Aeurekalert.org+technology&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.73
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # CONFERENCE BLOGS
+  # ============================================================
+
+  - name: "NeurIPS Blog"
+    kind: "rss"
+    feed_url: "https://blog.neurips.cc/feed/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "ICLR Blog"
+    kind: "rss"
+    feed_url: "https://blog.iclr.cc/feed/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "SIGGRAPH Blog (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=%22SIGGRAPH%22+computer+graphics+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "DBLP Blog"
+    kind: "rss"
+    feed_url: "https://blog.dblp.org/feed/"
+    authority: 0.75
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # ROBOTICS COMPANIES
+  # ============================================================
+
+  - name: "The Robot Report"
+    kind: "rss"
+    feed_url: "https://www.therobotreport.com/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Boston Dynamics Blog (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Abostondynamics.com+blog&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Figure AI (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.figure.ai/sitemap.xml"
+    path_filter: "/news"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "1X Technologies (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Awww.1x.tech+OR+%221X+Technologies%22+humanoid+robot&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Agility Robotics (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.agilityrobotics.com/sitemap.xml"
+    path_filter: "/press"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    lastmod_optional: true
+    enabled: true
+
+  - name: "Sanctuary AI (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.sanctuary.ai/sitemap.xml"
+    path_filter: "/blog"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Physical Intelligence (Sitemap)"
+    kind: "sitemap"
+    sitemap_url: "https://www.physicalintelligence.company/sitemap.xml"
+    path_filter: "/blog"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  # ============================================================
+  # SECURITY RESEARCH
+  # ============================================================
+
+  - name: "Google Project Zero"
+    kind: "rss"
+    feed_url: "https://googleprojectzero.blogspot.com/feeds/posts/default"
+    authority: 0.90
+    always_scrape: false
+    priority_poll: true
+    enabled: true
+
+  - name: "Microsoft Security Response Center (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Amsrc-blog.microsoft.com+security+vulnerability&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.88
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Krebs on Security"
+    kind: "rss"
+    feed_url: "https://krebsonsecurity.com/feed/"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "The Hacker News (Security)"
+    kind: "rss"
+    feed_url: "https://thehackernews.com/feeds/posts/default"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Trail of Bits"
+    kind: "rss"
+    feed_url: "https://blog.trailofbits.com/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "CrowdStrike Research"
+    kind: "rss"
+    feed_url: "https://www.crowdstrike.com/blog/feed/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Schneier on Security"
+    kind: "rss"
+    feed_url: "https://www.schneier.com/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "USENIX Blog (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Awww.usenix.org+blog&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # HARDWARE / SEMICONDUCTOR / ENGINEERING
+  # ============================================================
+
+  - name: "Semiconductor Engineering"
+    kind: "rss"
+    feed_url: "https://semiengineering.com/feed/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "EE Times (via Google News)"
+    kind: "rss"
+    feed_url: "https://news.google.com/rss/search?q=site%3Awww.eetimes.com+semiconductor+AI&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "ServeTheHome"
+    kind: "rss"
+    feed_url: "https://www.servethehome.com/feed/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Tom's Hardware"
+    kind: "rss"
+    feed_url: "https://www.tomshardware.com/feeds/all"
+    authority: 0.75
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "WikiChip Fuse"
+    kind: "rss"
+    feed_url: "https://fuse.wikichip.org/feed/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # INTERNATIONAL ORGANIZATIONS
+  # ============================================================
+
+  - name: "CERN News"
+    kind: "rss"
+    feed_url: "https://home.cern/api/news/feed.rss"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # AI POLICY THINK TANKS
+  # ============================================================
+
+  - name: "RAND Corporation"
+    kind: "rss"
+    feed_url: "https://www.rand.org/pubs/rss.xml"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: false  # 404; old feed URL dead
+
+  - name: "RAND Corporation (via Google News)"
+    kind: "rss"
+    # Direct RSS dead; Google News proxy.
+    feed_url: "https://news.google.com/rss/search?q=site%3Arand.org&hl=en-US&gl=US&ceid=US%3Aen"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Brookings Research"
+    kind: "rss"
+    feed_url: "https://www.brookings.edu/feeds/rss/research/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true

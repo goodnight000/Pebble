@@ -1,0 +1,131 @@
+aliases:
+  OpenAI:
+    - OpenAI
+    - Open AI
+  Anthropic:
+    - Anthropic
+  Google:
+    - Google
+    - Google AI
+    - Google DeepMind
+  DeepMind:
+    - DeepMind
+  Microsoft:
+    - Microsoft
+    - Microsoft Research
+  Meta:
+    - Meta
+    - Facebook
+  NVIDIA:
+    - NVIDIA
+    - Nvidia
+  AMD:
+    - AMD
+    - Advanced Micro Devices
+  Intel:
+    - Intel
+  Amazon:
+    - Amazon
+    - AWS
+  Apple:
+    - Apple
+  Hugging Face:
+    - Hugging Face
+  Mistral:
+    - Mistral
+  Cohere:
+    - Cohere
+  Stability AI:
+    - Stability AI
+  xAI:
+    - xAI
+  GitHub:
+    - GitHub
+  Open Source:
+    - open source
+  CrowdStrike:
+    - CrowdStrike
+    - Crowdstrike
+  Palo Alto Networks:
+    - Palo Alto Networks
+    - Palo Alto
+    - Unit 42
+  Mandiant:
+    - Mandiant
+    - Google TAG
+  Recorded Future:
+    - Recorded Future
+  SentinelOne:
+    - SentinelOne
+    - Sentinel One
+  Fortinet:
+    - Fortinet
+    - FortiGuard
+  Cloudflare:
+    - Cloudflare
+  Cisco Talos:
+    - Cisco Talos
+    - Talos Intelligence
+  MITRE:
+    - MITRE
+    - MITRE ATT&CK
+  CISA:
+    - CISA
+    - Cybersecurity and Infrastructure Security Agency
+
+# ENTITY_TIERS — used by the scoring engine to weight news by entity importance.
+# tier1: dominant AI labs and hyperscalers whose announcements move the industry.
+# tier2: major players with significant AI footprint.
+# tier3: notable but smaller or niche entities.
+ENTITY_TIERS:
+  tier1:
+    - OpenAI
+    - Anthropic
+    - Google
+    - DeepMind
+    - Meta
+    - Microsoft
+    - NVIDIA
+    - Apple
+    - xAI
+  tier2:
+    - Amazon
+    - AMD
+    - Intel
+    - Hugging Face
+    - Mistral
+    - Cohere
+    - Stability AI
+    - Together AI
+    - Databricks
+    - Snowflake
+    - Salesforce
+    - ByteDance
+    - Baidu
+    - Alibaba
+    - Tencent
+    - Samsung
+    - CrowdStrike
+    - Palo Alto Networks
+    - Cloudflare
+  tier3:
+    - GitHub
+    - Runway
+    - Midjourney
+    - Character.AI
+    - Inflection
+    - Adept
+    - Perplexity
+    - Pika
+    - Reka
+    - AI21 Labs
+    - Aleph Alpha
+    - Zhipu AI
+    - Moonshot AI
+    - Mandiant
+    - Recorded Future
+    - SentinelOne
+    - Fortinet
+    - Cisco Talos
+    - MITRE
+    - CISA

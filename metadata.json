@@ -1,0 +1,7 @@
+{
+  "name": "AIPulse: Intelligence Digest",
+  "description": "A high-performance AI news aggregator that monitors global trends, research, and announcements to deliver a curated daily digest with automated significance scoring.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
