@@ -10,7 +10,6 @@ from __future__ import annotations
 import logging
 import math
 import re
-import struct
 import unicodedata
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set
@@ -62,6 +61,13 @@ CORPORATE_SUFFIX_PATTERN = re.compile(
 )
 
 EMBEDDING_DIM = 384
+
+_EDGE_TYPE_PRIORITY: Dict[str, int] = {
+    "shared-entity": 3,
+    "event-chain": 2,
+    "embedding-similarity": 1,
+    "market-adjacency": 0,
+}
 
 # ---------------------------------------------------------------------------
 # Data structures
@@ -381,10 +387,9 @@ def compute_cluster_relationships(
                 if len(shared) < 2 and not event_chain:
                     continue
             else:
-                # Below threshold — only include if strong rule-based signals
-                # exist even without embedding support (handles clusters where
-                # one or both embeddings are invalid).
-                if not both_valid and (len(shared) >= 2 or event_chain):
+                # Below embedding threshold — only include if strong rule-based
+                # signals exist (shared entities or event chain evidence).
+                if len(shared) >= 2 or event_chain:
                     pass  # allow through on rule-based evidence alone
                 else:
                     continue
@@ -418,13 +423,6 @@ def compute_cluster_relationships(
             )
 
     # -- Sort descending by combined_score, then edge type priority, then id ----
-    _EDGE_TYPE_PRIORITY = {
-        "shared-entity": 3,
-        "event-chain": 2,
-        "embedding-similarity": 1,
-        "market-adjacency": 0,
-    }
-
     edges.sort(
         key=lambda e: (
             -e.combined_score,
