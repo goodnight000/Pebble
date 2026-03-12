@@ -30,6 +30,14 @@ ai_news/ai_news.db-wal
 *.sln
 *.sw?
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite copies
+ai_news/ai_news 2.db*
+
 # Test artifacts
 playwright-report/
 test-results/
