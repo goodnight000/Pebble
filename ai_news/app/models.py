@@ -268,6 +268,16 @@ class UserSourceWeight(Base):
     blocked = Column(Boolean, nullable=False, default=False)
 
 
+class EntityCanonMap(Base):
+    __tablename__ = "entity_canon_maps"
+
+    id = Column(Uuid(as_uuid=False), primary_key=True, default=_uuid_str)
+    generated_at = Column(DateTime(timezone=True), server_default=func.now())
+    canon_map = Column(JSON, nullable=False)
+    cluster_count = Column(Integer, nullable=False)
+    entity_count = Column(Integer, nullable=False)
+
+
 class DailyDigest(Base):
     __tablename__ = "daily_digests"
 
