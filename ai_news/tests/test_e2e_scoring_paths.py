@@ -138,7 +138,7 @@ def _build_mock_db(rows, *, min_show_score=30):
     """Build a mock DB session that _select_articles can call.
 
     The mock article-query chain inspects SQLAlchemy filter expressions so
-    that content_type filtering (routes_compat.py:275-276) is applied to
+    that content_type filtering (routes_api.py:275-276) is applied to
     the rows returned by .all(), just as the real DB would.
     """
     db = MagicMock()
@@ -228,7 +228,7 @@ def _build_mock_db(rows, *, min_show_score=30):
 
 class TestContentTypeSharedModule(unittest.TestCase):
     """content_type_for lives in a zero-dep module and is used by both
-    pipeline.py and routes_compat.py for content_type derivation."""
+    pipeline.py and routes_api.py for content_type derivation."""
 
     def test_rss_other_is_news(self):
         from app.common.content_type import content_type_for
@@ -306,7 +306,7 @@ class TestReclassifiedArticleTabEligibility(unittest.TestCase):
         ]
 
     def _select(self, rows, content_type=None):
-        from app.api.routes_compat import _select_articles
+        from app.api.routes_api import _select_articles
         db = _build_mock_db(rows)
         cutoff = datetime.utcnow() - timedelta(hours=24)
         return _select_articles(
@@ -379,7 +379,7 @@ class TestLowBaseHighEditorialSurvivesRoute(unittest.TestCase):
     survive the DB floor AND get boosted by editorial rank in the route."""
 
     def _select(self, rows, content_type=None, min_show_score=10):
-        from app.api.routes_compat import _select_articles
+        from app.api.routes_api import _select_articles
         db = _build_mock_db(rows, min_show_score=min_show_score)
         cutoff = datetime.utcnow() - timedelta(hours=24)
         return _select_articles(
@@ -452,7 +452,7 @@ class TestLowBaseHighEditorialSurvivesRoute(unittest.TestCase):
             self.assertLess(items[0]["editorialRank"], 5)
 
     def test_db_floor_constant_matches_editorial_boost(self):
-        """The _MAX_EDITORIAL_BOOST constant in routes_compat must equal
+        """The _MAX_EDITORIAL_BOOST constant in routes_api must equal
         the max possible output of compute_editorial_rank minus its input."""
         from app.scoring.editorial_rank import compute_editorial_rank
 
@@ -466,7 +466,7 @@ class TestLowBaseHighEditorialSurvivesRoute(unittest.TestCase):
             cluster_trust_score=60.0,
         )
         actual_max_boost = max_rank - base
-        # The constant in routes_compat.py:280 is 13
+        # The constant in routes_api.py:280 is 13
         self.assertLessEqual(actual_max_boost, 13.0)
 
 
@@ -505,7 +505,7 @@ class TestExtractionQualityZeroPath(unittest.TestCase):
         in the pipeline, which produces a lower global_score for low-quality
         articles.  Here we feed the route pre-penalised global_scores (as the
         pipeline would) and verify the route's output reflects the difference."""
-        from app.api.routes_compat import _select_articles
+        from app.api.routes_api import _select_articles
         from app.scoring.importance import GlobalScoreInputs, compute_global_score_v2
 
         # Compute what global_score the pipeline would produce for each quality

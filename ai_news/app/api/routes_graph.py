@@ -17,7 +17,7 @@ from app.db import get_db
 from app.llm.client import LLMClient
 from app.models import Article, Cluster, ClusterMember, RawItem, Source
 
-router = APIRouter(prefix="/v1/signal-map", tags=["signal-map"])
+router = APIRouter(prefix="/v1/graph", tags=["graph"])
 
 TOPIC_TAGS = {
     "llms": "LLM",
@@ -168,7 +168,7 @@ def _to_iso(dt) -> str | None:
 
 
 @router.get("")
-def get_signal_map(
+def get_graph(
     hours: int = Query(48, ge=1, le=168),
     locale: str = Query("en", pattern="^(en|zh)$"),
     db=Depends(get_db),
@@ -416,7 +416,7 @@ def get_signal_map(
     translation_status = "ready"
     localized_clusters = result_clusters
     if locale == "zh":
-        localized_clusters, translation_status = llm.translate_signal_map_clusters(result_clusters)
+        localized_clusters, translation_status = llm.translate_graph_clusters(result_clusters)
 
     return {
         "clusters": localized_clusters,

@@ -2,12 +2,9 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app.api.routes_admin import router as admin_router
-from app.api.routes_compat import router as compat_router
+from app.api.routes_api import router as api_router
 from app.api.routes_health import router as health_router
-from app.api.routes_news import router as news_router
-from app.api.routes_signal_map import router as signal_map_router
-from app.api.routes_users import router as users_router
+from app.api.routes_graph import router as graph_router
 from app.config import get_settings
 from app.db import session_scope
 from app.models import User, UserPref
@@ -17,12 +14,10 @@ from app.tasks.inline_scheduler import maybe_start_inline_scheduler
 
 app = FastAPI(title="AI News API")
 
-app.include_router(compat_router)
-app.include_router(news_router)
-app.include_router(users_router)
-app.include_router(admin_router)
+app.include_router(api_router)
 app.include_router(health_router)
-app.include_router(signal_map_router)
+app.include_router(graph_router)
+app.include_router(graph_router, prefix="/v1/signal-map")  # legacy alias
 
 
 @app.on_event("startup")

@@ -1291,7 +1291,7 @@ def run_relationship_inference() -> None:
 
     Fetches recent clusters, runs mechanical relationship computation with
     Track B candidate generation, then calls the LLM for uncached candidates.
-    Results are cached so the signal-map API can read them with zero latency.
+    Results are cached so the graph API can read them with zero latency.
     """
     import logging
     from collections import Counter
@@ -1318,7 +1318,7 @@ def run_relationship_inference() -> None:
 
         cluster_ids = [c.id for c in clusters]
 
-        # Batch-load member articles (same logic as routes_signal_map.py)
+        # Batch-load member articles (same logic as routes_graph.py)
         member_rows = (
             session.query(ClusterMember, Article, RawItem)
             .join(Article, ClusterMember.article_id == Article.id)

@@ -6,7 +6,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.abspath("ai_news"))
 
-from app.api import routes_compat
+from app.api import routes_api
 from app.features.funding import parse_funding_amount
 
 
@@ -20,11 +20,11 @@ class ResilienceTests(unittest.TestCase):
         self.assertIsNone(parse_funding_amount(text))
 
     def test_decode_embedding_or_none_rejects_invalid_buffer(self):
-        self.assertIsNone(routes_compat._decode_embedding_or_none(b"."))
+        self.assertIsNone(routes_api._decode_embedding_or_none(b"."))
 
     def test_decode_embedding_or_none_returns_vector_for_valid_buffer(self):
         emb = np.ones(384, dtype=np.float32)
-        decoded = routes_compat._decode_embedding_or_none(emb.tobytes())
+        decoded = routes_api._decode_embedding_or_none(emb.tobytes())
         self.assertIsNotNone(decoded)
         self.assertEqual(decoded.shape, (384,))
 

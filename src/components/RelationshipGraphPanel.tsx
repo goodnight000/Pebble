@@ -4,12 +4,12 @@ import type {
   Language,
   RelationshipEdgeType,
   RelationshipGraphResponse,
-  SignalMapCluster,
+  GraphCluster,
 } from '@/types';
 import { getTrustLabel, getUiText } from '@/i18n';
 
 interface RelationshipGraphPanelProps {
-  cluster: SignalMapCluster | null;
+  cluster: GraphCluster | null;
   graph: RelationshipGraphResponse;
   language: Language;
   onClose: () => void;

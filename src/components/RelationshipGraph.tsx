@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type {
   Language,
   RelationshipGraphWindow,
-  SignalMapCluster,
-  SignalMapEdge,
+  GraphCluster,
+  GraphEdge,
 } from '@/types';
 import { AIService } from '@/services/aiService';
 import RelationshipGraphCanvasV2 from '@/components/RelationshipGraphCanvasV2';
@@ -14,9 +14,9 @@ import {
   buildRelationshipGraph,
   RELATIONSHIP_GRAPH_WINDOW_HOURS,
   RELATIONSHIP_GRAPH_WINDOWS,
-} from '@/components/relationshipGraph';
+} from '@/lib/relationshipGraph';
 
-interface SignalMapProps {
+interface RelationshipGraphProps {
   aiService: AIService;
   language: Language;
   isActive: boolean;
@@ -38,13 +38,13 @@ const useMediaQuery = (query: string): boolean => {
 };
 
 interface GraphSnapshot {
-  clusters: SignalMapCluster[];
-  edges?: SignalMapEdge[];
+  clusters: GraphCluster[];
+  edges?: GraphEdge[];
   projectionSeed: string;
   generatedAt: string;
 }
 
-const SignalMap: React.FC<SignalMapProps> = ({ aiService, language, isActive }) => {
+const RelationshipGraph: React.FC<RelationshipGraphProps> = ({ aiService, language, isActive }) => {
   const [graphWindow, setGraphWindow] = useState<RelationshipGraphWindow>('7d');
   const [graphSnapshots, setGraphSnapshots] = useState<Partial<Record<RelationshipGraphWindow, GraphSnapshot>>>({});
   const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
@@ -61,7 +61,7 @@ const SignalMap: React.FC<SignalMapProps> = ({ aiService, language, isActive }) 
     }));
     try {
       const hours = RELATIONSHIP_GRAPH_WINDOW_HOURS[window];
-      const graphData = await aiService.fetchSignalMap(hours, language);
+      const graphData = await aiService.fetchRelationshipGraph(hours, language);
       setGraphSnapshots((current) => ({
         ...current,
         [window]: {
@@ -162,7 +162,7 @@ const SignalMap: React.FC<SignalMapProps> = ({ aiService, language, isActive }) 
   if (!isDesktop) {
     return (
       <div className="p-4">
-        <div className="signal-map-mobile-header">
+        <div className="relationship-graph-mobile-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
             <span className="wf-chip">{getUiText(language, 'relationshipGraph')}</span>
           </div>
@@ -174,19 +174,19 @@ const SignalMap: React.FC<SignalMapProps> = ({ aiService, language, isActive }) 
             <RefreshCcw className={`w-3.5 h-3.5 ${graphLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
-        <div className="signal-map-mobile-window" role="group" aria-label={getUiText(language, 'relationshipGraphWindow')}>
+        <div className="relationship-graph-mobile-window" role="group" aria-label={getUiText(language, 'relationshipGraphWindow')}>
           {RELATIONSHIP_GRAPH_WINDOWS.map((window) => (
             <button
               key={window}
               type="button"
-              className={`signal-map-window-button${graphWindow === window ? ' signal-map-window-button--active' : ''}`}
+              className={`relationship-graph-window-button${graphWindow === window ? ' relationship-graph-window-button--active' : ''}`}
               onClick={() => setGraphWindow(window)}
             >
               {window.toUpperCase()}
             </button>
           ))}
         </div>
-        <div className="signal-map-mobile-graph">
+        <div className="relationship-graph-mobile-graph">
           {graphModeLoading ? (
             <div className="relationship-graph-loading">
               {getUiText(language, 'relationshipGraphLoading')}
@@ -210,24 +210,24 @@ const SignalMap: React.FC<SignalMapProps> = ({ aiService, language, isActive }) 
 
   // Desktop layout
   return (
-    <div className="signal-map-layout signal-map-layout--graph" style={{ height: 'calc(100vh - 65px)' }}>
+    <div className="relationship-graph-layout relationship-graph-layout--graph" style={{ height: 'calc(100vh - 65px)' }}>
       <div
         className={[
-          'signal-map-canvas signal-map-canvas--graph',
-          graphPanelOpen ? 'signal-map-canvas--graph-panel-open' : '',
+          'relationship-graph-canvas relationship-graph-canvas--graph',
+          graphPanelOpen ? 'relationship-graph-canvas--graph-panel-open' : '',
         ].filter(Boolean).join(' ')}
         style={{ position: 'relative' }}
       >
-        <div className="signal-map-hud">
-          <div className="signal-map-hud__copy">
-            <div className="signal-map-hud__meta">
+        <div className="relationship-graph-hud">
+          <div className="relationship-graph-hud__copy">
+            <div className="relationship-graph-hud__meta">
               <span className="wf-chip">{getUiText(language, 'relationshipGraph')}</span>
-              <div className="signal-map-window-group" role="group" aria-label={getUiText(language, 'relationshipGraphWindow')}>
+              <div className="relationship-graph-window-group" role="group" aria-label={getUiText(language, 'relationshipGraphWindow')}>
                 {RELATIONSHIP_GRAPH_WINDOWS.map((window) => (
                   <button
                     key={window}
                     type="button"
-                    className={`signal-map-window-button${graphWindow === window ? ' signal-map-window-button--active' : ''}`}
+                    className={`relationship-graph-window-button${graphWindow === window ? ' relationship-graph-window-button--active' : ''}`}
                     onClick={() => setGraphWindow(window)}
                   >
                     {window.toUpperCase()}
@@ -235,35 +235,35 @@ const SignalMap: React.FC<SignalMapProps> = ({ aiService, language, isActive }) 
                 ))}
               </div>
             </div>
-            <div className="signal-map-hud__legend">
-              <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
-                <span className="signal-map-hud__legend-line signal-map-hud__legend-line--follow-up" aria-hidden="true" />
+            <div className="relationship-graph-hud__legend">
+              <span className="relationship-graph-hud__legend-item relationship-graph-hud__legend-item--edge">
+                <span className="relationship-graph-hud__legend-line relationship-graph-hud__legend-line--follow-up" aria-hidden="true" />
                 {getUiText(language, 'graphFollowUp')}
               </span>
-              <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
-                <span className="signal-map-hud__legend-line signal-map-hud__legend-line--reaction" aria-hidden="true" />
+              <span className="relationship-graph-hud__legend-item relationship-graph-hud__legend-item--edge">
+                <span className="relationship-graph-hud__legend-line relationship-graph-hud__legend-line--reaction" aria-hidden="true" />
                 {getUiText(language, 'graphReaction')}
               </span>
-              <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
-                <span className="signal-map-hud__legend-line signal-map-hud__legend-line--competing" aria-hidden="true" />
+              <span className="relationship-graph-hud__legend-item relationship-graph-hud__legend-item--edge">
+                <span className="relationship-graph-hud__legend-line relationship-graph-hud__legend-line--competing" aria-hidden="true" />
                 {getUiText(language, 'graphCompeting')}
               </span>
-              <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
-                <span className="signal-map-hud__legend-line signal-map-hud__legend-line--shared-entity" aria-hidden="true" />
+              <span className="relationship-graph-hud__legend-item relationship-graph-hud__legend-item--edge">
+                <span className="relationship-graph-hud__legend-line relationship-graph-hud__legend-line--shared-entity" aria-hidden="true" />
                 {getUiText(language, 'graphSharedEntity')}
               </span>
-              <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
-                <span className="signal-map-hud__legend-line signal-map-hud__legend-line--event-chain" aria-hidden="true" />
+              <span className="relationship-graph-hud__legend-item relationship-graph-hud__legend-item--edge">
+                <span className="relationship-graph-hud__legend-line relationship-graph-hud__legend-line--event-chain" aria-hidden="true" />
                 {getUiText(language, 'graphEventChain')}
               </span>
-              <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
-                <span className="signal-map-hud__legend-line signal-map-hud__legend-line--market-adjacency" aria-hidden="true" />
+              <span className="relationship-graph-hud__legend-item relationship-graph-hud__legend-item--edge">
+                <span className="relationship-graph-hud__legend-line relationship-graph-hud__legend-line--market-adjacency" aria-hidden="true" />
                 {getUiText(language, 'graphMarketAdjacency')}
               </span>
             </div>
           </div>
           {graphLoading && (
-            <span className="signal-map-hud__loading" aria-label={getUiText(language, 'relationshipGraphLoading')}>
+            <span className="relationship-graph-hud__loading" aria-label={getUiText(language, 'relationshipGraphLoading')}>
               <RefreshCcw className="w-3.5 h-3.5 animate-spin text-[var(--muted)]" />
             </span>
           )}
@@ -297,4 +297,4 @@ const SignalMap: React.FC<SignalMapProps> = ({ aiService, language, isActive }) 
   );
 };
 
-export default SignalMap;
+export default RelationshipGraph;

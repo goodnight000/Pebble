@@ -3,7 +3,7 @@ import { AppStatus, ContentType, DigestResponse, Language, NewsItem } from '@/ty
 import { AIService } from '@/services/aiService';
 import NewsCard from '@/components/NewsCard';
 import BreakingAlert from '@/components/BreakingAlert';
-import SignalMap from '@/components/SignalMap';
+import RelationshipGraph from '@/components/RelationshipGraph';
 import {
   CONTENT_TYPE_LABELS,
   getNavLabel,
@@ -250,7 +250,7 @@ const App: React.FC = () => {
         </header>
 
         {activeTab === 'map' && (
-          <SignalMap
+          <RelationshipGraph
             aiService={aiService}
             language={language}
             isActive={activeTab === 'map'}

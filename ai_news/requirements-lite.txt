@@ -1,6 +1,8 @@
 fastapi
 uvicorn[standard]
 sqlalchemy>=2.0
+psycopg[binary]
+alembic
 httpx
 curl_cffi>=0.7.0
 feedparser
@@ -18,7 +20,9 @@ pyyaml
 realtime
 supabase
 celery
+redis
 sentence-transformers
 twscrape>=0.12.0
 Mastodon.py>=1.8.0
 atproto>=0.0.50
+praw

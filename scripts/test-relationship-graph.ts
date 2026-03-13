@@ -16,7 +16,7 @@ import {
   resolveVisibleGraphError,
   pickVisibleEdges,
   scoreEdge,
-} from '../src/components/relationshipGraph';
+} from '../src/lib/relationshipGraph';
 import type {
   RelationshipGraphEdge,
   RelationshipGraphEdgeCandidate,

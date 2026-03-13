@@ -6,8 +6,8 @@ test.describe('AIPulse - Relationship Graph', () => {
   test('switching to graph mode renders nodes, edges, legend, and no panel by default', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('button', { name: /signal map/i }).click();
-    await page.locator('.signal-map-toggle').getByRole('button', { name: /relationship graph/i }).click();
+    await page.getByRole('button', { name: /relationship graph/i }).click();
+    await page.locator('.relationship-graph-toggle').getByRole('button', { name: /relationship graph/i }).click();
 
     const graphCanvas = page.getByTestId('relationship-graph-canvas');
     const graphNodes = page.locator('[data-testid^="graph-node-"]');
@@ -25,14 +25,14 @@ test.describe('AIPulse - Relationship Graph', () => {
     await expect(page.getByText(/event chain/i)).toBeVisible();
     await expect(page.getByText(/market adjacency/i)).toBeVisible();
     await expect(page.getByTestId('relationship-graph-panel')).toHaveCount(0);
-    await expect(page.locator('.signal-map-canvas')).not.toHaveClass(/graph-panel-open/);
+    await expect(page.locator('.relationship-graph-canvas')).not.toHaveClass(/graph-panel-open/);
   });
 
   test('selecting a graph node opens the panel, compresses the graph, and window controls stay interactive', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('button', { name: /signal map/i }).click();
-    await page.locator('.signal-map-toggle').getByRole('button', { name: /relationship graph/i }).click();
+    await page.getByRole('button', { name: /relationship graph/i }).click();
+    await page.locator('.relationship-graph-toggle').getByRole('button', { name: /relationship graph/i }).click();
 
     const firstNode = page.locator('[data-testid^="graph-node-"]').first();
     await expect(firstNode).toBeVisible();
@@ -40,7 +40,7 @@ test.describe('AIPulse - Relationship Graph', () => {
 
     const panel = page.getByTestId('relationship-graph-panel');
     await expect(panel).toBeVisible();
-    await expect(page.locator('.signal-map-canvas')).toHaveClass(/graph-panel-open/);
+    await expect(page.locator('.relationship-graph-canvas')).toHaveClass(/graph-panel-open/);
     await expect(panel.getByText(/why this cluster matters/i)).toBeVisible();
     await expect(panel.getByText(/relationship evidence/i)).toBeVisible();
     await expect(panel.getByText(/supporting coverage/i)).toBeVisible();
@@ -49,7 +49,7 @@ test.describe('AIPulse - Relationship Graph', () => {
     await page.getByRole('button', { name: '30D' }).click();
     await expect(page.getByTestId('relationship-graph-canvas')).toHaveAttribute('data-window', '30d');
 
-    await page.locator('.signal-map-toggle').getByRole('button', { name: /^signal map$/i }).click();
+    await page.locator('.relationship-graph-toggle').getByRole('button', { name: /^relationship graph$/i }).click();
     await expect
       .poll(async () => page.locator('.signal-bubble').count(), { timeout: 20_000 })
       .toBeGreaterThan(0);
@@ -59,8 +59,8 @@ test.describe('AIPulse - Relationship Graph', () => {
   test('graph mode exposes zoom controls and reset preserves the active window', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('button', { name: /signal map/i }).click();
-    await page.locator('.signal-map-toggle').getByRole('button', { name: /relationship graph/i }).click();
+    await page.getByRole('button', { name: /relationship graph/i }).click();
+    await page.locator('.relationship-graph-toggle').getByRole('button', { name: /relationship graph/i }).click();
 
     const graphCanvas = page.getByTestId('relationship-graph-canvas');
     const zoomIn = page.getByRole('button', { name: /zoom in/i });
@@ -83,8 +83,8 @@ test.describe('AIPulse - Relationship Graph', () => {
   test('graph nodes can be dragged without losing selection state', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('button', { name: /signal map/i }).click();
-    await page.locator('.signal-map-toggle').getByRole('button', { name: /relationship graph/i }).click();
+    await page.getByRole('button', { name: /relationship graph/i }).click();
+    await page.locator('.relationship-graph-toggle').getByRole('button', { name: /relationship graph/i }).click();
 
     const firstNode = page.locator('[data-testid^="graph-node-"]').first();
     await expect(firstNode).toBeVisible();

@@ -49,8 +49,7 @@ Located in `ai_news/app/`:
 
 **API Layer** (`api/`):
 - `main.py` - FastAPI app setup, seeds sources and public-user prefs on startup
-- `routes_news.py` - `/api/digest/today`, `/api/news`, `/api/news/weekly`, `/api/stream` (SSE)
-- `routes_compat.py` - Legacy compatibility endpoints
+- `routes_api.py` - Main API endpoints: `/api/digest/today`, `/api/news`, `/api/news/weekly`, `/api/stream` (SSE), `/api/refresh`, `/api/translate`
 
 **Data Layer**:
 - `models.py` - SQLAlchemy models: Source, RawItem, Article, Cluster, User, UserPref, DailyDigest

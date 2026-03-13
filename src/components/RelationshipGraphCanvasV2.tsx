@@ -13,7 +13,7 @@ import {
   projectRelationshipGraphLayout,
   resolveRelationshipGraphEdgeTier,
   resolveRelationshipGraphZoomLevel,
-} from '@/components/relationshipGraph';
+} from '@/lib/relationshipGraph';
 import { getTrustLabel, getUiText } from '@/i18n';
 
 interface RelationshipGraphCanvasV2Props {

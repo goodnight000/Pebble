@@ -1,4 +1,4 @@
-import { DigestResponse, Language, NewsItem, SignalMapResponse } from '@/types';
+import { DigestResponse, GraphResponse, Language, NewsItem } from '@/types';
 import { createRealtimeSubscription, type RealtimeSubscription } from '@/services/realtimeService';
 
 export type LiveEvent =
@@ -150,10 +150,10 @@ export class AIService {
     };
   }
 
-  async fetchSignalMap(hours = 48, locale: Language = 'en'): Promise<SignalMapResponse> {
-    const response = await this.fetchImpl(`/v1/signal-map?hours=${hours}&locale=${locale}`);
+  async fetchRelationshipGraph(hours = 48, locale: Language = 'en'): Promise<GraphResponse> {
+    const response = await this.fetchImpl(`/v1/graph?hours=${hours}&locale=${locale}`);
     if (!response.ok) {
-      await failWithResponse(response, 'Failed to fetch signal map');
+      await failWithResponse(response, 'Failed to fetch relationship graph');
     }
     const raw = await response.json();
     return {

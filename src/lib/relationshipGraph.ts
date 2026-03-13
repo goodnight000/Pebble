@@ -19,8 +19,8 @@ import type {
   RelationshipGraphViewport,
   RelationshipGraphWindow,
   RelationshipGraphZoomLevel,
-  SignalMapCluster,
-  SignalMapEdge,
+  GraphCluster,
+  GraphEdge,
 } from '@/types';
 
 export const RELATIONSHIP_GRAPH_WINDOWS = ['7d', '30d'] as const satisfies readonly RelationshipGraphWindow[];
@@ -155,11 +155,11 @@ interface ResolveRelationshipGraphEdgeTierOptions {
 }
 
 interface BuildRelationshipGraphOptions {
-  clusters: SignalMapCluster[];
+  clusters: GraphCluster[];
   window: RelationshipGraphWindow;
   generatedAt: string;
   maxVisibleEdges?: number;
-  serverEdges?: SignalMapEdge[];
+  serverEdges?: GraphEdge[];
 }
 
 export interface RelationshipGraphPosition {
@@ -298,7 +298,7 @@ const eventFamily = (eventType: string): string => {
   return (EVENT_FAMILY_ALIASES[normalized] ?? normalized) || 'other';
 };
 
-const eventChainScore = (left: SignalMapCluster, right: SignalMapCluster): number => {
+const eventChainScore = (left: GraphCluster, right: GraphCluster): number => {
   const leftFamily = eventFamily(left.dominantEventType);
   const rightFamily = eventFamily(right.dominantEventType);
   const compatible = EVENT_CHAIN_COMPATIBILITY.has(`${leftFamily}:${rightFamily}`)
@@ -312,8 +312,8 @@ const eventChainScore = (left: SignalMapCluster, right: SignalMapCluster): numbe
 };
 
 const entityIntersection = (
-  leftEntities: SignalMapCluster['entities'],
-  rightEntities: SignalMapCluster['entities'],
+  leftEntities: GraphCluster['entities'],
+  rightEntities: GraphCluster['entities'],
 ): string[] => {
   const rightMap = new Map<string, string>();
   for (const entity of rightEntities) {
@@ -336,7 +336,7 @@ const entityIntersection = (
   return [...shared.values()].sort((left, right) => left.localeCompare(right));
 };
 
-const buildNodeImportance = (cluster: SignalMapCluster): number =>
+const buildNodeImportance = (cluster: GraphCluster): number =>
   (cluster.coverageCount * 1.8)
   + (cluster.maxGlobalScore * 0.72)
   + (cluster.sourcesCount * 1.2)
@@ -344,7 +344,7 @@ const buildNodeImportance = (cluster: SignalMapCluster): number =>
   + (cluster.pulsing ? 16 : 0);
 
 const toGraphNode = (
-  cluster: SignalMapCluster,
+  cluster: GraphCluster,
   maxImportance: number,
 ): RelationshipGraphNode => ({
   id: cluster.id,

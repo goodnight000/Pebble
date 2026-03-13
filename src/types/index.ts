@@ -66,13 +66,13 @@ export enum AppStatus {
 
 // ── Cluster / Graph types ──
 
-export interface SignalMapEntity {
+export interface GraphEntity {
   name: string;
   weight: number;
   tier: number | null;
 }
 
-export interface SignalMapArticle {
+export interface GraphArticle {
   id: string;
   title: string;
   url: string;
@@ -84,7 +84,7 @@ export interface SignalMapArticle {
   summary: string | null;
 }
 
-export interface SignalMapCluster {
+export interface GraphCluster {
   id: string;
   headline: string;
   x: number;
@@ -99,15 +99,15 @@ export interface SignalMapCluster {
   dominantTopic: string;
   topicWeights: Record<string, number>;
   dominantEventType: string;
-  entities: SignalMapEntity[];
+  entities: GraphEntity[];
   sparkline: number[];
   firstSeenAt: string;
   lastSeenAt: string;
   ageHours: number;
-  articles: SignalMapArticle[];
+  articles: GraphArticle[];
 }
 
-export interface SignalMapEdge {
+export interface GraphEdge {
   id: string;
   source: string;
   target: string;
@@ -120,9 +120,9 @@ export interface SignalMapEdge {
   llmExplanation?: string;
 }
 
-export interface SignalMapResponse {
-  clusters: SignalMapCluster[];
-  edges?: SignalMapEdge[];
+export interface GraphResponse {
+  clusters: GraphCluster[];
+  edges?: GraphEdge[];
   projectionSeed: string;
   generatedAt: string;
   locale?: Language;

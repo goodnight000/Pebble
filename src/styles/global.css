@@ -689,21 +689,21 @@ a {
   background: rgba(17, 17, 17, 0.45);
 }
 
-/* ── Signal Map ── */
-.signal-map-layout {
+/* ── Relationship Graph ── */
+.relationship-graph-layout {
   display: flex;
   height: 100%;
   overflow: hidden;
 }
 
-.signal-map-layout--graph {
+.relationship-graph-layout--graph {
   background:
     radial-gradient(circle at 18% 18%, rgba(255, 106, 0, 0.12), transparent 32%),
     linear-gradient(180deg, rgba(17, 17, 17, 0.03), rgba(17, 17, 17, 0)),
     rgba(251, 249, 244, 0.68);
 }
 
-.signal-map-canvas {
+.relationship-graph-canvas {
   flex: 1;
   min-width: 0;
   width: 100%;
@@ -715,19 +715,19 @@ a {
     rgba(251, 249, 244, 0.42);
 }
 
-.signal-map-canvas--graph {
+.relationship-graph-canvas--graph {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0)),
     linear-gradient(135deg, rgba(255, 106, 0, 0.06), rgba(17, 17, 17, 0.02)),
     rgba(251, 249, 244, 0.82);
 }
 
-.signal-map-canvas--graph-panel-open {
+.relationship-graph-canvas--graph-panel-open {
   flex: 0 1 calc(100% - 25rem);
   transition: flex 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.signal-map-hud {
+.relationship-graph-hud {
   position: absolute;
   top: 16px;
   left: 18px;
@@ -740,27 +740,27 @@ a {
   pointer-events: none;
 }
 
-.signal-map-hud__copy {
+.relationship-graph-hud__copy {
   display: grid;
   gap: 0.55rem;
   max-width: 34rem;
   pointer-events: auto;
 }
 
-.signal-map-hud__meta {
+.relationship-graph-hud__meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
 }
 
-.signal-map-hud__legend {
+.relationship-graph-hud__legend {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
 }
 
-.signal-map-hud__legend-item {
+.relationship-graph-hud__legend-item {
   display: inline-flex;
   align-items: center;
   gap: 0.42rem;
@@ -776,11 +776,11 @@ a {
   backdrop-filter: blur(8px);
 }
 
-.signal-map-hud__legend-item--edge {
+.relationship-graph-hud__legend-item--edge {
   gap: 0.5rem;
 }
 
-.signal-map-hud__legend-line {
+.relationship-graph-hud__legend-line {
   width: 1.4rem;
   height: 0;
   border-top-width: 2px;
@@ -788,61 +788,61 @@ a {
   flex-shrink: 0;
 }
 
-.signal-map-hud__legend-line--follow-up {
+.relationship-graph-hud__legend-line--follow-up {
   border-top-color: rgba(34, 139, 230, 0.86);
   border-top-style: dashed;
 }
 
-.signal-map-hud__legend-line--reaction {
+.relationship-graph-hud__legend-line--reaction {
   border-top-color: rgba(168, 85, 247, 0.86);
   border-top-style: dashed;
 }
 
-.signal-map-hud__legend-line--competing {
+.relationship-graph-hud__legend-line--competing {
   border-top-color: rgba(239, 68, 68, 0.86);
   border-top-style: dotted;
 }
 
-.signal-map-hud__legend-line--shared-entity {
+.relationship-graph-hud__legend-line--shared-entity {
   border-top-color: #111111;
 }
 
-.signal-map-hud__legend-line--event-chain {
+.relationship-graph-hud__legend-line--event-chain {
   border-top-color: #ff6a00;
   border-top-style: dashed;
 }
 
-.signal-map-hud__legend-line--market-adjacency {
+.relationship-graph-hud__legend-line--market-adjacency {
   border-top-color: rgba(17, 17, 17, 0.46);
   border-top-style: dotted;
 }
 
-.signal-map-hud__legend-line--embedding-similarity {
+.relationship-graph-hud__legend-line--embedding-similarity {
   border-top-color: rgba(37, 99, 235, 0.58);
   border-top-style: dashed;
 }
 
-.signal-map-hud__refresh {
+.relationship-graph-hud__refresh {
   pointer-events: auto;
   padding: 6px 10px;
 }
 
-.signal-map-hud__loading {
+.relationship-graph-hud__loading {
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
 }
 
-.signal-map-window-group,
-.signal-map-mobile-window {
+.relationship-graph-window-group,
+.relationship-graph-mobile-window {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.4rem;
 }
 
-.signal-map-window-button {
+.relationship-graph-window-button {
   border: 1.5px solid rgba(17, 17, 17, 0.22);
   border-radius: 999px;
   padding: 0.42rem 0.72rem;
@@ -859,19 +859,19 @@ a {
     color 120ms ease;
 }
 
-.signal-map-window-button:hover {
+.relationship-graph-window-button:hover {
   transform: translateY(-1px);
   border-color: rgba(17, 17, 17, 0.45);
   color: var(--ink);
 }
 
-.signal-map-window-button--active {
+.relationship-graph-window-button--active {
   border-color: var(--ink);
   background: rgba(255, 106, 0, 0.16);
   color: var(--ink);
 }
 
-.signal-map-mobile-header {
+.relationship-graph-mobile-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
@@ -879,7 +879,7 @@ a {
   margin-bottom: 1rem;
 }
 
-.signal-map-mobile-graph {
+.relationship-graph-mobile-graph {
   height: min(72vh, 40rem);
 }
 
