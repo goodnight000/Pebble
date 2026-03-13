@@ -10,6 +10,7 @@ import type {
   RelationshipGraphWindow,
   RelationshipGraphZoomLevel,
   SignalMapCluster,
+  SignalMapEdge,
 } from '@/types';
 
 export const RELATIONSHIP_GRAPH_WINDOWS = ['7d', '30d'] as const satisfies readonly RelationshipGraphWindow[];
@@ -119,6 +120,7 @@ interface BuildRelationshipGraphOptions {
   window: RelationshipGraphWindow;
   generatedAt: string;
   maxVisibleEdges?: number;
+  serverEdges?: SignalMapEdge[];
 }
 
 export interface RelationshipGraphPosition {
@@ -499,6 +501,44 @@ export function buildRelationshipGraph(
     0,
   );
   const nodes = options.clusters.map((cluster) => toGraphNode(cluster, maxImportance));
+
+  if (options.serverEdges && options.serverEdges.length > 0) {
+    const edges: RelationshipGraphEdge[] = options.serverEdges.map((se) => ({
+      id: se.id,
+      source: se.source,
+      target: se.target,
+      type: se.type,
+      score: se.score,
+      evidence: se.evidence,
+      hiddenByDefault: true,
+    }));
+
+    const visibleIds = new Set(
+      pickVisibleEdges(edges, {
+        maxVisible: options.maxVisibleEdges ?? Math.min(Math.max(8, Math.round(nodes.length * 0.3)), 14),
+        importantNodeIds: nodes
+          .filter((node) => node.importance >= 0.72)
+          .sort((left, right) => {
+            if (right.importance !== left.importance) return right.importance - left.importance;
+            if (right.coverageCount !== left.coverageCount) return right.coverageCount - left.coverageCount;
+            return left.id.localeCompare(right.id);
+          })
+          .slice(0, 2)
+          .map((node) => node.id),
+      }).map((edge) => edge.id),
+    );
+
+    return {
+      nodes,
+      edges: edges.map((edge) => ({
+        ...edge,
+        hiddenByDefault: !visibleIds.has(edge.id),
+      })).sort(compareEdges),
+      window: options.window,
+      generatedAt: options.generatedAt,
+    };
+  }
+
   const clusterById = new Map(options.clusters.map((cluster) => [cluster.id, cluster]));
   const edgeCandidates: RelationshipGraphEdgeCandidate[] = [];
 
