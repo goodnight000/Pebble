@@ -441,10 +441,10 @@ class LLMClient:
             ]
         }
         parsed = self._translate_cached_json(
-            cache_namespace="translate_graph_clusters",
+            cache_namespace="translate_signal_map_clusters",
             payload=payload,
             instruction=(
-                "Translate the following graph cluster headlines and article titles into professional simplified Chinese (zh-CN).\n\n"
+                "Translate the following signal map cluster headlines and article titles into professional simplified Chinese (zh-CN).\n\n"
                 "PAYLOAD:\n{payload}\n\n"
                 "Return JSON with the same structure and translated headline/title fields only."
             ),

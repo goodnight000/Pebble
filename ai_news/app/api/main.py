@@ -16,7 +16,7 @@ app = FastAPI(title="AI News API")
 
 app.include_router(api_router)
 app.include_router(health_router)
-app.include_router(graph_router)
+app.include_router(graph_router, prefix="/v1/graph")
 app.include_router(graph_router, prefix="/v1/signal-map")  # legacy alias
 
 

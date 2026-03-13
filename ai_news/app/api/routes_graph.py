@@ -17,7 +17,7 @@ from app.db import get_db
 from app.llm.client import LLMClient
 from app.models import Article, Cluster, ClusterMember, RawItem, Source
 
-router = APIRouter(prefix="/v1/graph", tags=["graph"])
+router = APIRouter(tags=["graph"])
 
 TOPIC_TAGS = {
     "llms": "LLM",

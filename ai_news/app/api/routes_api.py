@@ -25,7 +25,7 @@ from app.scoring.user_score import compute_user_score
 from app.tasks.pipeline import run_refresh
 
 
-router = APIRouter(prefix="/api", tags=["compat"])
+router = APIRouter(prefix="/api", tags=["api"])
 
 
 def _content_type_for(source_kind: str, event_type: str) -> str:
