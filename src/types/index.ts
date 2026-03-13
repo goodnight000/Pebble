@@ -33,6 +33,8 @@ export interface NewsItem {
     specificity_score: number;
   };
   finalScore?: number;
+  editorialRank?: number;
+  urgent?: boolean;
 }
 
 export interface GroundingSource {
@@ -113,6 +115,9 @@ export interface SignalMapEdge {
   score: number;
   evidence: string[];
   embeddingSimilarity: number;
+  llmType?: string;
+  llmStrength?: number;
+  llmExplanation?: string;
 }
 
 export interface SignalMapResponse {
@@ -157,7 +162,10 @@ export type RelationshipEdgeType =
   | 'shared-entity'
   | 'event-chain'
   | 'market-adjacency'
-  | 'embedding-similarity';
+  | 'embedding-similarity'
+  | 'follow-up'
+  | 'reaction'
+  | 'competing';
 
 export interface RelationshipGraphNode {
   id: string;

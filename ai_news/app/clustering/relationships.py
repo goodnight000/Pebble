@@ -25,18 +25,30 @@ logger = logging.getLogger(__name__)
 EVENT_FAMILY_ALIASES: Dict[str, str] = {
     "announcement": "release",
     "benchmark": "benchmark",
+    "benchmark_result": "benchmark",
+    "big_tech_announcement": "release",
+    "chip_hardware": "release",
     "collaboration": "partnership",
     "funding": "funding",
+    "government_action": "policy",
     "grant": "funding",
     "launch": "release",
+    "m_and_a": "ma",
     "merger": "ma",
+    "model_release": "release",
+    "open_source_release": "release",
     "partnership": "partnership",
     "policy": "policy",
+    "policy_regulation": "policy",
+    "product_launch": "release",
     "recall": "security",
     "regulation": "policy",
     "release": "release",
     "research": "research",
+    "research_paper": "research",
     "security": "security",
+    "security_incident": "security",
+    "startup_funding": "funding",
     "update": "release",
 }
 
@@ -63,6 +75,9 @@ CORPORATE_SUFFIX_PATTERN = re.compile(
 EMBEDDING_DIM = 384
 
 _EDGE_TYPE_PRIORITY: Dict[str, int] = {
+    "follow-up": 5,
+    "reaction": 4,
+    "competing": 3,
     "shared-entity": 3,
     "event-chain": 2,
     "embedding-similarity": 1,
@@ -80,13 +95,31 @@ class ClusterRelationshipEdge:
 
     source_cluster_id: str
     target_cluster_id: str
-    edge_type: str  # shared-entity | event-chain | embedding-similarity | market-adjacency
+    edge_type: str  # shared-entity | event-chain | embedding-similarity | market-adjacency | follow-up | reaction | competing
     combined_score: float
     embedding_similarity: float
     shared_entities: List[str]
     event_chain: bool
     topic_similarity: float
     evidence: List[str] = field(default_factory=list)
+    llm_type: Optional[str] = None       # follow-up | reaction | competing | None
+    llm_strength: Optional[float] = None  # 0.0-1.0
+    llm_explanation: Optional[str] = None
+
+
+@dataclass
+class LLMCandidatePair:
+    """A pair rejected by mechanical thresholds but worth LLM evaluation."""
+
+    source_cluster_id: str
+    target_cluster_id: str
+    source_cluster: Dict[str, Any]
+    target_cluster: Dict[str, Any]
+    emb_sim: float
+    shared_entities: List[str]
+    event_chain_raw: float
+    topic_sim: float
+    reason: str  # why this pair is a candidate
 
 
 # ---------------------------------------------------------------------------
@@ -272,6 +305,78 @@ def _bytes_to_vector(data: bytes, dim: int = EMBEDDING_DIM) -> Optional[np.ndarr
 
 
 # ---------------------------------------------------------------------------
+# Track B – LLM candidate selection
+# ---------------------------------------------------------------------------
+
+
+def _llm_candidate_reason(
+    ci: Dict[str, Any],
+    cj: Dict[str, Any],
+    shared: List[str],
+    emb_sim: float,
+    topic_sim: float,
+) -> Optional[str]:
+    """Return a reason string if this pair is worth LLM evaluation, else None.
+
+    Track B criteria (any one is sufficient):
+    - Same non-mixed dominant topic but no shared entities
+    - At least 1 shared entity but embedding similarity below threshold
+    - Both clusters are "hot" (recent and well-covered)
+    - Cross-topic event chain compatibility with recency
+    - Cross-topic high-coverage clusters in temporal proximity
+    - Cross-topic embedding near-miss below mechanical threshold
+    """
+    ci_topic = ci.get("dominant_topic", "mixed")
+    cj_topic = cj.get("dominant_topic", "mixed")
+
+    # --- Existing same-topic / entity / hot criteria ---
+    if ci_topic == cj_topic and ci_topic != "mixed" and not shared:
+        return "same_topic_no_entities"
+
+    if len(shared) >= 1 and emb_sim < 0.55:
+        return "shared_entity_low_embedding"
+
+    ci_hot = ci.get("age_hours", 999) < 48 and ci.get("coverage_count", 0) >= 3
+    cj_hot = cj.get("age_hours", 999) < 48 and cj.get("coverage_count", 0) >= 3
+    if ci_hot and cj_hot:
+        return "both_hot"
+
+    # --- Cross-topic criteria ---
+    both_non_mixed = ci_topic != "mixed" and cj_topic != "mixed"
+    is_cross_topic = ci_topic != cj_topic and both_non_mixed
+
+    if is_cross_topic:
+        # Event chain compatibility across topics (e.g. research→release,
+        # release→policy, funding→release).
+        ci_family = _event_family(ci.get("dominant_event_type", ""))
+        cj_family = _event_family(cj.get("dominant_event_type", ""))
+        forward = f"{ci_family}:{cj_family}"
+        backward = f"{cj_family}:{ci_family}"
+        if forward in EVENT_CHAIN_COMPATIBILITY or backward in EVENT_CHAIN_COMPATIBILITY:
+            min_age = min(ci.get("age_hours", 999), cj.get("age_hours", 999))
+            if min_age < 72:
+                return "cross_topic_event_chain"
+
+        # High-coverage temporal proximity — major stories in different topics
+        # appearing close together with slight topic overlap.
+        ci_coverage = ci.get("coverage_count", 0)
+        cj_coverage = cj.get("coverage_count", 0)
+        if ci_coverage >= 5 and cj_coverage >= 5:
+            age_delta = abs(ci.get("age_hours", 999) - cj.get("age_hours", 999))
+            if age_delta < 48 and topic_sim >= 0.15:
+                return "cross_topic_high_coverage"
+
+    # Embedding near-miss: different topics with embedding similarity just
+    # below the mechanical threshold — narratively adjacent content.
+    if is_cross_topic and 0.45 <= emb_sim < 0.55:
+        min_age = min(ci.get("age_hours", 999), cj.get("age_hours", 999))
+        if min_age < 72:
+            return "cross_topic_embedding_near_miss"
+
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -282,7 +387,11 @@ def compute_cluster_relationships(
     entity_canon_map: Optional[Dict[str, str]] = None,
     embedding_threshold: float = 0.55,
     max_edges: int = 100,
-) -> List[ClusterRelationshipEdge]:
+    return_llm_candidates: bool = False,
+) -> (
+    List[ClusterRelationshipEdge]
+    | tuple[List[ClusterRelationshipEdge], List[LLMCandidatePair]]
+):
     """Compute pairwise cluster relationship edges.
 
     Parameters
@@ -297,6 +406,9 @@ def compute_cluster_relationships(
         - ``age_hours`` (float)
         Optional:
         - ``dominant_topic`` (str) – used for topic bonus; defaults to ``"mixed"``
+        - ``headline`` (str) – needed for LLM candidate context
+        - ``top_summary`` (str) – needed for LLM candidate context
+        - ``coverage_count`` (int) – used for Track B "hot" detection
 
     entity_canon_map:
         Maps normalized entity name → canonical form, enabling alias resolution.
@@ -307,13 +419,20 @@ def compute_cluster_relationships(
     max_edges:
         Maximum number of edges to return (default 100).
 
+    return_llm_candidates:
+        When True, return a tuple of ``(edges, llm_candidates)`` where
+        ``llm_candidates`` contains pairs that failed mechanical thresholds
+        but are worth evaluating with an LLM.
+
     Returns
     -------
     list[ClusterRelationshipEdge]
-        Sorted descending by ``combined_score``.
+        Sorted descending by ``combined_score``.  If *return_llm_candidates*
+        is True, returns ``(edges, llm_candidates)`` instead.
     """
+    empty: List[ClusterRelationshipEdge] = []
     if len(clusters) < 2:
-        return []
+        return (empty, []) if return_llm_candidates else empty
 
     # -- Build embedding matrix -------------------------------------------------
     n = len(clusters)
@@ -346,6 +465,7 @@ def compute_cluster_relationships(
 
     # -- Iterate over upper triangle --------------------------------------------
     edges: List[ClusterRelationshipEdge] = []
+    llm_candidates: List[LLMCandidatePair] = []
 
     for i in range(n):
         for j in range(i + 1, n):
@@ -375,24 +495,50 @@ def compute_cluster_relationships(
             )
 
             # Apply adaptive thresholds
+            passed_mechanical = True
             if emb_sim >= 0.75:
                 # Strong — always include
                 pass
             elif emb_sim >= 0.65:
                 # Medium — need entity or event chain
                 if not shared and not event_chain:
-                    continue
+                    passed_mechanical = False
             elif emb_sim >= embedding_threshold:
                 # Weak — need strong rule-based signals
                 if len(shared) < 2 and not event_chain:
-                    continue
+                    passed_mechanical = False
             else:
                 # Below embedding threshold — only include if strong rule-based
                 # signals exist (shared entities or event chain evidence).
                 if len(shared) >= 2 or event_chain:
                     pass  # allow through on rule-based evidence alone
                 else:
-                    continue
+                    passed_mechanical = False
+
+            # --- Track B: collect LLM candidates from rejected pairs ----------
+            if not passed_mechanical and return_llm_candidates:
+                candidate_reason = _llm_candidate_reason(ci, cj, shared, emb_sim, topic_sim)
+                if candidate_reason:
+                    src_id = str(ci["id"])
+                    tgt_id = str(cj["id"])
+                    if src_id > tgt_id:
+                        src_id, tgt_id = tgt_id, src_id
+                    llm_candidates.append(
+                        LLMCandidatePair(
+                            source_cluster_id=src_id,
+                            target_cluster_id=tgt_id,
+                            source_cluster=ci,
+                            target_cluster=cj,
+                            emb_sim=emb_sim,
+                            shared_entities=shared,
+                            event_chain_raw=chain_raw,
+                            topic_sim=topic_sim,
+                            reason=candidate_reason,
+                        )
+                    )
+
+            if not passed_mechanical:
+                continue
 
             # --- Scoring ------------------------------------------------------
             combined = _compute_combined_score(emb_sim, shared, chain_raw, topic_sim)
@@ -432,4 +578,118 @@ def compute_cluster_relationships(
         ),
     )
 
-    return edges[:max_edges]
+    result_edges = edges[:max_edges]
+    if return_llm_candidates:
+        return result_edges, llm_candidates
+    return result_edges
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 – Score fusion with LLM inference results
+# ---------------------------------------------------------------------------
+
+# Minimum floor scores so strong LLM findings surface as visible edges.
+_LLM_SCORE_FLOOR: Dict[str, float] = {
+    "follow-up": 0.35,
+    "reaction": 0.30,
+    "competing": 0.32,
+}
+
+
+def fuse_llm_results(
+    mechanical_edges: List[ClusterRelationshipEdge],
+    llm_results: List[Any],
+    *,
+    max_edges: int = 100,
+) -> List[ClusterRelationshipEdge]:
+    """Merge LLM relationship classifications into the mechanical edge list.
+
+    LLM results can:
+    - **Create** new edges for pairs with no mechanical edge.
+    - **Boost** existing edges when the LLM label is informative.
+    - **Penalize** existing edges when the LLM says ``"unrelated"``.
+
+    Parameters
+    ----------
+    mechanical_edges:
+        Output of ``compute_cluster_relationships()``.
+    llm_results:
+        List of ``LLMRelationshipResult`` (from ``relationship_inference.py``).
+        Each has ``source_cluster_id``, ``target_cluster_id``, ``label``,
+        ``confidence``, ``explanation``.
+    max_edges:
+        Cap on returned edges.
+    """
+    # Index LLM results by canonicalized pair key
+    llm_by_pair: Dict[tuple[str, str], Any] = {}
+    for r in llm_results:
+        key = (min(r.source_cluster_id, r.target_cluster_id),
+               max(r.source_cluster_id, r.target_cluster_id))
+        llm_by_pair[key] = r
+
+    # Index mechanical edges for mutation
+    edge_keys: set[tuple[str, str]] = set()
+    for edge in mechanical_edges:
+        key = (edge.source_cluster_id, edge.target_cluster_id)
+        edge_keys.add(key)
+
+        llm = llm_by_pair.get(key)
+        if llm is None:
+            continue
+
+        if llm.label == "unrelated" and llm.confidence >= 0.7:
+            # Penalize: reduce score by 40%
+            edge.combined_score = round(edge.combined_score * 0.6, 6)
+        elif llm.label != "unrelated":
+            # Boost: take max of mechanical vs LLM-derived score
+            floor = _LLM_SCORE_FLOOR.get(llm.label, 0.25)
+            llm_derived = llm.confidence * 0.70 + floor * 0.30
+            if llm_derived > edge.combined_score:
+                edge.combined_score = round(llm_derived, 6)
+            # Promote edge type if LLM is confident
+            if llm.confidence >= 0.5:
+                edge.edge_type = llm.label
+            edge.llm_type = llm.label
+            edge.llm_strength = round(llm.confidence, 4)
+            edge.llm_explanation = llm.explanation
+
+    # Create new edges for LLM-found relationships with no mechanical edge
+    for key, llm in llm_by_pair.items():
+        if key in edge_keys:
+            continue
+        if llm.label == "unrelated":
+            continue
+        if llm.confidence < 0.6:
+            continue
+
+        floor = _LLM_SCORE_FLOOR.get(llm.label, 0.25)
+        score = llm.confidence * 0.70 + floor * 0.30
+
+        mechanical_edges.append(
+            ClusterRelationshipEdge(
+                source_cluster_id=key[0],
+                target_cluster_id=key[1],
+                edge_type=llm.label,
+                combined_score=round(score, 6),
+                embedding_similarity=0.0,
+                shared_entities=[],
+                event_chain=False,
+                topic_similarity=0.0,
+                evidence=[llm.explanation] if llm.explanation else [],
+                llm_type=llm.label,
+                llm_strength=round(llm.confidence, 4),
+                llm_explanation=llm.explanation,
+            )
+        )
+
+    # Re-sort after fusion
+    mechanical_edges.sort(
+        key=lambda e: (
+            -e.combined_score,
+            -_EDGE_TYPE_PRIORITY.get(e.edge_type, 0),
+            e.source_cluster_id,
+            e.target_cluster_id,
+        ),
+    )
+
+    return mechanical_edges[:max_edges]

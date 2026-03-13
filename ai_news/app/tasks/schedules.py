@@ -50,4 +50,8 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.urgent_monitor.notify_urgent",
         "schedule": 300.0,
     },
+    "relationship-inference": {
+        "task": "app.tasks.pipeline.run_relationship_inference",
+        "schedule": 3600.0,
+    },
 }

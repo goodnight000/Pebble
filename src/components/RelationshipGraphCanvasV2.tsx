@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { drag, select, zoom, zoomIdentity } from 'd3';
 import type { D3DragEvent, ZoomBehavior, ZoomTransform } from 'd3';
-import type { Language, RelationshipGraphPosition, RelationshipGraphResponse } from '@/types';
+import type { Language, RelationshipGraphResponse } from '@/types';
 import {
+  type RelationshipGraphPosition,
   applyRelationshipGraphPositionOverrides,
   buildLocalNeighborhood,
   buildRelationshipGraphVisuals,
@@ -23,6 +24,7 @@ interface RelationshipGraphCanvasV2Props {
 }
 
 const GRAPH_PADDING = 76;
+const LAYOUT_SCALE = 2.0;
 
 function resolveNodeRadius(importance: number): number {
   return 10 + importance * 20;
@@ -73,11 +75,12 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
 
   const positions = useMemo(
     () => projectRelationshipGraphLayout(graph.nodes, {
-      width: dimensions.width,
-      height: dimensions.height,
-      padding: GRAPH_PADDING,
+      width: dimensions.width * LAYOUT_SCALE,
+      height: dimensions.height * LAYOUT_SCALE,
+      padding: GRAPH_PADDING * LAYOUT_SCALE,
+      edges: graph.edges,
     }),
-    [dimensions.height, dimensions.width, graph.nodes],
+    [dimensions.height, dimensions.width, graph.nodes, graph.edges],
   );
 
   const projectedPositions = useMemo(
@@ -138,7 +141,7 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
     }
 
     const zoomBehavior = zoom<HTMLDivElement, unknown>()
-      .scaleExtent([0.45, 3.2])
+      .scaleExtent([0.15, 10])
       .filter((event) => {
         const target = event.target as HTMLElement | null;
         if (!target) {
@@ -258,6 +261,8 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
     context.scale(viewTransform.k, viewTransform.k);
     context.lineCap = 'round';
 
+    const inverseScale = 1 / viewTransform.k;
+
     for (const edge of graph.edges) {
       const source = projectedPositions.get(edge.source);
       const target = projectedPositions.get(edge.target);
@@ -279,21 +284,33 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
       context.moveTo(source.x, source.y);
       context.lineTo(target.x, target.y);
 
-      if (edge.type === 'event-chain') {
-        context.setLineDash([10, 8]);
+      if (edge.type === 'follow-up') {
+        context.setLineDash([14 * inverseScale, 6 * inverseScale]);
+      } else if (edge.type === 'reaction') {
+        context.setLineDash([6 * inverseScale, 4 * inverseScale, 14 * inverseScale, 4 * inverseScale]);
+      } else if (edge.type === 'competing') {
+        context.setLineDash([3 * inverseScale, 6 * inverseScale]);
+      } else if (edge.type === 'event-chain') {
+        context.setLineDash([10 * inverseScale, 8 * inverseScale]);
       } else if (edge.type === 'market-adjacency') {
-        context.setLineDash([4, 10]);
+        context.setLineDash([4 * inverseScale, 10 * inverseScale]);
       } else {
         context.setLineDash([]);
       }
 
-      context.lineWidth = tier === 'focused' ? 3 : 1.9;
+      context.lineWidth = (tier === 'focused' ? 2.4 : 1.4) * inverseScale;
       context.globalAlpha = tier === 'focused' ? 0.92 : 0.42;
-      context.strokeStyle = edge.type === 'event-chain'
-        ? 'rgba(255, 106, 0, 0.86)'
-        : edge.type === 'market-adjacency'
-          ? 'rgba(17, 17, 17, 0.26)'
-          : 'rgba(17, 17, 17, 0.72)';
+      context.strokeStyle = edge.type === 'follow-up'
+        ? 'rgba(34, 139, 230, 0.86)'
+        : edge.type === 'reaction'
+          ? 'rgba(168, 85, 247, 0.86)'
+          : edge.type === 'competing'
+            ? 'rgba(239, 68, 68, 0.86)'
+            : edge.type === 'event-chain'
+              ? 'rgba(255, 106, 0, 0.86)'
+              : edge.type === 'market-adjacency'
+                ? 'rgba(17, 17, 17, 0.26)'
+                : 'rgba(17, 17, 17, 0.72)';
       context.stroke();
     }
 
@@ -438,6 +455,7 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
                 top: `${screenY}px`,
                 width: `${radius * 2 + 18}px`,
                 height: `${radius * 2 + 18}px`,
+                zIndex: isHovered || isSelected ? 100 : undefined,
                 ['--relationship-node-accent' as string]: `var(${visual.topicColorToken}, var(--accent))`,
               }}
               onClick={() => onSelectCluster(node.id)}

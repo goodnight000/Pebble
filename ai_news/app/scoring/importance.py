@@ -111,6 +111,7 @@ class GlobalScoreInputs:
     final_url: str = ""
     source_names: list[str] = field(default_factory=list)
     content_type: str = "news"
+    extraction_quality: float = 1.0
 
 
 def compute_global_score_v2(inputs: GlobalScoreInputs) -> tuple[float, dict[str, float]]:
@@ -164,4 +165,12 @@ def compute_global_score_v2(inputs: GlobalScoreInputs) -> tuple[float, dict[str,
 
     signals["base_importance"] = BASE_IMPORTANCE.get(inputs.event_type, BASE_IMPORTANCE["OTHER"]) / 100.0
     score = min(100.0, round(score, 2))
+
+    # Soft penalty for snippet-only / low-quality extractions
+    eq_penalty = 1.0
+    if inputs.extraction_quality <= 0.30:
+        eq_penalty = 0.70 + 0.30 * (inputs.extraction_quality / 0.30)
+        score = round(score * eq_penalty, 2)
+    signals["extraction_quality_penalty"] = round(eq_penalty, 4)
+
     return score, signals

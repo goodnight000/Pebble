@@ -237,6 +237,18 @@ const SignalMap: React.FC<SignalMapProps> = ({ aiService, language, isActive }) 
             </div>
             <div className="signal-map-hud__legend">
               <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
+                <span className="signal-map-hud__legend-line signal-map-hud__legend-line--follow-up" aria-hidden="true" />
+                {getUiText(language, 'graphFollowUp')}
+              </span>
+              <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
+                <span className="signal-map-hud__legend-line signal-map-hud__legend-line--reaction" aria-hidden="true" />
+                {getUiText(language, 'graphReaction')}
+              </span>
+              <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
+                <span className="signal-map-hud__legend-line signal-map-hud__legend-line--competing" aria-hidden="true" />
+                {getUiText(language, 'graphCompeting')}
+              </span>
+              <span className="signal-map-hud__legend-item signal-map-hud__legend-item--edge">
                 <span className="signal-map-hud__legend-line signal-map-hud__legend-line--shared-entity" aria-hidden="true" />
                 {getUiText(language, 'graphSharedEntity')}
               </span>

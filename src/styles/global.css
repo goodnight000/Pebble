@@ -788,6 +788,21 @@ a {
   flex-shrink: 0;
 }
 
+.signal-map-hud__legend-line--follow-up {
+  border-top-color: rgba(34, 139, 230, 0.86);
+  border-top-style: dashed;
+}
+
+.signal-map-hud__legend-line--reaction {
+  border-top-color: rgba(168, 85, 247, 0.86);
+  border-top-style: dashed;
+}
+
+.signal-map-hud__legend-line--competing {
+  border-top-color: rgba(239, 68, 68, 0.86);
+  border-top-style: dotted;
+}
+
 .signal-map-hud__legend-line--shared-entity {
   border-top-color: #111111;
 }

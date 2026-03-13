@@ -52,6 +52,7 @@ class ScrapeDecision(str, enum.Enum):
     skip = "skip"
     fetch_full = "fetch_full"
     fetch_full_priority = "fetch_full_priority"
+    fetch_watch = "fetch_watch"
 
 
 class EventType(str, enum.Enum):

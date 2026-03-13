@@ -20,6 +20,7 @@ from app.integrations.supabase import get_realtime_channel_map
 from app.llm.client import LLMClient
 from app.models import Article, Cluster, ClusterMember, DailyDigest, RawItem, Source, UserEntityWeight, UserPref, UserSourceWeight, UserTopicWeight
 from app.scoring.signals import log_norm
+from app.scoring.editorial_rank import compute_editorial_rank
 from app.scoring.user_score import compute_user_score
 from app.tasks.pipeline import run_refresh
 
@@ -28,11 +29,8 @@ router = APIRouter(prefix="/api", tags=["compat"])
 
 
 def _content_type_for(source_kind: str, event_type: str) -> str:
-    if source_kind in ("github", "github_trending"):
-        return "github"
-    if source_kind == "arxiv" or event_type == "RESEARCH_PAPER":
-        return "research"
-    return "news"
+    from app.common.content_type import content_type_for
+    return content_type_for(source_kind, event_type)
 MIN_ITEMS_FALLBACK = 20
 FETCHED_AT_FALLBACK_KINDS = {"hn", "reddit", "twitter", "mastodon", "bluesky", "github", "github_trending", "congress"}
 # For these source kinds, always use fetched_at (discovery time) as the event time
@@ -276,6 +274,13 @@ def _select_articles(
     )
     if content_type:
         query = query.filter(Article.content_type == content_type)
+    # DB-side floor to reduce working set. The editorial rank layer can
+    # add up to ~13 points (coverage + corroboration + official boost),
+    # so subtract that headroom from the display-threshold floor.
+    _MAX_EDITORIAL_BOOST = 13
+    db_floor = max(1, (10 if content_type and content_type != "news" else 15) - _MAX_EDITORIAL_BOOST)
+    effective_score = func.coalesce(Article.final_score, Article.global_score)
+    query = query.filter(effective_score >= db_floor)
     rows = query.all()
 
     has_real = any(source.name != "Local Sample Feed" for _article, _raw, source, _cluster in rows)
@@ -302,8 +307,18 @@ def _select_articles(
         topics = _normalized_mapping(article.topics)
         entities = _normalized_mapping(article.entities)
         base_score = article.final_score if article.final_score is not None else article.global_score
+        if cluster:
+            editorial_rank = compute_editorial_rank(
+                max_global_score=cluster.max_global_score or base_score,
+                coverage_count=cluster.coverage_count or 1,
+                independent_sources_count=cluster.independent_sources_count or 1,
+                has_official_confirmation=bool(cluster.has_official_confirmation),
+                cluster_trust_score=cluster.cluster_trust_score,
+            )
+        else:
+            editorial_rank = base_score
         user_score = compute_user_score(
-            global_score=base_score,
+            global_score=editorial_rank,
             event_type=article.event_type,
             topics=topics,
             entities=entities,
@@ -356,6 +371,8 @@ def _select_articles(
             "trustLabel": article.trust_label,
             "trustComponents": article.trust_components,
             "finalScore": article.final_score or article.global_score,
+            "editorialRank": editorial_rank,
+            "urgent": bool(article.urgent),
             "_rank_score": float(rank_score),
             "_embedding": embedding,
         }
@@ -404,6 +421,7 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
         .filter(Article.id.in_(article_ids))
+        .filter(func.coalesce(Article.final_score, Article.global_score) >= 1)
         .all()
     )
     has_real = any(source.name != "Local Sample Feed" for _article, _raw, source, _cluster in rows)
@@ -423,8 +441,18 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
         topics = _normalized_mapping(article.topics)
         entities = _normalized_mapping(article.entities)
         base_score = article.final_score if article.final_score is not None else article.global_score
+        if cluster:
+            editorial_rank = compute_editorial_rank(
+                max_global_score=cluster.max_global_score or base_score,
+                coverage_count=cluster.coverage_count or 1,
+                independent_sources_count=cluster.independent_sources_count or 1,
+                has_official_confirmation=bool(cluster.has_official_confirmation),
+                cluster_trust_score=cluster.cluster_trust_score,
+            )
+        else:
+            editorial_rank = base_score
         user_score = compute_user_score(
-            global_score=base_score,
+            global_score=editorial_rank,
             event_type=article.event_type,
             topics=topics,
             entities=entities,
@@ -477,6 +505,8 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
             "trustLabel": article.trust_label,
             "trustComponents": article.trust_components,
             "finalScore": article.final_score or article.global_score,
+            "editorialRank": editorial_rank,
+            "urgent": bool(article.urgent),
             "_rank_score": float(rank_score),
             "_embedding": embedding,
         }
@@ -588,11 +618,11 @@ def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depen
         }
         digests = {ct: fallback_digest for ct in content_types}
 
-    _trusted_labels = {"official", "confirmed", "likely", None}
+    # Use the backend's unified urgent flag instead of a separate threshold.
+    # compute_urgent() already checks score >= 85, age <= 6h, trust label,
+    # and corroboration/official status.
     breaking = next(
-        (item for item in items
-         if item.get("significanceScore", 0) >= 90
-         and item.get("trustLabel") in _trusted_labels),
+        (item for item in items if item.get("urgent")),
         None,
     )
     llm = LLMClient()

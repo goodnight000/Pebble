@@ -330,6 +330,9 @@ def get_signal_map(
     relationship_inputs = []
     for cd in cluster_data:
         c = cd["cluster"]
+        top_summary = ""
+        if cd["articles"]:
+            top_summary = cd["articles"][0].get("summary") or ""
         relationship_inputs.append({
             "id": str(c.id),
             "centroid_embedding": c.centroid_embedding,
@@ -338,15 +341,30 @@ def get_signal_map(
             "dominant_topic": cd["dominant_topic"],
             "topic_weights": cd["topic_weights"],
             "age_hours": cd["age_hours"],
+            "headline": c.headline,
+            "top_summary": top_summary,
+            "coverage_count": c.coverage_count or 0,
         })
 
-    raw_edges = compute_cluster_relationships(
+    raw_edges, llm_candidates = compute_cluster_relationships(
         relationship_inputs,
         entity_canon_map=cached_canon_map,
+        return_llm_candidates=True,
     )
 
-    edges_payload = [
-        {
+    # Fuse with cached LLM inference results (cache_only=True to avoid
+    # blocking the API on LLM calls; the background worker fills the cache).
+    if llm_candidates:
+        from app.clustering.relationship_inference import infer_relationships
+        from app.clustering.relationships import fuse_llm_results
+
+        llm_results = infer_relationships(llm_candidates, cache_only=True)
+        if llm_results:
+            raw_edges = fuse_llm_results(raw_edges, llm_results)
+
+    edges_payload = []
+    for edge in raw_edges:
+        entry: dict = {
             "id": f"{edge.source_cluster_id}::{edge.target_cluster_id}",
             "source": edge.source_cluster_id,
             "target": edge.target_cluster_id,
@@ -355,8 +373,13 @@ def get_signal_map(
             "evidence": edge.evidence,
             "embedding_similarity": round(edge.embedding_similarity, 4),
         }
-        for edge in raw_edges
-    ]
+        if edge.llm_type:
+            entry["llm_type"] = edge.llm_type
+        if edge.llm_strength is not None:
+            entry["llm_strength"] = round(edge.llm_strength, 4)
+        if edge.llm_explanation:
+            entry["llm_explanation"] = edge.llm_explanation
+        edges_payload.append(entry)
 
     # Step 6: Build response
     result_clusters = []

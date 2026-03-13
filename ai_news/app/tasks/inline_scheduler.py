@@ -13,6 +13,7 @@ from app.tasks.pipeline import (
     run_gov_api_poll,
     run_normal_poll,
     run_priority_poll,
+    run_relationship_inference,
     run_sitemap_poll,
     run_social_poll,
     run_twitter_poll,
@@ -71,4 +72,5 @@ def maybe_start_inline_scheduler() -> None:
     loop.create_task(_run_periodic("rebuild-faiss", 1800.0, rebuild_faiss_index, initial_delay=15))
     loop.create_task(_run_periodic("urgent-notify", 300.0, notify_urgent, initial_delay=10))
     loop.create_task(_run_periodic("entity-resolution", 21600.0, run_entity_resolution, initial_delay=180))
+    loop.create_task(_run_periodic("relationship-inference", 3600.0, run_relationship_inference, initial_delay=210))
     loop.create_task(_run_daily("daily-digest", 6, 0, run_daily_digest))

@@ -333,7 +333,7 @@ def _determine_label(
     if is_still_developing and (hours_since_first_report or 999) < 6:
         return "developing"
 
-    if independent_sources >= 2:
+    if independent_sources >= 2 and trust_score >= 40 and confirmation_level != "rumor":
         return "likely"
 
     if trust_score < 40:

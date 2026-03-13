@@ -35,7 +35,7 @@ from app.ingestion.twitter import TwitterConnector
 from app.ingestion.wayback import check_wayback
 from app.llm.client import LLMClient
 from app.models import Article, Cluster, ClusterMember, EntityCanonMap, RawItem, Source
-from app.scraping.extract import extract_pub_date, extract_text
+from app.scraping.extract import extract_pub_date, extract_text, extract_text_lightweight
 from app.scraping.fetch import fetch_html
 from app.scoring.importance import GlobalScoreInputs, compute_global_score_v2
 from app.scoring.llm_judge import compute_final_score
@@ -50,11 +50,8 @@ INGEST_RUN_LOCK = threading.Lock()
 
 
 def _content_type_for(source_kind: str, event_type: str) -> str:
-    if source_kind in ("github", "github_trending"):
-        return "github"
-    if source_kind == "arxiv" or event_type == "RESEARCH_PAPER":
-        return "research"
-    return "news"
+    from app.common.content_type import content_type_for
+    return content_type_for(source_kind, event_type)
 
 
 SAMPLE_ITEMS = [
@@ -371,6 +368,10 @@ def _scrape_decision(raw: RawItem, source: Source) -> tuple[str, str]:
         return "fetch_full_priority", "pre_score>=70"
     if raw.pre_score is not None and raw.pre_score >= pre_fetch:
         return "fetch_full", "pre_score>=40"
+    pre_watch = thresholds.get("pre_watch", 30)
+    if raw.pre_score is not None and raw.pre_score >= pre_watch:
+        if source.authority >= 0.70 or ai_rel >= 0.60:
+            return "fetch_watch", "watch_band"
     return "skip", "below_threshold_skip"
 
 
@@ -522,9 +523,15 @@ async def _scrape_and_process(raw: RawItem, source: Source) -> Article | None:
     text = None
     quality = 0.0
 
+    # Watch-band items: lightweight extraction only
+    is_watch = raw.scrape_decision == "fetch_watch"
+
     try:
         html, final_url = await fetch_html(raw.url, rate_limit_rps=source.rate_limit_rps)
-        text, quality = await extract_text(html, final_url)
+        if is_watch:
+            text, quality = extract_text_lightweight(html, final_url)
+        else:
+            text, quality = await extract_text(html, final_url)
     except Exception:
         # Some domains (e.g. behind bot challenges) may block full-page scraping.
         # Fall back to the feed/snippet so we still surface the item in the UI.
@@ -639,18 +646,16 @@ def _score_article(
     cluster_articles = []
     source_names = []
     if cluster:
-        member_ids = [
-            cm.article_id
-            for cm in session.query(ClusterMember).filter(ClusterMember.cluster_id == cluster_id).all()
-        ]
-        if member_ids:
-            cluster_articles = session.query(Article).filter(Article.id.in_(member_ids)).all()
-            for ca in cluster_articles:
-                ri = session.query(RawItem).filter(RawItem.id == ca.raw_item_id).first()
-                if ri:
-                    s = session.query(Source).filter(Source.id == ri.source_id).first()
-                    if s:
-                        source_names.append(s.name)
+        rows = (
+            session.query(Article, Source.name)
+            .join(ClusterMember, ClusterMember.article_id == Article.id)
+            .join(RawItem, Article.raw_item_id == RawItem.id)
+            .join(Source, RawItem.source_id == Source.id)
+            .filter(ClusterMember.cluster_id == cluster_id)
+            .all()
+        )
+        cluster_articles = [art for art, _sname in rows]
+        source_names = [sname for _art, sname in rows]
 
     independent_count = estimate_independent_sources(cluster_articles) if cluster_articles else 1
     articles_in_cluster = cluster.coverage_count if cluster else 1
@@ -691,6 +696,7 @@ def _score_article(
         final_url=article.final_url,
         source_names=source_names,
         content_type=article.content_type,
+        extraction_quality=article.extraction_quality if article.extraction_quality is not None else 1.0,
     )
     score, signal_breakdown = compute_global_score_v2(inputs)
     article.global_score = score
@@ -747,7 +753,11 @@ def _score_article(
             article.llm_reasoning = llm_reasoning
 
     # ── 4. Compute final score (blend rule + LLM) ────────────────────
-    article.final_score = compute_final_score(article.global_score, llm_score_val)
+    article.final_score = compute_final_score(
+        article.global_score, llm_score_val,
+        confirmation_level=article.confirmation_level,
+        trust_label=article.trust_label,
+    )
 
     # ── 5. Determine urgent ──────────────────────────────────────────
     article.urgent = compute_urgent(
@@ -963,14 +973,22 @@ def _process_scrape_targets(raw_ids: list[str]) -> None:
                 _update_article_scores(session, article, raw, source)
 
                 llm = LLMClient()
+                reclassified = False
                 if article.global_score >= 60 or raw.scrape_decision == "fetch_full_priority":
                     max_topic = max(article.topics.values()) if article.topics else 0.0
                     if article.event_type == "OTHER" or max_topic < 0.35:
                         data = llm.classify_event_and_topics(raw.title, article.text)
                         if data.get("event_type"):
                             article.event_type = data.get("event_type")
+                            article.content_type = _content_type_for(source.kind, article.event_type)
+                            reclassified = True
                         if data.get("topics"):
                             article.topics = data.get("topics")
+                            reclassified = True
+                # Rescore if LLM changed event_type or topics, since
+                # global_score was computed with the stale values.
+                if reclassified:
+                    _refresh_existing_article_scores(session, article, raw, source)
                 if article.global_score >= 70 and article.summary is None:
                     summary = llm.summarize(raw.title, article.text)
                     if summary:
@@ -1090,8 +1108,23 @@ def _run_poll(priority_only: bool):
             .all()
         ]
 
+    # ── Phase 2b: Watch band targets (separate quota) ──
+    with session_scope() as session:
+        watch_ids = [
+            row[0]
+            for row in session.query(RawItem.id)
+            .filter(RawItem.scrape_decision == "fetch_watch")
+            .outerjoin(Article, Article.raw_item_id == RawItem.id)
+            .filter(Article.id.is_(None))
+            .order_by(RawItem.pre_score.desc().nullslast())
+            .limit(settings.max_watch_per_run)
+            .all()
+        ]
+
     # ── Phase 3: Scrape + score each article ──
     _process_scrape_targets(to_scrape_ids)
+    if watch_ids:
+        _process_scrape_targets(watch_ids)
 
 
 def _run_special(kind: str, window_hours: int):
@@ -1177,8 +1210,26 @@ def _run_special(kind: str, window_hours: int):
             .all()
         ]
 
+    # ── Phase 2b: Watch band targets for this kind ──
+    with session_scope() as session:
+        watch_ids = [
+            row[0]
+            for row in session.query(RawItem.id)
+            .filter(
+                RawItem.source_id.in_(source_ids),
+                RawItem.scrape_decision == "fetch_watch",
+            )
+            .outerjoin(Article, Article.raw_item_id == RawItem.id)
+            .filter(Article.id.is_(None))
+            .order_by(RawItem.pre_score.desc().nullslast())
+            .limit(settings.max_watch_per_run)
+            .all()
+        ]
+
     # ── Phase 3: Scrape + score ──
     _process_scrape_targets(to_scrape_ids)
+    if watch_ids:
+        _process_scrape_targets(watch_ids)
 
 
 def run_entity_resolution() -> None:
@@ -1233,3 +1284,144 @@ def run_entity_resolution() -> None:
         len(all_entity_names),
         len(resolution.clusters),
     )
+
+
+def run_relationship_inference() -> None:
+    """Periodic LLM relationship inference for cluster pairs.
+
+    Fetches recent clusters, runs mechanical relationship computation with
+    Track B candidate generation, then calls the LLM for uncached candidates.
+    Results are cached so the signal-map API can read them with zero latency.
+    """
+    import logging
+    from collections import Counter
+
+    from app.clustering.relationship_inference import infer_relationships
+    from app.clustering.relationships import compute_cluster_relationships
+    from app.features.entity_resolution import get_cached_entity_resolution
+
+    log = logging.getLogger(__name__)
+
+    with session_scope() as session:
+        cutoff = utcnow() - timedelta(hours=48)
+        clusters = (
+            session.query(Cluster)
+            .filter(Cluster.last_seen_at >= cutoff)
+            .order_by(Cluster.max_global_score.desc())
+            .limit(80)
+            .all()
+        )
+
+        if len(clusters) < 2:
+            log.info("run_relationship_inference: fewer than 2 clusters, skipping")
+            return
+
+        cluster_ids = [c.id for c in clusters]
+
+        # Batch-load member articles (same logic as routes_signal_map.py)
+        member_rows = (
+            session.query(ClusterMember, Article, RawItem)
+            .join(Article, ClusterMember.article_id == Article.id)
+            .join(RawItem, Article.raw_item_id == RawItem.id)
+            .filter(ClusterMember.cluster_id.in_(cluster_ids))
+            .all()
+        )
+
+        cluster_articles: dict[str, list[tuple]] = {}
+        for cm, article, raw in member_rows:
+            cluster_articles.setdefault(cm.cluster_id, []).append((article, raw))
+
+        canon_map = get_cached_entity_resolution()
+        now = utcnow().replace(tzinfo=None)
+
+        relationship_inputs = []
+        for cluster in clusters:
+            members = cluster_articles.get(cluster.id, [])
+            articles_list = [art for art, _raw in members]
+
+            # Top article summary
+            top_summary = ""
+            if articles_list:
+                top_art = max(articles_list, key=lambda a: a.global_score or 0)
+                top_summary = top_art.summary or ""
+
+            # Dominant topic
+            summed: dict[str, float] = {}
+            count = 0
+            for art in articles_list:
+                topics = art.topics if isinstance(art.topics, dict) else {}
+                if topics:
+                    count += 1
+                    for key, val in topics.items():
+                        summed[key] = summed.get(key, 0.0) + float(val)
+            if count > 0:
+                avg = {k: v / count for k, v in summed.items()}
+                max_key = max(avg, key=avg.get)
+                dominant_topic = max_key if avg[max_key] >= 0.25 else "mixed"
+                topic_weights = avg
+            else:
+                dominant_topic = "mixed"
+                topic_weights = {}
+
+            # Dominant event type
+            types = [art.event_type for art in articles_list if art.event_type]
+            if types:
+                counter = Counter(types)
+                most_common, cnt = counter.most_common(1)[0]
+                dominant_event_type = most_common if cnt / len(types) > 0.5 else "MIXED"
+            else:
+                dominant_event_type = "MIXED"
+
+            # Entities
+            merged: dict[str, float] = {}
+            for art in articles_list:
+                ents = art.entities if isinstance(art.entities, dict) else {}
+                for name, weight in ents.items():
+                    canonical = canon_map.get(name.lower(), name) if canon_map else name
+                    w = float(weight)
+                    if canonical not in merged or w > merged[canonical]:
+                        merged[canonical] = w
+            sorted_ents = sorted(merged.items(), key=lambda kv: kv[1], reverse=True)[:5]
+            entities = [{"name": name, "weight": weight} for name, weight in sorted_ents]
+
+            # Age
+            first_seen = cluster.first_seen_at
+            if first_seen and first_seen.tzinfo:
+                first_seen = first_seen.replace(tzinfo=None)
+            last_seen = cluster.last_seen_at
+            if last_seen and last_seen.tzinfo:
+                last_seen = last_seen.replace(tzinfo=None)
+            age_hours = ((last_seen - first_seen).total_seconds() / 3600) if first_seen and last_seen else 0.0
+
+            relationship_inputs.append({
+                "id": str(cluster.id),
+                "centroid_embedding": cluster.centroid_embedding,
+                "entities": entities,
+                "dominant_event_type": dominant_event_type,
+                "dominant_topic": dominant_topic,
+                "topic_weights": topic_weights,
+                "age_hours": age_hours,
+                "headline": cluster.headline,
+                "top_summary": top_summary,
+                "coverage_count": cluster.coverage_count or 0,
+            })
+
+        _edges, llm_candidates = compute_cluster_relationships(
+            relationship_inputs,
+            entity_canon_map=canon_map,
+            return_llm_candidates=True,
+        )
+
+        if not llm_candidates:
+            log.info("run_relationship_inference: no LLM candidates")
+            return
+
+        # This call does actual LLM inference (cache_only=False)
+        results = infer_relationships(llm_candidates, cache_only=False)
+
+        non_unrelated = sum(1 for r in results if r.label != "unrelated")
+        log.info(
+            "run_relationship_inference: inferred %d relationships from %d candidates",
+            non_unrelated,
+            len(llm_candidates),
+        )

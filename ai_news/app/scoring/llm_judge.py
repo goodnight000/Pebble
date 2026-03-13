@@ -102,9 +102,24 @@ def llm_significance_score(impact: int, breadth: int, novelty: int) -> float:
     return round(max(0.0, min(100.0, score)), 2)
 
 
-def compute_final_score(rule_score: float, llm_score: float | None) -> float:
-    """Blend rule-based and LLM scores without lowering strong rule scores."""
+def compute_final_score(
+    rule_score: float,
+    llm_score: float | None,
+    *,
+    confirmation_level: str | None = None,
+    trust_label: str | None = None,
+) -> float:
+    """Blend rule-based and LLM scores, allowing bounded downward correction."""
     if llm_score is None:
         return rule_score
     blended = 0.70 * rule_score + 0.30 * llm_score
-    return round(max(rule_score, blended), 2)
+    if blended >= rule_score:
+        return round(blended, 2)
+    # Downward correction with guardrails
+    delta = rule_score - blended
+    if confirmation_level == "official":
+        delta = min(delta, 5.0)
+    if trust_label in ("official", "confirmed", "likely"):
+        delta = delta * 0.5
+    delta = min(delta, 15.0)
+    return round(rule_score - delta, 2)

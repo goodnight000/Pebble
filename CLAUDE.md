@@ -103,3 +103,30 @@ Hosted environments should also set `DATABASE_URL` to the Supabase/Postgres targ
 - Backend auto-seeds initial sources from `app/config_entities.yml` on startup
 - Articles scored 0-100 with significance thresholds (85+ = urgent, 55+ = show in feed)
 - Support for EN/ZH translation via LLM endpoint at `/api/translate`
+
+## Implementation Workflow
+
+### Subagent-Driven Development
+Always use subagent-driven development (`/subagent-driven-development`) when implementing multi-step features or changes that touch multiple files. Break work into independent tasks and run subagents in parallel where possible.
+
+### Skill Selection Before Implementation
+Before starting any implementation task, read through all available skills and select the ones relevant to the work. Common skills to consider:
+- `/subagent-driven-development` — for parallelizing independent implementation tasks
+- `/writing-plans` — for planning multi-step implementations before touching code
+- `/test-driven-development` — when adding new modules or functions
+- `/systematic-debugging` — when encountering bugs or test failures during implementation
+- `/code-review-excellence` or `/requesting-code-review` — after completing implementation
+- `/simplify` — review changed code for reuse, quality, and efficiency
+
+Do not skip the skill selection step. Picking the right skills upfront avoids rework and ensures consistent quality.
+
+### General Implementation Rules
+- Always read existing code before modifying it. Understand the patterns in place before introducing new ones.
+- Prefer editing existing files over creating new ones. Only create new files when the change represents genuinely new functionality.
+- Maintain backward compatibility — new API fields should be optional, frontend should degrade gracefully when backend fields are absent.
+- Follow existing naming conventions: snake_case in Python, camelCase in TypeScript, kebab-case in CSS classes.
+- New backend modules go in the appropriate subdirectory under `ai_news/app/` (e.g., `clustering/`, `features/`, `tasks/`).
+- New Alembic migrations must follow the sequential numbering pattern (`0006_`, `0007_`, etc.) and reference the correct `down_revision`.
+- When porting logic between frontend and backend (e.g., TypeScript → Python), keep the algorithm semantics identical so behavior is consistent regardless of which side executes it.
+- Run `npm run build` to verify TypeScript compilation after frontend changes.
+- Keep Python imports lazy where possible in hot paths (API request handlers) to avoid startup cost.

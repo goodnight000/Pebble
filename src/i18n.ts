@@ -74,6 +74,9 @@ const UI_TEXT: Record<string, Record<Language, string>> = {
   graphEventChain: { en: 'Event Chain', zh: '事件链' },
   graphMarketAdjacency: { en: 'Market Adjacency', zh: '市场邻接' },
   graphEmbeddingSimilarity: { en: 'Embedding Similarity', zh: '嵌入相似度' },
+  graphFollowUp: { en: 'Follow-up', zh: '后续报道' },
+  graphReaction: { en: 'Reaction', zh: '回应' },
+  graphCompeting: { en: 'Competing', zh: '竞争' },
 };
 
 export function getUiText(language: Language, key: string): string {

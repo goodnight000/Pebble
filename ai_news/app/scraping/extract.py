@@ -56,6 +56,20 @@ async def extract_text(html: str, url: str) -> Tuple[str, float]:
     return text, quality
 
 
+def extract_text_lightweight(html: str, url: str, *, max_chars: int = 500) -> tuple[str, float]:
+    """Lightweight extraction for watch-band items.
+
+    Uses trafilatura only (no readability/playwright fallback),
+    truncates to max_chars, and caps quality at 0.30.
+    """
+    text = _extract_trafilatura(html) or ""
+    text = normalize_whitespace(text)
+    if len(text) > max_chars:
+        text = text[:max_chars]
+    quality = min(0.29, _quality_score(text, html))
+    return text, quality
+
+
 def extract_pub_date(html: str, url: str) -> datetime | None:
     """Extract the original publication date from HTML using htmldate.
 

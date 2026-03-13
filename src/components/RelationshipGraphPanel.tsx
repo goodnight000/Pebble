@@ -15,11 +15,14 @@ interface RelationshipGraphPanelProps {
   onClose: () => void;
 }
 
-const EDGE_TYPE_LABEL_KEY: Record<RelationshipEdgeType, 'graphSharedEntity' | 'graphEventChain' | 'graphMarketAdjacency' | 'graphEmbeddingSimilarity'> = {
+const EDGE_TYPE_LABEL_KEY: Record<RelationshipEdgeType, string> = {
   'shared-entity': 'graphSharedEntity',
   'event-chain': 'graphEventChain',
   'market-adjacency': 'graphMarketAdjacency',
   'embedding-similarity': 'graphEmbeddingSimilarity',
+  'follow-up': 'graphFollowUp',
+  'reaction': 'graphReaction',
+  'competing': 'graphCompeting',
 };
 
 function formatAge(ageHours: number): string {
@@ -52,6 +55,9 @@ const RelationshipGraphPanel: React.FC<RelationshipGraphPanelProps> = ({
 
   const groupedEdges = useMemo(() => {
     const groups: Record<RelationshipEdgeType, typeof relatedEdges> = {
+      'follow-up': [],
+      'reaction': [],
+      'competing': [],
       'shared-entity': [],
       'event-chain': [],
       'market-adjacency': [],

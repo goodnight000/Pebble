@@ -51,7 +51,8 @@ def build_features(
     source_name: str | None = None,
 ):
     event_type = classify_event_type(title, source_kind=source_kind)
-    topics = topic_probabilities(title)
+    topic_input = f"{title}\n{text[:1000]}" if text else title
+    topics = topic_probabilities(topic_input)
     entities = extract_entities(f"{title}\n{text[:2000]}")
     funding_amount = parse_funding_amount(f"{title}\n{text[:2000]}")
     release_assessment = assess_official_model_release(

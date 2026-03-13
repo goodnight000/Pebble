@@ -33,14 +33,19 @@ def _anchor_embeddings() -> Dict[str, np.ndarray]:
     return embeddings
 
 
-def topic_probabilities(title: str) -> Dict[str, float]:
-    title_emb = embed_text(title)
+def topic_probabilities(text: str) -> Dict[str, float]:
+    """Compute topic probabilities from text (title, or title+body excerpt).
+
+    Accepts any text input — callers should pass title+body for full-content
+    classification, or title-only when body is unavailable.
+    """
+    text_emb = embed_text(text)
     sims = []
     topics = list(TOPIC_ANCHORS.keys())
     anchor_embs = _anchor_embeddings()
     for topic in topics:
         emb = anchor_embs[topic]
-        sim = float(np.max(emb @ title_emb))
+        sim = float(np.max(emb @ text_emb))
         sims.append(sim)
     sims_arr = np.array(sims, dtype=np.float32)
     temp = 0.07

@@ -1,3 +1,13 @@
+import {
+  forceCenter,
+  forceCollide,
+  forceLink,
+  forceManyBody,
+  forceSimulation,
+  forceX,
+  forceY,
+} from 'd3';
+import type { SimulationLinkDatum, SimulationNodeDatum } from 'd3';
 import type {
   RelationshipEdgeType,
   RelationshipGraphBounds,
@@ -20,6 +30,9 @@ export const RELATIONSHIP_GRAPH_WINDOW_HOURS: Record<RelationshipGraphWindow, nu
 };
 
 const EDGE_TYPE_PRIORITY: Record<RelationshipEdgeType, number> = {
+  'follow-up': 5,
+  'reaction': 4,
+  'competing': 3,
   'shared-entity': 3,
   'event-chain': 2,
   'market-adjacency': 1,
@@ -45,18 +58,30 @@ const TOPIC_ORDER = [
 const EVENT_FAMILY_ALIASES: Record<string, string> = {
   announcement: 'release',
   benchmark: 'benchmark',
+  benchmark_result: 'benchmark',
+  big_tech_announcement: 'release',
+  chip_hardware: 'release',
   collaboration: 'partnership',
   funding: 'funding',
+  government_action: 'policy',
   grant: 'funding',
   launch: 'release',
+  m_and_a: 'ma',
   merger: 'ma',
+  model_release: 'release',
+  open_source_release: 'release',
   partnership: 'partnership',
   policy: 'policy',
+  policy_regulation: 'policy',
+  product_launch: 'release',
   recall: 'security',
   regulation: 'policy',
   release: 'release',
   research: 'research',
+  research_paper: 'research',
   security: 'security',
+  security_incident: 'security',
+  startup_funding: 'funding',
   update: 'release',
 };
 
@@ -92,10 +117,24 @@ interface BuildRelationshipGraphResponseOptions {
   maxVisibleEdges?: number;
 }
 
+interface ForceNode extends SimulationNodeDatum {
+  id: string;
+  dominantTopic: string;
+  importance: number;
+  radius: number;
+  topicAnchorX: number;
+  topicAnchorY: number;
+}
+
+interface ForceLink extends SimulationLinkDatum<ForceNode> {
+  score: number;
+}
+
 interface RelationshipGraphLayoutOptions {
   width: number;
   height: number;
   padding?: number;
+  edges?: RelationshipGraphEdge[];
 }
 
 interface PickVisibleNodeLabelsOptions {
@@ -671,6 +710,72 @@ export function projectRelationshipGraphLayout(
     });
   }
 
+  // Edge-aware refinement: nudge edge-connected nodes closer within their sectors.
+  // Uses a short force simulation anchored strongly to the sector positions so the
+  // overall topic layout is preserved, while linked nodes drift toward each other.
+  const edges = options.edges ?? [];
+  if (edges.length > 0 && nodes.length > 1) {
+    const nodeIdSet = new Set(nodes.map((n) => n.id));
+    const relevantEdges = edges.filter(
+      (e) => nodeIdSet.has(e.source) && nodeIdSet.has(e.target),
+    );
+
+    if (relevantEdges.length > 0) {
+      const forceNodes: ForceNode[] = nodes.map((node) => {
+        const pos = positions.get(node.id)!;
+        return {
+          id: node.id,
+          dominantTopic: node.dominantTopic,
+          importance: clamp01(node.importance),
+          radius: 10 + clamp01(node.importance) * 20,
+          topicAnchorX: pos.x,
+          topicAnchorY: pos.y,
+          x: pos.x,
+          y: pos.y,
+          vx: 0,
+          vy: 0,
+        };
+      });
+
+      const forceLinks: ForceLink[] = relevantEdges.map((edge) => ({
+        source: edge.source,
+        target: edge.target,
+        score: edge.score,
+      }));
+
+      const simulation = forceSimulation<ForceNode>(forceNodes)
+        .force('link', forceLink<ForceNode, ForceLink>(forceLinks)
+          .id((d) => d.id)
+          .distance((d) => 140 - (d as ForceLink).score * 80)
+          .strength((d) => 0.15 + (d as ForceLink).score * 0.25),
+        )
+        .force('anchor-x', forceX<ForceNode>()
+          .x((d) => d.topicAnchorX)
+          .strength(0.6),
+        )
+        .force('anchor-y', forceY<ForceNode>()
+          .y((d) => d.topicAnchorY)
+          .strength(0.6),
+        )
+        .force('collide', forceCollide<ForceNode>()
+          .radius((d) => d.radius + 14)
+          .strength(0.8)
+          .iterations(2),
+        )
+        .stop();
+
+      simulation.tick(80);
+
+      for (const forceNode of forceNodes) {
+        positions.set(forceNode.id, {
+          x: Math.max(padding, Math.min(width - padding, forceNode.x!)),
+          y: Math.max(padding, Math.min(height - padding, forceNode.y!)),
+        });
+      }
+    }
+  }
+
+  // Overlap resolution for any remaining tight pairs
   const minGap = 52;
   const minGapSq = minGap * minGap;
   const nodeIds = [...positions.keys()];

@@ -2,10 +2,8 @@ import assert from 'node:assert/strict';
 import {
   applyRelationshipGraphPositionOverrides,
   buildRelationshipGraphVisuals,
-  DEFAULT_SIGNAL_MAP_VIEW_MODE,
   RELATIONSHIP_GRAPH_WINDOW_HOURS,
   RELATIONSHIP_GRAPH_WINDOWS,
-  SIGNAL_MAP_VIEW_MODES,
   mergeRelationshipGraphPositionOverrides,
   buildRelationshipGraphResponse,
   buildLocalNeighborhood,
@@ -62,16 +60,6 @@ const makeEdge = (
   ...overrides,
 });
 
-assert.deepEqual(
-  SIGNAL_MAP_VIEW_MODES,
-  ['map', 'graph'],
-  'signal map surface should expose both map and graph modes',
-);
-assert.equal(
-  DEFAULT_SIGNAL_MAP_VIEW_MODE,
-  'map',
-  'map mode should remain the default view',
-);
 assert.deepEqual(
   RELATIONSHIP_GRAPH_WINDOWS,
   ['7d', '30d'],
@@ -593,6 +581,41 @@ assert.deepEqual(
     target: 'beta',
   },
   'canonicalized edges should keep stable ids and endpoints regardless of input order',
+);
+
+// Edge-aware layout: linked nodes should cluster closer than unlinked nodes
+const edgeLayout = projectRelationshipGraphLayout(
+  [
+    makeNode('linked-a', { dominantTopic: 'llms', importance: 0.6, positionSeed: { x: 0.2, y: 0.3 } }),
+    makeNode('linked-b', { dominantTopic: 'robotics', importance: 0.6, positionSeed: { x: 0.8, y: 0.7 } }),
+    makeNode('isolated-c', { dominantTopic: 'agents', importance: 0.6, positionSeed: { x: 0.5, y: 0.5 } }),
+  ],
+  {
+    width: 1200,
+    height: 720,
+    padding: 80,
+    edges: [
+      makeEdge('link-ab', 'linked-a', 'linked-b', { score: 0.95, type: 'shared-entity' }),
+    ],
+  },
+);
+
+const linkedDist = Math.hypot(
+  edgeLayout.get('linked-a')!.x - edgeLayout.get('linked-b')!.x,
+  edgeLayout.get('linked-a')!.y - edgeLayout.get('linked-b')!.y,
+);
+const isolatedDistA = Math.hypot(
+  edgeLayout.get('isolated-c')!.x - edgeLayout.get('linked-a')!.x,
+  edgeLayout.get('isolated-c')!.y - edgeLayout.get('linked-a')!.y,
+);
+const isolatedDistB = Math.hypot(
+  edgeLayout.get('isolated-c')!.x - edgeLayout.get('linked-b')!.x,
+  edgeLayout.get('isolated-c')!.y - edgeLayout.get('linked-b')!.y,
+);
+
+assert.ok(
+  linkedDist < Math.max(isolatedDistA, isolatedDistB),
+  `edge-linked nodes should be positioned closer together than unlinked nodes (linked=${linkedDist.toFixed(1)}, isolatedA=${isolatedDistA.toFixed(1)}, isolatedB=${isolatedDistB.toFixed(1)})`,
 );
 
 console.log('relationship graph verification passed');

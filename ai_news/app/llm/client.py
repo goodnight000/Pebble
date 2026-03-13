@@ -487,7 +487,7 @@ class LLMClient:
             llm_significance_score,
         )
 
-        cache_key = f"judge:{_hash_text(title, text_preview or '')}"
+        cache_key = f"judge:{_hash_text(title, f'{source_name}|{event_type}|{text_preview or ""}')}"
         cached = get_cached(cache_key)
         if cached:
             return cached.get("score"), cached.get("reasoning")

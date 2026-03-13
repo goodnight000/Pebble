@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     public_user_id: str = Field(default_factory=_default_public_user_id, alias="PUBLIC_USER_ID")
 
     max_scrape_per_run: int = Field(default=50, alias="MAX_SCRAPE_PER_RUN")
+    max_watch_per_run: int = Field(default=15, alias="MAX_WATCH_PER_RUN")
     ingest_lookback_hours: int = Field(default=168, alias="INGEST_LOOKBACK_HOURS")
 
     @model_validator(mode="after")
