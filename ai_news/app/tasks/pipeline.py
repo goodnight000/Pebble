@@ -34,7 +34,7 @@ from app.ingestion.sitemap import SitemapConnector
 from app.ingestion.twitter import TwitterConnector
 from app.ingestion.wayback import check_wayback
 from app.llm.client import LLMClient
-from app.models import Article, Cluster, ClusterMember, RawItem, Source
+from app.models import Article, Cluster, ClusterMember, EntityCanonMap, RawItem, Source
 from app.scraping.extract import extract_pub_date, extract_text
 from app.scraping.fetch import fetch_html
 from app.scoring.importance import GlobalScoreInputs, compute_global_score_v2
@@ -1179,3 +1179,57 @@ def _run_special(kind: str, window_hours: int):
 
     # ── Phase 3: Scrape + score ──
     _process_scrape_targets(to_scrape_ids)
+
+
+def run_entity_resolution() -> None:
+    """Periodic entity resolution refresh.
+
+    Gathers unique entity names from recent articles, clusters them via
+    embedding similarity, updates the in-memory cache, and persists the
+    canonical mapping to the DB.
+    """
+    import logging
+
+    from app.features.entity_resolution import resolve_entities, update_entity_resolution_cache
+
+    log = logging.getLogger(__name__)
+
+    with session_scope() as session:
+        cutoff = utcnow() - timedelta(days=7)
+        recent_articles = (
+            session.query(Article)
+            .join(RawItem, Article.raw_item_id == RawItem.id)
+            .filter(
+                or_(
+                    RawItem.published_at >= cutoff,
+                    RawItem.fetched_at >= cutoff,
+                )
+            )
+            .all()
+        )
+
+        all_entity_names: set[str] = set()
+        for art in recent_articles:
+            if isinstance(art.entities, dict):
+                all_entity_names.update(art.entities.keys())
+
+        if not all_entity_names:
+            log.info("run_entity_resolution: no entities found in recent articles")
+            return
+
+        resolution = resolve_entities(sorted(all_entity_names), distance_threshold=0.15)
+        update_entity_resolution_cache(resolution)
+
+        canon_entry = EntityCanonMap(
+            canon_map=resolution.canon_map,
+            cluster_count=len(resolution.clusters),
+            entity_count=len(all_entity_names),
+        )
+        session.add(canon_entry)
+        session.flush()
+
+    log.info(
+        "run_entity_resolution: resolved %d entities into %d clusters",
+        len(all_entity_names),
+        len(resolution.clusters),
+    )

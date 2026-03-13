@@ -8,6 +8,7 @@ from app.tasks.daily_digest import run_daily_digest
 from app.tasks.pipeline import (
     rebuild_faiss_index,
     run_arxiv_poll,
+    run_entity_resolution,
     run_github_poll,
     run_gov_api_poll,
     run_normal_poll,
@@ -69,4 +70,5 @@ def maybe_start_inline_scheduler() -> None:
     loop.create_task(_run_daily("gov-api-poll", 8, 0, run_gov_api_poll))
     loop.create_task(_run_periodic("rebuild-faiss", 1800.0, rebuild_faiss_index, initial_delay=15))
     loop.create_task(_run_periodic("urgent-notify", 300.0, notify_urgent, initial_delay=10))
+    loop.create_task(_run_periodic("entity-resolution", 21600.0, run_entity_resolution, initial_delay=180))
     loop.create_task(_run_daily("daily-digest", 6, 0, run_daily_digest))

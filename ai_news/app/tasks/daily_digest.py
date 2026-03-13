@@ -10,7 +10,7 @@ from app.config import get_settings
 from app.db import session_scope
 from app.services.digest_storage import build_digest_artifact, store_digest_artifact
 from app.services.realtime_events import build_digest_refresh_event, publish_realtime_event
-from app.models import Article, Cluster, ClusterMember, DailyDigest, RawItem, Source, User, UserEntityWeight, UserPref, UserSourceWeight, UserTopicWeight
+from app.models import Article, Cluster, ClusterMember, DailyDigest, EntityCanonMap, RawItem, Source, User, UserEntityWeight, UserPref, UserSourceWeight, UserTopicWeight
 from app.scoring.signals import log_norm
 from app.scoring.time_decay import rank_score as compute_rank_score
 from app.scoring.user_score import compute_user_score
@@ -143,12 +143,56 @@ def _build_today_for_user(db, user_id: str) -> list[dict]:
     return [{"id": item["id"], "content_type": item.get("content_type", "news")} for item in selected[:30]]
 
 
+def _refresh_entity_resolution(session) -> None:
+    """Gather entities from recent articles, resolve aliases, cache & persist."""
+    from app.features.entity_resolution import resolve_entities, update_entity_resolution_cache
+
+    cutoff = utcnow().replace(tzinfo=None) - timedelta(days=7)
+    recent_articles = (
+        session.query(Article)
+        .join(RawItem, Article.raw_item_id == RawItem.id)
+        .filter(
+            or_(
+                RawItem.published_at >= cutoff,
+                and_(RawItem.published_at.is_(None), RawItem.fetched_at >= cutoff),
+            )
+        )
+        .all()
+    )
+
+    all_entity_names: set[str] = set()
+    for art in recent_articles:
+        if isinstance(art.entities, dict):
+            all_entity_names.update(art.entities.keys())
+
+    if not all_entity_names:
+        return
+
+    resolution = resolve_entities(sorted(all_entity_names), distance_threshold=0.15)
+    update_entity_resolution_cache(resolution)
+
+    canon_entry = EntityCanonMap(
+        canon_map=resolution.canon_map,
+        cluster_count=len(resolution.clusters),
+        entity_count=len(all_entity_names),
+    )
+    session.add(canon_entry)
+    session.flush()
+
+
 @celery_app.task(name="app.tasks.daily_digest.run_daily_digest")
 def run_daily_digest():
     from app.llm.client import LLMClient
 
     pending_realtime_events: list[dict] = []
     with session_scope() as session:
+        # Refresh entity resolution before building per-user digests
+        try:
+            _refresh_entity_resolution(session)
+        except Exception as exc:
+            import logging
+            logging.getLogger(__name__).warning("Entity resolution during digest failed: %s", exc)
+
         users = session.query(User).all()
         now = utcnow()
         llm = LLMClient()

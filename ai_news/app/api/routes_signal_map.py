@@ -136,19 +136,25 @@ def _compute_dominant_event_type(articles: list) -> str:
     return "MIXED"
 
 
-def _merge_entities(articles: list) -> list[dict[str, Any]]:
+def _merge_entities(articles: list, canon_map: dict[str, str] | None = None) -> list[dict[str, Any]]:
     tier_map = _build_tier_map()
     merged: dict[str, float] = {}
+    # Track display name for each canonical key
+    display_names: dict[str, str] = {}
     for art in articles:
         entities = art.entities if isinstance(art.entities, dict) else {}
         for name, weight in entities.items():
+            canonical = name
+            if canon_map:
+                canonical = canon_map.get(name.lower(), name)
             w = float(weight)
-            if name not in merged or w > merged[name]:
-                merged[name] = w
+            if canonical not in merged or w > merged[canonical]:
+                merged[canonical] = w
+                display_names[canonical] = canonical
 
     sorted_entities = sorted(merged.items(), key=lambda kv: kv[1], reverse=True)[:5]
     return [
-        {"name": name, "weight": weight, "tier": tier_map.get(name)}
+        {"name": display_names.get(name, name), "weight": weight, "tier": tier_map.get(display_names.get(name, name))}
         for name, weight in sorted_entities
     ]
 
@@ -199,6 +205,11 @@ def get_signal_map(
     for cm, article, raw, source in member_rows:
         cluster_articles.setdefault(cm.cluster_id, []).append((article, raw, source))
 
+    # Load entity canon map once for the entire request
+    from app.features.entity_resolution import get_cached_entity_resolution
+
+    cached_canon_map = get_cached_entity_resolution()
+
     # Step 3: Compute per-cluster data
     cluster_data = []
     valid_embeddings = []
@@ -230,8 +241,8 @@ def get_signal_map(
         # Dominant event type
         dominant_event_type = _compute_dominant_event_type(articles_list)
 
-        # Top entities
-        entities = _merge_entities(articles_list)
+        # Top entities (canonicalized via entity resolution cache)
+        entities = _merge_entities(articles_list, canon_map=cached_canon_map)
 
         # Velocity
         first_seen = _naive_utc(cluster.first_seen_at)
@@ -331,7 +342,7 @@ def get_signal_map(
 
     raw_edges = compute_cluster_relationships(
         relationship_inputs,
-        entity_canon_map=None,
+        entity_canon_map=cached_canon_map,
     )
 
     edges_payload = [
