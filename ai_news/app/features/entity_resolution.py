@@ -161,6 +161,9 @@ def resolve_entities(
         canonical = static_aliases.get(norm, unique_names[0])
         canon_map = dict(static_aliases)
         canon_map[norm] = canonical
+        lc = unique_names[0].strip().lower()
+        if lc:
+            canon_map[lc] = canonical
         return EntityResolutionResult(
             canon_map=canon_map,
             clusters=[{unique_names[0]}],
@@ -219,6 +222,12 @@ def resolve_entities(
             norm = _normalize_entity(member)
             if norm:
                 canon_map[norm] = canonical
+            # Also store a simple lowercase key so that callers using
+            # ``name.lower()`` lookups (e.g. ``_merge_entities``) can
+            # find the canonical form without full normalisation.
+            lc = member.strip().lower()
+            if lc:
+                canon_map[lc] = canonical
 
     return EntityResolutionResult(
         canon_map=canon_map,
@@ -260,6 +269,9 @@ def _static_only_result(
         norm = _normalize_entity(name)
         if norm and norm not in canon_map:
             canon_map[norm] = name
+        lc = name.strip().lower()
+        if lc and lc not in canon_map:
+            canon_map[lc] = name
         clusters.append({name})
 
     return EntityResolutionResult(
