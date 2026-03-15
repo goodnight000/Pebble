@@ -11,6 +11,7 @@ import {
   readStoredLanguage,
   writeStoredLanguage,
 } from '@/i18n';
+import DailyDigestPage from '@/components/DailyDigestPage';
 import {
   RefreshCcw,
   Calendar,
@@ -23,11 +24,12 @@ import {
   Newspaper,
   FlaskConical,
   Github,
+  BookOpen,
 } from 'lucide-react';
 
 const DIGEST_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
 
-type AppTab = 'live' | 'weekly' | 'history' | 'map';
+type AppTab = 'digest' | 'live' | 'weekly' | 'history' | 'map';
 
 interface NavDef {
   id: AppTab;
@@ -36,6 +38,7 @@ interface NavDef {
 }
 
 const NAV_ITEMS: NavDef[] = [
+  { id: 'digest', icon: <BookOpen className="w-4 h-4" />, color: '#ff6a00' },
   { id: 'live', icon: <Compass className="w-4 h-4" />, color: '#10b981' },
   { id: 'weekly', icon: <Calendar className="w-4 h-4" />, color: '#8b5cf6' },
   { id: 'history', icon: <BarChart3 className="w-4 h-4" />, color: '#e67e22' },
@@ -58,7 +61,7 @@ const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [weeklyTop, setWeeklyTop] = useState<NewsItem[]>([]);
-  const [activeTab, setActiveTab] = useState<AppTab>('live');
+  const [activeTab, setActiveTab] = useState<AppTab>('digest');
   const [contentFilter, setContentFilter] = useState<ContentType>('all');
 
   const aiService = React.useMemo(() => new AIService(), []);
@@ -260,6 +263,12 @@ const App: React.FC = () => {
         {activeTab !== 'map' && (
         <div className="custom-scrollbar flex-1 min-h-0 overflow-y-auto">
           <div className="mx-auto max-w-5xl space-y-8 p-6">
+            {activeTab === 'digest' && (
+              <DailyDigestPage aiService={aiService} language={language} />
+            )}
+
+            {activeTab !== 'digest' && (
+              <>
             {hasDigest ? (
               <>
                 {activeTab === 'live' && (
@@ -434,6 +443,8 @@ const App: React.FC = () => {
                   </button>
                 )}
               </div>
+            )}
+              </>
             )}
           </div>
         </div>

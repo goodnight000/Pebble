@@ -5,9 +5,11 @@ type MessageValue = {
   zh: string;
 };
 
-export const LOCALE_STORAGE_KEY = 'pebble-locale';
+export const LOCALE_STORAGE_KEY = 'pebble-language';
+export const LEGACY_LOCALE_STORAGE_KEYS = ['pebble-locale'] as const;
 
 export const NAV_LABELS = {
+  digest: { en: 'Daily Digest', zh: '每日简报' },
   live: { en: 'Live Intelligence', zh: '实时情报' },
   weekly: { en: 'Weekly Signal', zh: '周度信号' },
   history: { en: 'History', zh: '历史存档' },
@@ -22,16 +24,19 @@ export const CONTENT_TYPE_LABELS: Record<ContentType, MessageValue> = {
 };
 
 export const TRUST_LABELS: Record<string, MessageValue> = {
-  official: { en: 'Official', zh: '官方确认' },
-  confirmed: { en: 'Confirmed', zh: '已证实' },
-  likely: { en: 'Likely', zh: '高度可信' },
-  developing: { en: 'Developing', zh: '持续发展中' },
-  unverified: { en: 'Unverified', zh: '未经证实' },
-  disputed: { en: 'Disputed', zh: '存在争议' },
+  official: { en: 'Official', zh: '官方' },
+  confirmed: { en: 'Confirmed', zh: '已确认' },
+  likely: { en: 'Likely', zh: '较可信' },
+  developing: { en: 'Developing', zh: '发展中' },
+  unverified: { en: 'Unverified', zh: '未验证' },
+  disputed: { en: 'Disputed', zh: '有争议' },
 };
 
 export const CATEGORY_LABELS: Record<string, MessageValue> = {
   Research: { en: 'Research', zh: '研究' },
+  Industry: { en: 'Industry', zh: '行业' },
+  Startup: { en: 'Startup', zh: '创业' },
+  Trend: { en: 'Trend', zh: '趋势' },
   Product: { en: 'Product', zh: '产品' },
   Company: { en: 'Company', zh: '公司' },
   Funding: { en: 'Funding', zh: '融资' },
@@ -52,7 +57,7 @@ export const TOPIC_LABELS: Record<string, MessageValue> = {
   hardware_chips: { en: 'Hardware', zh: '硬件' },
   open_source: { en: 'Open Source', zh: '开源' },
   startups_funding: { en: 'Funding', zh: '融资' },
-  enterprise_apps: { en: 'Enterprise', zh: '企业应用' },
+  enterprise_apps: { en: 'Enterprise', zh: '企业' },
   safety_policy: { en: 'Policy', zh: '政策' },
   research_methods: { en: 'Research', zh: '研究' },
   mixed: { en: 'Mixed', zh: '综合' },
@@ -60,15 +65,15 @@ export const TOPIC_LABELS: Record<string, MessageValue> = {
 
 export const UI_MESSAGES = {
   brand: { en: 'Pebble', zh: 'Pebble' },
-  digestRefresh: { en: 'Digest Refresh', zh: '摘要刷新' },
-  autoRefresh: { en: 'Auto refresh every 30 min', zh: '每 30 分钟自动刷新' },
-  signalDigest: { en: 'Signal Digest', zh: '信号摘要' },
+  digestRefresh: { en: 'Real-time Scanner', zh: '实时扫描器' },
+  autoRefresh: { en: 'Monitoring Active', zh: '监控运行中' },
+  signalDigest: { en: 'Live Signal Stream', zh: '实时信号流' },
   lastDeepScan: { en: 'Last Deep Scan: ', zh: '深度扫描于: ' },
   languageToggleEn: { en: 'EN / 中', zh: 'EN / 中' },
   languageToggleZh: { en: '中 / EN', zh: '中 / EN' },
-  refresh: { en: 'Refresh', zh: '刷新信号' },
+  refresh: { en: 'Refresh', zh: '刷新' },
   contentFilters: { en: 'Content filters', zh: '内容筛选' },
-  todaysBriefing: { en: "Today's Briefing", zh: '今日简报' },
+  todaysBriefing: { en: 'Today’s Briefing', zh: '今日简报' },
   feedSuffix: { en: 'feed', zh: '流' },
   storiesSuffix: { en: 'stories', zh: '条内容' },
   updatedAt: { en: 'Updated', zh: '更新于' },
@@ -87,7 +92,7 @@ export const UI_MESSAGES = {
   signalDisruption: { en: 'Signal Disruption', zh: '信号中断' },
   initializingSystem: { en: 'Initializing System', zh: '初始化系统中' },
   reestablishUplink: { en: 'Re-establish Uplink', zh: '重新连接' },
-  curatingGlobalSignals: { en: 'Curating Global Signals // Distilling Clarity', zh: '汇聚全球信号 // 提炼清晰判断' },
+  curatingGlobalSignals: { en: 'Curating Global Signals // Distilling Clarity', zh: '汇聚全球信号 // 提炼清晰洞察' },
   readSource: { en: 'Read source', zh: '查看来源' },
   shareStory: { en: 'Share story', zh: '分享内容' },
   copyStoryLink: { en: 'Copy story link', zh: '复制内容链接' },
@@ -128,7 +133,7 @@ export const UI_MESSAGES = {
   keyEntities: { en: 'KEY ENTITIES', zh: '关键实体' },
   sevenDayTrend: { en: '7-DAY TREND', zh: '7 日趋势' },
   coverageWithCount: { en: 'COVERAGE', zh: '报道' },
-  localeUnavailable: { en: 'Chinese content is unavailable right now. Showing source-language coverage where needed.', zh: '当前中文内容暂不可用，部分内容将显示原始语言。' },
+  localeUnavailable: { en: 'Translation unavailable for this digest.', zh: '此简报暂无翻译。' },
 } as const;
 
 export function pickMessage(language: Language, value: MessageValue): string {
