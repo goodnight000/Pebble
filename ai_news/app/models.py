@@ -292,6 +292,7 @@ class DailyDigest(Base):
     llm_authored = Column(Boolean, nullable=False, default=False, server_default="false")
     storage_bucket = Column(Text, nullable=True)
     storage_path = Column(Text, nullable=True)
+    longform_html = Column(Text, nullable=True)
 
     __table_args__ = (
         Index("ix_daily_digests_user_date_ct", "user_id", "date", "content_type", unique=True),
