@@ -3075,3 +3075,327 @@ sources:
     always_scrape: false
     priority_poll: false
     enabled: true
+
+  # ============================================================
+  # VC FIRMS — RSS FEEDS
+  # ============================================================
+
+  - name: "Air Street Capital (Air Street Press)"
+    kind: "rss"
+    feed_url: "https://press.airstreet.com/feed"
+    authority: 0.82
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Radical Ventures"
+    kind: "rss"
+    feed_url: "https://radical.vc/feed/"
+    authority: 0.80
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Madrona Venture Group"
+    kind: "rss"
+    feed_url: "https://www.madrona.com/feed/"
+    authority: 0.78
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Insight Partners"
+    kind: "rss"
+    feed_url: "https://www.insightpartners.com/feed/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+    browser_ua: true
+
+  - name: "Sequoia Capital"
+    kind: "rss"
+    feed_url: "https://sequoiacap.com/feed/"
+    authority: 0.88
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Battery Ventures"
+    kind: "rss"
+    feed_url: "https://www.battery.com/feed/"
+    authority: 0.78
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Menlo Ventures"
+    kind: "rss"
+    feed_url: "https://menlovc.com/feed/"
+    authority: 0.78
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "a16z (Substack)"
+    kind: "rss"
+    feed_url: "https://www.a16z.news/feed"
+    authority: 0.90
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Tomasz Tunguz (Redpoint GP)"
+    kind: "rss"
+    feed_url: "https://tomtunguz.com/index.xml"
+    authority: 0.76
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Elad Gil"
+    kind: "rss"
+    feed_url: "https://blog.eladgil.com/feed"
+    authority: 0.80
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Nathan Benaich (State of AI)"
+    kind: "rss"
+    feed_url: "https://nathanbenaich.substack.com/feed"
+    authority: 0.84
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Y Combinator Blog"
+    kind: "rss"
+    feed_url: "https://www.ycombinator.com/blog/rss"
+    authority: 0.85
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Balderton Capital"
+    kind: "rss"
+    feed_url: "https://www.balderton.com/feed/"
+    authority: 0.74
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "M12 (Microsoft Ventures)"
+    kind: "rss"
+    feed_url: "https://m12.vc/feed/"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Obvious Ventures"
+    kind: "rss"
+    feed_url: "https://obvious.com/ideas/feed/"
+    authority: 0.72
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # VC FIRMS — SITEMAPS (with lastmod dates)
+  # ============================================================
+
+  - name: "a16z Blog"
+    kind: "sitemap"
+    sitemap_url: "https://a16z.com/sitemap_index.xml"
+    authority: 0.90
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Greylock Partners"
+    kind: "sitemap"
+    sitemap_url: "https://greylock.com/post-sitemap.xml"
+    path_filter: "/greymatter/"
+    authority: 0.82
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Coatue Management"
+    kind: "sitemap"
+    sitemap_url: "https://www.coatue.com/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.80
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "GV (Google Ventures)"
+    kind: "sitemap"
+    sitemap_url: "https://www.gv.com/sitemap.xml"
+    path_filter: "/news/"
+    authority: 0.82
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+
+  - name: "Bessemer Venture Partners"
+    kind: "sitemap"
+    sitemap_url: "https://www.bvp.com/post-sitemap.xml"
+    path_filter: "/atlas/"
+    authority: 0.82
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Sapphire Ventures"
+    kind: "sitemap"
+    sitemap_url: "https://sapphireventures.com/blog-sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+    browser_ua: true
+
+  - name: "NFX"
+    kind: "sitemap"
+    sitemap_url: "https://nfx.com/sitemap.xml"
+    path_filter: "/post/"
+    authority: 0.78
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Lightspeed Venture Partners"
+    kind: "sitemap"
+    sitemap_url: "https://lsvp.com/post-sitemap.xml"
+    path_filter: "/stories/"
+    authority: 0.80
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+    browser_ua: true
+
+  - name: "AI Fund (Andrew Ng)"
+    kind: "sitemap"
+    sitemap_url: "https://aifund.ai/post-sitemap.xml"
+    path_filter: "/insights/"
+    authority: 0.80
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  - name: "Norwest Venture Partners"
+    kind: "sitemap"
+    sitemap_url: "https://norwest.com/blog-sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.74
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+    browser_ua: true
+
+  - name: "Kleiner Perkins"
+    kind: "sitemap"
+    sitemap_url: "https://www.kleinerperkins.com/post-sitemap.xml"
+    path_filter: "/perspectives/"
+    authority: 0.82
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+
+  # ============================================================
+  # VC FIRMS — SITEMAPS (no lastmod, uses lastmod_optional)
+  # ============================================================
+
+  - name: "General Catalyst"
+    kind: "sitemap"
+    sitemap_url: "https://www.generalcatalyst.com/sitemap.xml"
+    path_filter: "/stories/"
+    authority: 0.82
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+    lastmod_optional: true
+
+  - name: "Antler"
+    kind: "sitemap"
+    sitemap_url: "https://www.antler.co/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.72
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+    lastmod_optional: true
+
+  - name: "Lux Capital"
+    kind: "sitemap"
+    sitemap_url: "https://www.luxcapital.com/sitemap.xml"
+    path_filter: "/content/"
+    authority: 0.78
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+    lastmod_optional: true
+
+  - name: "Accel"
+    kind: "sitemap"
+    sitemap_url: "https://www.accel.com/sitemap.xml"
+    path_filter: "/noteworthies/"
+    authority: 0.82
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+    lastmod_optional: true
+
+  - name: "Felicis Ventures"
+    kind: "sitemap"
+    sitemap_url: "https://www.felicis.com/sitemap.xml"
+    path_filter: "/insight/"
+    authority: 0.76
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+    lastmod_optional: true
+
+  - name: "Scale Venture Partners"
+    kind: "sitemap"
+    sitemap_url: "https://www.scalevp.com/sitemap.xml"
+    path_filter: "/blog/"
+    authority: 0.74
+    always_scrape: false
+    priority_poll: false
+    enabled: true
+    lastmod_optional: true
+
+  - name: "Amplify Partners"
+    kind: "sitemap"
+    sitemap_url: "https://www.amplifypartners.com/sitemap.xml"
+    path_filter: "/blog-posts/"
+    authority: 0.76
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+    lastmod_optional: true
+
+  - name: "Emergence Capital"
+    kind: "sitemap"
+    sitemap_url: "https://www.emcap.com/sitemap.xml"
+    path_filter: "/thoughts/"
+    authority: 0.76
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+    lastmod_optional: true
+
+  - name: "Khosla Ventures"
+    kind: "sitemap"
+    sitemap_url: "https://www.khoslaventures.com/sitemap.xml"
+    path_filter: "/posts/"
+    authority: 0.80
+    always_scrape: true
+    priority_poll: false
+    enabled: true
+    lastmod_optional: true

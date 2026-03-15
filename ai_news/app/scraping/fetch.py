@@ -49,6 +49,25 @@ def jittered_interval(base_seconds: float, jitter_fraction: float = 0.20) -> flo
     return random.uniform(low, high)
 
 
+def _fetch_with_browser_tls(url: str) -> tuple[str, str]:
+    """Fallback fetch using curl_cffi for browser TLS fingerprint impersonation.
+
+    Many sites (Cloudflare, Pantheon, WordPress) return 403 to httpx because
+    its TLS ClientHello doesn't match any known browser. curl_cffi uses
+    libcurl with browser-impersonation patches for an authentic fingerprint.
+    """
+    from curl_cffi import requests as cffi_requests
+
+    resp = cffi_requests.get(
+        url,
+        impersonate="chrome",
+        timeout=25,
+        allow_redirects=True,
+    )
+    resp.raise_for_status()
+    return resp.text, str(resp.url)
+
+
 async def fetch_html(
     url: str,
     rate_limit_rps: float = 0.5,
@@ -56,6 +75,9 @@ async def fetch_html(
     base_delay: float = 2.0,
 ) -> tuple[str, str]:
     """Fetch HTML with conditional GET, exponential backoff on 429/503, and jitter.
+
+    On 403, falls back to curl_cffi with browser TLS fingerprinting to bypass
+    bot-protection (Cloudflare, etc.).
 
     Returns (html_text, final_url).
     """
@@ -83,6 +105,16 @@ async def fetch_html(
 
             if response.status_code == 304:
                 raise NotModifiedError(url)
+
+            if response.status_code == 403:
+                # Bot-blocked — try curl_cffi with browser TLS fingerprint.
+                logger.info("fetch_html %s returned 403, retrying with browser TLS", url)
+                try:
+                    text, final_url = await asyncio.to_thread(_fetch_with_browser_tls, url)
+                    return text, final_url
+                except Exception as cffi_exc:
+                    logger.warning("fetch_html browser TLS fallback also failed for %s: %s", url, cffi_exc)
+                    response.raise_for_status()  # raise the original 403
 
             if response.status_code in (429, 503) and attempt < max_retries:
                 delay = jittered_interval(base_delay * (2 ** attempt))
