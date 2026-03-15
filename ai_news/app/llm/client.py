@@ -295,6 +295,70 @@ class LLMClient:
         set_cached(cache_key, result)
         return result
 
+    def generate_longform_digest(self, articles: list[dict]) -> dict | None:
+        """Generate a longform daily digest article with personality and inline source links."""
+        from app.llm.prompts import LONGFORM_DIGEST_SYSTEM_PROMPT, LONGFORM_DIGEST_USER_PROMPT
+
+        if not articles:
+            return None
+        if not self.enabled:
+            return None
+
+        cache_key = f"longform_digest:{hashlib.sha256(json.dumps(articles, sort_keys=True).encode('utf-8')).hexdigest()}"
+        cached = get_cached(cache_key)
+        if cached:
+            return cached
+
+        try:
+            content = self.chat(
+                [
+                    {"role": "system", "content": LONGFORM_DIGEST_SYSTEM_PROMPT},
+                    {
+                        "role": "user",
+                        "content": LONGFORM_DIGEST_USER_PROMPT.format(
+                            articles_json=json.dumps(articles, ensure_ascii=False)
+                        ),
+                    },
+                ],
+                json_object=True,
+            )
+            parsed = json.loads(content or "{}")
+            if not parsed.get("title") or not parsed.get("sections"):
+                return None
+            set_cached(cache_key, parsed)
+            return parsed
+        except Exception:
+            logger.exception("Longform digest generation failed")
+            return None
+
+    def translate_longform_digest(self, digest: dict) -> dict | None:
+        """Translate a longform digest to zh-CN, preserving markdown links."""
+        if not digest:
+            return None
+        payload = {
+            "title": digest.get("title", ""),
+            "subtitle": digest.get("subtitle", ""),
+            "sections": [
+                {"heading": s.get("heading", ""), "body": s.get("body", "")}
+                for s in digest.get("sections", [])
+            ],
+            "sign_off": digest.get("sign_off", ""),
+        }
+        result = self._translate_cached_json(
+            cache_namespace="translate_longform_digest",
+            payload=payload,
+            instruction=(
+                "Translate the following AI news digest into professional simplified Chinese (zh-CN). "
+                "Preserve all markdown formatting and [link](url) references exactly. "
+                "Translate the prose but keep URLs, proper nouns (company/product names), and technical terms unchanged.\n\n"
+                "PAYLOAD:\n{payload}\n\n"
+                "Return the same JSON structure with translated text fields."
+            ),
+        )
+        if not isinstance(result, dict) or not result.get("title"):
+            return None
+        return {**digest, **result}
+
     def translate_digest(self, digest: dict) -> dict:
         if not self.enabled:
             return digest
