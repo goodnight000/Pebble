@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import timedelta
 
 import numpy as np
@@ -180,6 +181,89 @@ def _refresh_entity_resolution(session) -> None:
     session.flush()
 
 
+def _render_longform_html(digest_json: dict) -> str:
+    """Convert the structured longform digest JSON into rendered HTML."""
+    parts: list[str] = []
+    parts.append(f'<h1 class="digest-title">{_escape(digest_json.get("title", ""))}</h1>')
+    subtitle = digest_json.get("subtitle", "")
+    if subtitle:
+        parts.append(f'<p class="digest-subtitle">{_escape(subtitle)}</p>')
+
+    for section in digest_json.get("sections", []):
+        heading = section.get("heading", "")
+        body = section.get("body", "")
+        if heading:
+            parts.append(f'<h2 class="digest-section-heading">{_escape(heading)}</h2>')
+        if body:
+            parts.append(_markdown_to_html(body))
+
+    sign_off = digest_json.get("sign_off", "")
+    if sign_off:
+        parts.append(f'<p class="digest-sign-off">{_md_inline(sign_off)}</p>')
+
+    return "\n".join(parts)
+
+
+def _escape(text: str) -> str:
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _md_inline(text: str) -> str:
+    """Convert inline markdown (bold, links) to HTML."""
+    text = _escape(text)
+    # Bold
+    text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+    # Links — only allow http/https URLs
+    def _safe_link(m):
+        label, url = m.group(1), m.group(2)
+        if not url.startswith(('http://', 'https://')):
+            return label
+        return f'<a href="{url}" target="_blank" rel="noopener noreferrer">{label}</a>'
+    text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', _safe_link, text)
+    return text
+
+
+def _markdown_to_html(md: str) -> str:
+    """Minimal markdown-to-HTML: paragraphs, bold, links, bullet lists."""
+    lines = md.strip().split("\n")
+    html_parts: list[str] = []
+    in_list = False
+    paragraph_lines: list[str] = []
+
+    def flush_paragraph():
+        nonlocal paragraph_lines
+        if paragraph_lines:
+            text = " ".join(paragraph_lines)
+            html_parts.append(f"<p>{_md_inline(text)}</p>")
+            paragraph_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            flush_paragraph()
+            if in_list:
+                html_parts.append("</ul>")
+                in_list = False
+            continue
+        if stripped.startswith("- ") or stripped.startswith("* "):
+            flush_paragraph()
+            if not in_list:
+                html_parts.append("<ul>")
+                in_list = True
+            html_parts.append(f"<li>{_md_inline(stripped[2:])}</li>")
+        else:
+            if in_list:
+                html_parts.append("</ul>")
+                in_list = False
+            paragraph_lines.append(stripped)
+
+    flush_paragraph()
+    if in_list:
+        html_parts.append("</ul>")
+
+    return "\n".join(html_parts)
+
+
 @celery_app.task(name="app.tasks.daily_digest.run_daily_digest")
 def run_daily_digest():
     from app.llm.client import LLMClient
@@ -279,6 +363,62 @@ def run_daily_digest():
                             storage_path=target_digest.storage_path,
                         )
                     )
+
+            # ── Generate longform digest ──
+            longform_articles = []
+            if all_items:
+                art_ids = [item["id"] for item in all_items]
+                articles_with_raw = (
+                    session.query(Article, RawItem, Source)
+                    .join(RawItem, Article.raw_item_id == RawItem.id)
+                    .join(Source, RawItem.source_id == Source.id)
+                    .filter(Article.id.in_(art_ids))
+                    .all()
+                )
+                for article, raw, source in articles_with_raw:
+                    longform_articles.append({
+                        "title": raw.title,
+                        "summary": article.summary or raw.snippet or (article.text[:400] if article.text else ""),
+                        "source_name": source.name,
+                        "url": article.final_url,
+                        "category": article.event_type,
+                        "content_type": article.content_type,
+                        "significance_score": article.final_score or article.global_score or 0,
+                    })
+                # Sort by significance so LLM sees most important first
+                longform_articles.sort(key=lambda x: x["significance_score"], reverse=True)
+
+            longform_result = llm.generate_longform_digest(longform_articles[:30])
+            if longform_result:
+                longform_html = _render_longform_html(longform_result)
+
+                existing_lf = (
+                    session.query(DailyDigest)
+                    .filter(
+                        DailyDigest.user_id == user.id,
+                        func.date(DailyDigest.date) == now.date(),
+                        DailyDigest.content_type == "longform",
+                    )
+                    .first()
+                )
+                if existing_lf:
+                    existing_lf.article_ids = all_ids
+                    existing_lf.headline = longform_result.get("title")
+                    existing_lf.executive_summary = longform_result.get("subtitle")
+                    existing_lf.longform_html = longform_html
+                    existing_lf.llm_authored = True
+                else:
+                    lf_digest = DailyDigest(
+                        user_id=user.id,
+                        date=now,
+                        article_ids=all_ids,
+                        content_type="longform",
+                        headline=longform_result.get("title"),
+                        executive_summary=longform_result.get("subtitle"),
+                        longform_html=longform_html,
+                        llm_authored=True,
+                    )
+                    session.add(lf_digest)
 
     for payload in pending_realtime_events:
         publish_realtime_event("digests", "digest_refresh", payload)
