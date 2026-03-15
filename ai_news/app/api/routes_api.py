@@ -649,6 +649,112 @@ def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depen
     }
 
 
+@router.get("/digest/archive")
+def digest_archive(
+    limit: int = Query(30, ge=1, le=90),
+    db=Depends(get_db),
+):
+    """Return a list of dates that have longform digests available."""
+    settings = get_settings()
+    rows = (
+        db.query(
+            func.date(DailyDigest.date).label("digest_date"),
+            DailyDigest.headline,
+            DailyDigest.executive_summary,
+        )
+        .filter(
+            DailyDigest.user_id == settings.public_user_id,
+            DailyDigest.content_type == "longform",
+            DailyDigest.longform_html.isnot(None),
+        )
+        .order_by(func.date(DailyDigest.date).desc())
+        .limit(limit)
+        .all()
+    )
+    return {
+        "digests": [
+            {
+                "date": str(row.digest_date),
+                "headline": row.headline or "Daily AI Digest",
+                "subtitle": row.executive_summary or "",
+            }
+            for row in rows
+        ]
+    }
+
+
+@router.get("/digest/daily")
+def digest_daily(
+    date: str = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    locale: str = Query("en", pattern="^(en|zh)$"),
+    db=Depends(get_db),
+):
+    """Return the longform digest for a given date (defaults to today)."""
+    from datetime import date as date_type
+
+    settings = get_settings()
+    if date:
+        try:
+            target_date = date_type.fromisoformat(date)
+        except ValueError:
+            target_date = _naive_utc(utcnow()).date()
+    else:
+        target_date = _naive_utc(utcnow()).date()
+
+    row = (
+        db.query(DailyDigest)
+        .filter(
+            DailyDigest.user_id == settings.public_user_id,
+            func.date(DailyDigest.date) == target_date,
+            DailyDigest.content_type == "longform",
+        )
+        .first()
+    )
+
+    if not row or not row.longform_html:
+        return {
+            "date": str(target_date),
+            "headline": None,
+            "subtitle": None,
+            "longformHtml": None,
+            "llmAuthored": False,
+            "locale": locale,
+            "available": False,
+        }
+
+    html = row.longform_html
+    headline = row.headline
+    subtitle = row.executive_summary
+
+    if locale == "zh":
+        llm = LLMClient()
+        translated = llm._translate_cached_json(
+            cache_namespace="translate_longform_html",
+            payload={"headline": headline or "", "subtitle": subtitle or "", "html": html},
+            instruction=(
+                "Translate the following AI news digest into professional simplified Chinese (zh-CN). "
+                "The html field contains rendered HTML — translate the text content but preserve ALL HTML tags, "
+                "attributes, URLs, proper nouns (company/product names), and technical terms unchanged.\n\n"
+                "PAYLOAD:\n{payload}\n\n"
+                "Return JSON with keys: headline, subtitle, html"
+            ),
+        )
+        if translated and isinstance(translated, dict):
+            html = translated.get("html") or html
+            headline = translated.get("headline") or headline
+            subtitle = translated.get("subtitle") or subtitle
+
+    return {
+        "date": str(target_date),
+        "headline": headline,
+        "subtitle": subtitle,
+        "longformHtml": html,
+        "llmAuthored": True,
+        "locale": locale,
+        "available": True,
+    }
+
+
 @router.post("/refresh")
 async def compat_refresh(background_tasks: BackgroundTasks):
     # Kick off refresh in the background so the endpoint returns immediately.
