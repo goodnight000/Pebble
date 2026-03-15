@@ -1,4 +1,4 @@
-import { DigestResponse, GraphResponse, Language, NewsItem } from '@/types';
+import { DigestArchiveEntry, DigestResponse, GraphResponse, Language, LongformDigest, NewsItem } from '@/types';
 import { createRealtimeSubscription, type RealtimeSubscription } from '@/services/realtimeService';
 
 export type LiveEvent =
@@ -59,6 +59,25 @@ export class AIService {
     }
     const data = await response.json();
     return data.items ?? [];
+  }
+
+  async fetchDailyDigest(date?: string, locale: Language = 'en'): Promise<LongformDigest> {
+    const params = new URLSearchParams({ locale });
+    if (date) params.set('date', date);
+    const response = await this.fetchImpl(`/api/digest/daily?${params}`);
+    if (!response.ok) {
+      await failWithResponse(response, 'Failed to fetch daily digest');
+    }
+    return response.json();
+  }
+
+  async fetchDigestArchive(limit = 30): Promise<DigestArchiveEntry[]> {
+    const response = await this.fetchImpl(`/api/digest/archive?limit=${limit}`);
+    if (!response.ok) {
+      await failWithResponse(response, 'Failed to fetch digest archive');
+    }
+    const data = await response.json();
+    return data.digests ?? [];
   }
 
   private subscribeWithSse(callback: (event: LiveEvent) => void): () => void {

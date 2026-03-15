@@ -211,3 +211,23 @@ export interface RelationshipGraphResponse {
   window: RelationshipGraphWindow;
   generatedAt: string;
 }
+
+export interface LongformDigest {
+  date: string;
+  headline: string | null;
+  subtitle: string | null;
+  longformHtml: string | null;
+  llmAuthored: boolean;
+  locale: Language;
+  available: boolean;
+}
+
+export interface DigestArchiveEntry {
+  date: string;
+  headline: string;
+  subtitle: string;
+}
+
+export interface DigestArchiveResponse {
+  digests: DigestArchiveEntry[];
+}
