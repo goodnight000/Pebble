@@ -46,3 +46,6 @@ test-results 2/
 # Environment
 .env
 ai_news/.env
+
+# Supabase CLI
+supabase/.temp/

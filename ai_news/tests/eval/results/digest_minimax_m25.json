@@ -1,0 +1,48 @@
+{
+  "prompt_type": "digest",
+  "version": "minimax_m25",
+  "sample_count": 3,
+  "dimension_averages": {
+    "headline_quality": 4.5,
+    "summary_quality": 3.0,
+    "accuracy": 2.5,
+    "tone": 4.5
+  },
+  "overall_score": 3.62,
+  "results": [
+    {
+      "sample_id": "digest_all",
+      "scores": {
+        "headline_quality": 1,
+        "summary_quality": 1,
+        "accuracy": 1,
+        "tone": 1
+      },
+      "raw_output": "ERROR: 'choices'",
+      "judge_reasoning": "The digest output is completely invalid - it returns only an error message ('ERROR: choices') instead of an actual headline and executive summary. There is no content to evaluate on any dimension. This represents a complete failure of the generation process.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_news",
+      "scores": {},
+      "raw_output": "{\"headline\":\"Nvidia Commits $26B to Open-Source AI as LeCun's AMI Labs Bags $1B, Meanwhile Rogue AI Agents Pose New Security Threat\",\"executiveSummary\":\"Nvidia announced a $26 billion, five-year investment in open-source AI models alongside the release of Nemotron 3 Super (128B), making weights and training methods publicly available. Meanwhile, Yann LeCun's AMI Labs raised $1.03 billion at a $3.5 billion valuation to build 'world models' that learn from physical reality rather than language alo",
+      "judge_reasoning": "Failed to parse judge response",
+      "errors": [
+        "judge_parse_error"
+      ]
+    },
+    {
+      "sample_id": "digest_research",
+      "scores": {
+        "headline_quality": 8,
+        "summary_quality": 5,
+        "accuracy": 4,
+        "tone": 8
+      },
+      "raw_output": "{\"headline\": \"Research Reveals LLMs Implement Bayesian Inference Through Geometric Structures, With Implications for Understanding Model Uncertainty\", \"executiveSummary\": \"A landmark study has discovered that production-grade language models including Llama-3, Mistral, Phi-2, and Pythia preserve the same geometric substrate for Bayesian inference previously only observed in small synthetic models. Researchers found that last-layer value representations organize along a dominant axis that strongl",
+      "judge_reasoning": "Headline is strong - specific, references the top story, and captures the key finding. Tone is professional and journalistic. However, accuracy is a significant concern: the summary covers only 2 of 5 input items (Bayesian inference and LLM judges), completely omitting RCTs/human uplift studies, robotic sample scraping, and FRIEND federated learning. Additionally, the summary introduces 'DAWN' diffusion framework and 'Mamba Neural Operator' for robotic manipulation and PDE solving - these are not in the input items and appear to be hallucinated content. The summary also conflates the robotic manipulation input (about adaptive force control for sample scraping) with a different story about diffusion-based motion intent modeling. While the writing quality is good, the digest fails to cover the full breadth of input items and invents content not present in the source titles.",
+      "errors": []
+    }
+  ],
+  "failure_count": 1
+}

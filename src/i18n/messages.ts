@@ -30,6 +30,18 @@ export const TRUST_LABELS: Record<string, MessageValue> = {
   developing: { en: 'Developing', zh: '发展中' },
   unverified: { en: 'Unverified', zh: '未验证' },
   disputed: { en: 'Disputed', zh: '有争议' },
+  verified_artifact: { en: 'Verified Artifact', zh: '已验证载体' },
+  official_statement: { en: 'Official Statement', zh: '官方声明' },
+  corroborated_report: { en: 'Corroborated Report', zh: '交叉验证报道' },
+  single_source_report: { en: 'Single-Source Report', zh: '单一来源报道' },
+  community_signal: { en: 'Community Signal', zh: '社区信号' },
+  corrected_or_retracted: { en: 'Corrected / Retracted', zh: '已更正 / 已撤回' },
+};
+
+export const FRESHNESS_LABELS: Record<string, MessageValue> = {
+  fresh: { en: 'Fresh', zh: '最新' },
+  maturing: { en: 'Maturing', zh: '逐步明朗' },
+  stable: { en: 'Stable', zh: '稳定' },
 };
 
 export const CATEGORY_LABELS: Record<string, MessageValue> = {
@@ -98,6 +110,7 @@ export const UI_MESSAGES = {
   copyStoryLink: { en: 'Copy story link', zh: '复制内容链接' },
   breakingIntelligence: { en: 'Breaking Intelligence', zh: '突发情报' },
   sourceLabel: { en: 'Source', zh: '来源' },
+  via: { en: 'via', zh: '经由' },
   viewSource: { en: 'View Source', zh: '查看来源' },
   signal: { en: 'Signal', zh: '信号' },
   relationshipGraphError: { en: 'Failed to load relationship graph.', zh: '关系图加载失败。' },

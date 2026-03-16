@@ -1,0 +1,120 @@
+{
+  "prompt_type": "summary",
+  "version": "final",
+  "sample_count": 8,
+  "dimension_averages": {
+    "factual": 7.38,
+    "conciseness": 8.62,
+    "lead_quality": 8.25,
+    "specificity": 8.12,
+    "no_editorializing": 9.5
+  },
+  "overall_score": 8.37,
+  "results": [
+    {
+      "sample_id": "f7618d2c-0431-4b0e-b775-418867a398d9",
+      "scores": {
+        "factual": 6,
+        "conciseness": 8,
+        "lead_quality": 7,
+        "specificity": 8,
+        "no_editorializing": 9
+      },
+      "raw_output": "AI data centers are adopting co-packaged optics (CPO) to reduce power and increase bandwidth, with Broadcom, Nvidia, Intel, Marvell, and Ayar Labs leading adoption. According to McKinsey & Company, meeting global AI demand will require $5.2 trillion in data center investments by 2030.",
+      "judge_reasoning": "The summary is concise and specific, adding company names and a McKinsey statistic not in the provided text. However, it hallucinates details about Broadcom, Nvidia, etc., and the McKinsey data, which are absent from the article excerpt, lowering the factual score. It leads adequately and avoids editorializing.",
+      "errors": []
+    },
+    {
+      "sample_id": "6a8ee61a-3d81-463d-bd09-b68f2cc3d435",
+      "scores": {
+        "factual": 2,
+        "conciseness": 8,
+        "lead_quality": 7,
+        "specificity": 9,
+        "no_editorializing": 9
+      },
+      "raw_output": "In 2025, the average eCrime breakout time dropped to 29 minutes, a 65% increase in speed from 2024, with the fastest observed breakout time being 27 seconds. CrowdStrike observed an 89% increase in attacks by AI-enabled adversaries compared to 2024.",
+      "judge_reasoning": "The summary is concise, specific, and avoids editorializing, but it is largely factually inaccurate relative to the provided article text. The article excerpt does not mention breakout times, eCrime statistics, or an 89% increase in AI-enabled attacks; it discusses adversary trends like subtlety and targeting trusted relationships. The summary hallucinates specific data points not present in the source.",
+      "errors": []
+    },
+    {
+      "sample_id": "6b436e19-d7ec-4c57-bf3e-83449904bd7e",
+      "scores": {
+        "factual": 8,
+        "conciseness": 9,
+        "lead_quality": 9,
+        "specificity": 8,
+        "no_editorializing": 9
+      },
+      "raw_output": "Grammarly faces a class action lawsuit filed by journalist Julia Angwin over its \"Expert Review\" AI feature, which simulates feedback from writers like Stephen King and Kara Swisher without their permission. The feature is available to subscribers for $144 a year. Angwin, whose career focuses on tech and privacy, alleges the company violated publicity rights.",
+      "judge_reasoning": "Summary accurately captures core facts (lawsuit, feature, names, allegation) without hallucination. It is concise (2 sentences) and leads with the lawsuit, the most newsworthy element. Includes specific names (Angwin, King, Swisher) and a price detail ($144/year) not in the provided text excerpt, but this is plausible context. Avoids editorializing, sticking to reported facts.",
+      "errors": []
+    },
+    {
+      "sample_id": "bbc02d1e-143e-4a18-b037-f6be2e4ea41b",
+      "scores": {
+        "factual": 9,
+        "conciseness": 9,
+        "lead_quality": 9,
+        "specificity": 9,
+        "no_editorializing": 10
+      },
+      "raw_output": "Atlassian is laying off about 1,600 employees, or 10% of its workforce, and replacing its chief technology officer as it restructures to invest in artificial intelligence. The company's shares rose over 4% in extended trading. Affected positions include over 900 in software R&D, with 640 in North America, 480 in Australia, and 250 in India.",
+      "judge_reasoning": "Summary accurately captures all key facts from the provided text (layoffs, CTO replacement, AI investment, stock rise, R&D impact, geographic breakdown) without hallucination. It is concise (3 sentences) and leads with the most newsworthy fact. It includes specific numbers and locations. It is strictly factual with no editorializing.",
+      "errors": []
+    },
+    {
+      "sample_id": "e1cc0bc0-905a-416b-b1e4-13e849df740c",
+      "scores": {
+        "factual": 10,
+        "conciseness": 9,
+        "lead_quality": 9,
+        "specificity": 9,
+        "no_editorializing": 10
+      },
+      "raw_output": "Adobe CEO and chair Shantanu Narayen is stepping down after 18 years, with the board beginning a search for his replacement. The announcement comes less than two months after Adobe granted Narayen a stock award vesting in 2028, which had suggested a longer-term commitment.",
+      "judge_reasoning": "The summary is factually accurate, capturing the CEO's departure, his tenure, the board's search, and the recent stock grant detail. It is concise at two sentences, leading directly with the newsworthy fact. It includes specific details like '18 years' and 'less than two months,' and avoids editorializing by sticking to reported facts.",
+      "errors": []
+    },
+    {
+      "sample_id": "56405814-2e65-4614-a4a8-3b7f4daae141",
+      "scores": {
+        "factual": 9,
+        "conciseness": 9,
+        "lead_quality": 8,
+        "specificity": 7,
+        "no_editorializing": 10
+      },
+      "raw_output": "LocalAI is a free, open-source alternative to OpenAI, acting as a drop-in replacement REST API compatible with OpenAI specifications for local AI inferencing. It allows running LLMs, image, and audio generation locally on consumer hardware without requiring a GPU. The project is created and maintained by Ettore Di Giacinto.",
+      "judge_reasoning": "Summary is highly accurate and concise, capturing the core facts. It leads well with the key newsworthy fact (open-source alternative). Specificity is good but could include more concrete details like 'multiple model families' or 'consumer grade hardware' from the text. No editorializing is perfect.",
+      "errors": []
+    },
+    {
+      "sample_id": "fe30e419-334f-468e-94b1-faeb5fe77e44",
+      "scores": {
+        "factual": 9,
+        "conciseness": 9,
+        "lead_quality": 8,
+        "specificity": 8,
+        "no_editorializing": 10
+      },
+      "raw_output": "Researchers introduce ComFree-Sim, a GPU-parallelized contact physics engine for robotics simulation. It demonstrates near-linear runtime scaling with contact number and achieves 2-3 times higher throughput than MuJoCo Warp in dense scenes. The engine is successfully deployed for real-time control of a LEAP multi-fingered hand.",
+      "judge_reasoning": "Summary accurately reflects key claims (GPU-parallelized, near-linear scaling, comparison to MuJoCo Warp, LEAP hand deployment) without hallucination. It is concise (2 sentences) and leads with the core innovation. Specific details (throughput numbers, LEAP hand) are included. No opinions or speculation are added.",
+      "errors": []
+    },
+    {
+      "sample_id": "1cc31ea4-a913-4334-856e-6fa2aaaa9a2e",
+      "scores": {
+        "factual": 6,
+        "conciseness": 8,
+        "lead_quality": 9,
+        "specificity": 7,
+        "no_editorializing": 9
+      },
+      "raw_output": "Facebook Marketplace is adding AI-powered tools, including an auto-reply feature that uses Meta AI to respond to \"Is this still available?\" messages with editable drafts like \"Yes, it’s still available.\" The AI can also fill out listing details and suggest prices based on photos, and it generates seller profile summaries showing account age, friend count, and Marketplace activity.",
+      "judge_reasoning": "The summary accurately captures the core AI auto-reply feature and leads with the most newsworthy fact. However, it hallucinates details not in the provided article text: 'suggest prices based on photos' and 'generates seller profile summaries showing account age, friend count, and Marketplace activity' are not mentioned. It is concise and avoids editorializing.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

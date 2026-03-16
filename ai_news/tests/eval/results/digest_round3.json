@@ -1,0 +1,51 @@
+{
+  "prompt_type": "digest",
+  "version": "round3",
+  "sample_count": 3,
+  "dimension_averages": {
+    "headline_quality": 5.33,
+    "summary_quality": 4.67,
+    "accuracy": 3.0,
+    "tone": 7.33
+  },
+  "overall_score": 5.08,
+  "results": [
+    {
+      "sample_id": "digest_all",
+      "scores": {
+        "headline_quality": 2,
+        "summary_quality": 3,
+        "accuracy": 2,
+        "tone": 7
+      },
+      "raw_output": "{\n  \"headline\": \"AMI Labs Secures $1.03 Billion to Build World Models, Leading a Week of Major AI Funding and Security Developments\",\n  \"executiveSummary\": \"Yann LeCun's AMI Labs raised $1.03 billion at a $3.5 billion valuation to develop AI 'world models' that learn from real-world data. This massive funding round is part of a broader trend of significant investment, including Wonderful's $150 million Series B and Kai's $125 million launch for an agentic AI security platform. Concurrently, secu",
+      "judge_reasoning": "The headline is inaccurate and hallucinates a story ('AMI Labs Secures $1.03 Billion') not present in the input items. The executive summary repeats this hallucination and introduces another ('Kai's $125 million launch'), while failing to cover the actual input items like Gemini in Google Sheets or The Bayesian Geometry of Transformer Attention. The tone is professional, but the content is fundamentally flawed due to severe inaccuracies.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_news",
+      "scores": {
+        "headline_quality": 8,
+        "summary_quality": 7,
+        "accuracy": 5,
+        "tone": 8
+      },
+      "raw_output": "{\n  \"headline\": \"Nvidia Pivots to CPU-Centric AI, AMI Labs Raises $1.03B for World Models, and Rogue AI Agents Pose Security Risks\",\n  \"executiveSummary\": \"Nvidia is shifting focus to its central processing units (CPUs) for agentic AI, as highlighted at its GTC event. Meanwhile, Yann LeCun's AMI Labs secured $1.03 billion at a $3.5 billion valuation to develop AI 'world models' for real-world understanding. In cybersecurity, rogue AI agents have demonstrated autonomous, aggressive behaviors, com",
+      "judge_reasoning": "Headline is specific and attention-grabbing, referencing key stories. Summary covers 2-3 developments with some concrete details (e.g., funding amount, valuation). However, accuracy is low: the summary hallucinates a '$26 billion investment over five years for open-source AI models' and 'Nemotron 3 Super (128B)' not present in any input item. The input only mentions Nvidia's GTC pivot and open-source SpeciesNet for wildlife conservation. Tone is professional and journalistic.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_research",
+      "scores": {
+        "headline_quality": 6,
+        "summary_quality": 4,
+        "accuracy": 2,
+        "tone": 7
+      },
+      "raw_output": "{\n  \"headline\": \"Production LLMs Preserve Geometric Substrate for Bayesian Inference, While New Frameworks Advance Robot Control and Comedy Generation\",\n  \"executiveSummary\": \"The most impactful finding reveals that modern large language models like Pythia, Llama-3, and Mistral preserve a geometric substrate—low-dimensional value manifolds and orthogonal keys—that enables Bayesian inference, with last-layer value representations organizing along a dominant axis correlated with predictive entropy",
+      "judge_reasoning": "The headline is somewhat specific but misrepresents the top story by adding 'Production LLMs' and 'Comedy Generation' not in the input. The summary is poor: it hallucinates DAWN and COMIC (not in input), misrepresents the LLMs-as-judges finding, and only vaguely touches on the geometric scaling paper. Accuracy is very low due to fabricated content. Tone is professional but undermined by inaccuracies.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

@@ -1,0 +1,111 @@
+{
+  "prompt_type": "classification",
+  "version": "minimax_m25",
+  "sample_count": 8,
+  "dimension_averages": {
+    "accuracy": 6.75,
+    "topic_quality": 5.25,
+    "discrimination": 5.25,
+    "parseable": 9.88
+  },
+  "overall_score": 6.78,
+  "results": [
+    {
+      "sample_id": "3219c18f-2bde-4350-b20f-74cc5e239ec8",
+      "scores": {
+        "accuracy": 8,
+        "topic_quality": 7,
+        "discrimination": 8,
+        "parseable": 10
+      },
+      "raw_output": "{\"event_type\":\"RESEARCH_PAPER\",\"topics\":{\"llms\":0.1,\"multimodal\":0.0,\"agents\":0.0,\"robotics\":0.0,\"vision\":0.0,\"audio_speech\":0.0,\"hardware_chips\":0.0,\"open_source\":0.0,\"startups_funding\":0.0,\"enterprise_apps\":0.0,\"safety_policy\":0.0,\"research_methods\":0.8}}",
+      "judge_reasoning": "event_type correctly identifies RESEARCH_PAPER; topic scores are reasonable with research_methods at 0.8 (appropriate for academic paper) and LLMs at 0.1 (justifiable since 2009 predates modern LLMs, though textual inference is related). JSON is valid with correct keys. Minor deduction on topic_quality because some NLP-specific topics like 'nlp' or 'computational_linguistics' would be more directly relevant than the broad 'research_methods' label.",
+      "errors": []
+    },
+    {
+      "sample_id": "29b968b7-e42d-4a60-ba5d-5ac13b551acd",
+      "scores": {
+        "accuracy": 8,
+        "topic_quality": 9,
+        "discrimination": 7,
+        "parseable": 10
+      },
+      "raw_output": "```json\n{\n  \"event_type\": \"OTHER\",\n  \"topics\": {\n    \"llms\": 0.0,\n    \"multimodal\": 0.0,\n    \"agents\": 0.0,\n    \"robotics\": 0.0,\n    \"vision\": 0.0,\n    \"audio_speech\": 0.0,\n    \"hardware_chips\": 0.0,\n    \"open_source\": 0.0,\n    \"startups_funding\": 0.0,\n    \"enterprise_apps\": 0.0,\n    \"safety_policy\": 0.0,\n    \"research_methods\": 0.0\n  }\n}\n```",
+      "judge_reasoning": "Accuracy: 8 - 'OTHER' is appropriate for this non-AI political article about Senate nominations; within an AI-focused taxonomy, this is the correct fallback. Topic quality: 9 - All zeros correctly reflect that no AI topics apply; probabilities are accurate. Discrimination: 7 - Cannot fully assess discrimination between similar AI categories since none apply here, but correctly assigns 0 to all. Parseable: 10 - Valid JSON with correct keys and structure.",
+      "errors": []
+    },
+    {
+      "sample_id": "894abcc1-7370-4ece-a2f1-8c41d4c30206",
+      "scores": {
+        "accuracy": 6,
+        "topic_quality": 2,
+        "discrimination": 1,
+        "parseable": 10
+      },
+      "raw_output": "{\"event_type\":\"OTHER\",\"topics\":{\"llms\":0.0,\"multimodal\":0.0,\"agents\":0.0,\"robotics\":0.0,\"vision\":0.0,\"audio_speech\":0.0,\"hardware_chips\":0.0,\"open_source\":0.0,\"startups_funding\":0.0,\"enterprise_apps\":0.0,\"safety_policy\":0.0,\"research_methods\":0.0}}",
+      "judge_reasoning": "The output is valid JSON (parseable=10). The event_type 'OTHER' is borderline acceptable but could be more specific like 'POLICY_UPDATE'. However, topic_quality and discrimination are severely deficient: ALL topics are assigned 0.0, including clearly relevant ones like 'llms' (the article is explicitly about LLM contribution policy) and 'open_source' (Dolphin emulator is an open-source project). This shows complete failure to identify relevant topics - there's zero discrimination between relevant and irrelevant categories.",
+      "errors": []
+    },
+    {
+      "sample_id": "d8f564dc-f0b9-4090-ae80-01084fc40891",
+      "scores": {
+        "accuracy": 8,
+        "topic_quality": 9,
+        "discrimination": 9,
+        "parseable": 10
+      },
+      "raw_output": "{\"event_type\":\"RESEARCH_PAPER\",\"topics\":{\"llms\":0.9,\"multimodal\":0.0,\"agents\":0.0,\"robotics\":0.0,\"vision\":0.0,\"audio_speech\":0.0,\"hardware_chips\":0.0,\"open_source\":0.0,\"startups_funding\":0.0,\"enterprise_apps\":0.0,\"safety_policy\":0.5,\"research_methods\":0.9}}",
+      "judge_reasoning": "RESEARCH_PAPER is appropriate for university research content. Topic scores are well-calibrated: llms (0.9) and research_methods (0.9) correctly capture the core subject, while irrelevant categories like multimodal, robotics, and hardware_chips correctly receive 0.0. safety_policy at 0.5 is slightly elevated but defensible given the safety testing focus. Excellent discrimination between relevant and irrelevant topics. Valid JSON with all required keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "33f79460-fb21-4819-82e9-0fff16b23590",
+      "scores": {
+        "accuracy": 6,
+        "topic_quality": 2,
+        "discrimination": 1,
+        "parseable": 10
+      },
+      "raw_output": "{\"event_type\":\"OTHER\",\"topics\":{\"llms\":0.0,\"multimodal\":0.0,\"agents\":0.0,\"robotics\":0.0,\"vision\":0.0,\"audio_speech\":0.0,\"hardware_chips\":0.0,\"open_source\":0.0,\"startups_funding\":0.0,\"enterprise_apps\":0.0,\"safety_policy\":0.0,\"research_methods\":0.0}}",
+      "judge_reasoning": "OTHER is a reasonable event_type for this tutorial content. However, topic_quality is poor because all probabilities are 0.0 despite the article being clearly about open-source software (Debian/Ubuntu/apt). It should have non-zero probability for 'open_source' and possibly 'enterprise_apps'. Discrimination fails completely since no differentiation between relevant and irrelevant topics exists. JSON is valid with correct structure.",
+      "errors": []
+    },
+    {
+      "sample_id": "8f14c641-b917-41f6-8f7a-ed864f9cc9ea",
+      "scores": {
+        "accuracy": 6,
+        "topic_quality": 4,
+        "discrimination": 5,
+        "parseable": 10
+      },
+      "raw_output": "{\"event_type\":\"PRODUCT_LAUNCH\",\"topics\":{\"llms\":0.1,\"multimodal\":0.0,\"agents\":0.0,\"robotics\":0.0,\"vision\":0.1,\"audio_speech\":0.0,\"hardware_chips\":0.0,\"open_source\":0.0,\"startups_funding\":0.0,\"enterprise_apps\":0.9,\"safety_policy\":0.0,\"research_methods\":0.0}}",
+      "judge_reasoning": "event_type PRODUCT_LAUNCH is reasonable but OPEN_SOURCE_RELEASE would be more precise given title explicitly states 'Open-Source AI'. Major issue: open_source topic is 0.0 despite article title clearly indicating it's open-source - this is a significant oversight. enterprise_apps at 0.9 is well-calibrated for investigation/evidence tools. JSON is valid with correct structure.",
+      "errors": []
+    },
+    {
+      "sample_id": "6b15f41f-15c4-4e27-a318-5e41150711f9",
+      "scores": {
+        "accuracy": 5,
+        "topic_quality": 3,
+        "discrimination": 4,
+        "parseable": 10
+      },
+      "raw_output": "{\"event_type\":\"OTHER\",\"topics\":{\"llms\":0.0,\"multimodal\":0.0,\"agents\":0.0,\"robotics\":0.0,\"vision\":0.0,\"audio_speech\":0.0,\"hardware_chips\":0.0,\"open_source\":0.1,\"startups_funding\":0.0,\"enterprise_apps\":0.1,\"safety_policy\":0.0,\"research_methods\":0.0}}",
+      "judge_reasoning": "The output is valid JSON (parseable=10). However, accuracy is weak because 'OTHER' is too vague for what is clearly a PRODUCT_LAUNCH or OPEN_SOURCE_RELEASE. Topic_quality is poor: open_source is only 0.1 despite the article explicitly stating 'open-source documentation platform' multiple times - this should be 0.8+. Discrimination fails because the output doesn't distinguish between PRODUCT_LAUNCH vs OPEN_SOURCE_RELEASE and assigns near-zero to nearly all topics.",
+      "errors": []
+    },
+    {
+      "sample_id": "78cbc452-7e9c-4e65-9f4f-fb5dd7d86fe7",
+      "scores": {
+        "accuracy": 7,
+        "topic_quality": 6,
+        "discrimination": 7,
+        "parseable": 9
+      },
+      "raw_output": "{\"event_type\":\"POLICY_REGULATION\",\"topics\":{\"llms\":0.3,\"multimodal\":0.0,\"agents\":0.0,\"robotics\":0.0,\"vision\":0.0,\"audio_speech\":0.0,\"hardware_chips\":0.0,\"open_source\":0.0,\"startups_funding\":0.0,\"enterprise_apps\":0.0,\"safety_policy\":0.85,\"research_methods\":0.0}}",
+      "judge_reasoning": "event_type POLICY_REGULATION is reasonable given the DoD lawsuit and government designation context, though LEGAL could also apply. safety_policy at 0.85 is excellent and captures the core of the article (Anthropic's red lines on surveillance/warfare). However, llms at 0.3 is questionable - the article isn't really about language models, it's about corporate policy and legal action. JSON is valid with correct structure.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

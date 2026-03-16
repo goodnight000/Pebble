@@ -165,6 +165,13 @@ class Article(Base):
     specificity_score = Column(Float, nullable=True)
     has_primary_document = Column(Boolean, default=False, server_default="false")
     confirmation_level = Column(Text, nullable=True)
+    verification_mode = Column(Text, nullable=True)
+    verification_state = Column(Text, nullable=True)
+    freshness_state = Column(Text, nullable=True)
+    verification_confidence = Column(Float, nullable=True)
+    verification_signals = Column(JSON, nullable=True)
+    update_status = Column(Text, nullable=True)
+    canonical_evidence_url = Column(Text, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -197,6 +204,10 @@ class Cluster(Base):
     has_official_confirmation = Column(Boolean, default=False, server_default="false")
     cluster_trust_score = Column(Float, nullable=True)
     cluster_trust_label = Column(Text, nullable=True)
+    cluster_verification_state = Column(Text, nullable=True)
+    cluster_freshness_state = Column(Text, nullable=True)
+    cluster_verification_confidence = Column(Float, nullable=True)
+    cluster_verification_signals = Column(JSON, nullable=True)
 
 
 class ClusterMember(Base):

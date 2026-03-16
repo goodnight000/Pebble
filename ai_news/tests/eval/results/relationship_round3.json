@@ -1,0 +1,157 @@
+{
+  "prompt_type": "relationship",
+  "version": "round3",
+  "sample_count": 10,
+  "dimension_averages": {
+    "label_accuracy": 4.3,
+    "confidence_calibration": 4.7,
+    "explanation_quality": 5.0,
+    "parseable": 2.0,
+    "explainability_quality": 1.0,
+    "explain_quality": 1.0
+  },
+  "overall_score": 3.0,
+  "results": [
+    {
+      "sample_id": "pair_0",
+      "scores": {
+        "label_accuracy": 8,
+        "confidence_calibration": 9,
+        "explanation_quality": 7,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 1,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A discusses OpenAI's hardware/chip strategy, while B is a 2010 research paper on machine translation toolkits; no narrative link.\"\n}",
+      "judge_reasoning": "Label 'unrelated' is correct; clusters discuss distinct topics (OpenAI strategy vs. 2010 MT toolkit). Confidence 0.1 appropriately low for clear unrelatedness. Explanation is concise but slightly inaccurate: Cluster A summary mentions 'hardware/chip strategy' but the provided summary text does not explicitly state that; it's an inference. Output is valid JSON with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_1",
+      "scores": {
+        "label_accuracy": 9,
+        "confidence_calibration": 9,
+        "explanation_quality": 8,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 2,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A is about a lawsuit against Grammarly over AI identity misuse, while B is a software release for an AI SDK; no narrative connection.\"\n}",
+      "judge_reasoning": "Label is correct as clusters are clearly unrelated (legal issue vs. software release). Confidence is appropriately low given no connection. Explanation is concise and specific, though could mention the complete lack of shared entities or themes. Output is valid JSON with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_2",
+      "scores": {
+        "label_accuracy": 2,
+        "confidence_calibration": 6,
+        "explanation_quality": 3,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 3,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.2,\n  \"explanation\": \"A is a research paper on diffusion models, while B is about OpenAI's hardware/chip race; no direct narrative relationship.\"\n}",
+      "judge_reasoning": "Label 'unrelated' is incorrect; both clusters involve AI research/development (diffusion models vs. OpenAI's competitive efforts), suggesting a 'competing' or thematic relationship. Confidence of 0.2 is too low given the clear AI theme. Explanation mischaracterizes Cluster B as 'hardware/chip race' and lacks specific evidence. Output is valid JSON with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_3",
+      "scores": {
+        "label_accuracy": 10,
+        "confidence_calibration": 10,
+        "explanation_quality": 10,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 4,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A is about Anthropic's Claude AI feature update, while B is about a Japanese fintech company's IPO; no meaningful connection.\"\n}",
+      "judge_reasoning": "The classification is perfectly accurate: the clusters are clearly unrelated (AI feature vs. fintech IPO). Confidence of 0.1 is appropriately low for this unambiguous case. The explanation is concise and directly cites the differing topics. The output is valid JSON with all required keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_4",
+      "scores": {
+        "label_accuracy": 9,
+        "confidence_calibration": 8,
+        "explanation_quality": 9,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 5,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.2,\n  \"explanation\": \"A is a 2009 research paper on text similarity, while B is a 2026 paper on multimodal perception; no direct narrative link.\"\n}",
+      "judge_reasoning": "Label 'unrelated' is correct: clusters are from different domains (NLP vs. computer vision) and time periods with no thematic overlap. Confidence 0.2 is appropriately low given the clear disconnect. Explanation is concise and cites specific evidence (year, domain). Output is valid JSON with all required keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_5",
+      "scores": {
+        "label_accuracy": 1,
+        "confidence_calibration": 1,
+        "explainability_quality": 1,
+        "parseable": 1
+      },
+      "raw_output": "{\n  \"error\": \"The input provided is not valid JSON. Please ensure the input is a properly formatted JSON object.\"\n}",
+      "judge_reasoning": "The output is an error message, not a classification. It provides no label, confidence, or explanation, so all dimensions score 1. The parseable score is 1 because the output is not a valid JSON array with the required keys; it's a JSON object with an 'error' key.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_6",
+      "scores": {
+        "label_accuracy": 1,
+        "confidence_calibration": 1,
+        "explain_quality": 1,
+        "parseable": 1
+      },
+      "raw_output": "NO RESULT FOR THIS PAIR",
+      "judge_reasoning": "The output is not a valid classification; it returns 'NO RESULT FOR THIS PAIR' instead of a JSON array with label, confidence, and explanation. Therefore, all dimensions score 1 as it fails to provide any meaningful evaluation.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_7",
+      "scores": {
+        "label_accuracy": 1,
+        "confidence_calibration": 1,
+        "explanation_quality": 1,
+        "parseable": 1
+      },
+      "raw_output": "NO RESULT FOR THIS PAIR",
+      "judge_reasoning": "The output 'NO RESULT FOR THIS PAIR' is not a valid JSON array with the required keys (label, confidence, explanation). It fails all dimensions: it provides no relationship label to assess accuracy, no confidence score to evaluate calibration, no explanation to judge quality, and the output is not parseable as the specified JSON structure.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_8",
+      "scores": {
+        "label_accuracy": 1,
+        "confidence_calibration": 1,
+        "explanation_quality": 1,
+        "parseable": 1
+      },
+      "raw_output": "NO RESULT FOR THIS PAIR",
+      "judge_reasoning": "The output 'NO RESULT FOR THIS PAIR' is not a valid JSON array with the required keys (label, confidence, explanation). It fails to provide any relationship classification, confidence score, or explanation, making it impossible to evaluate label accuracy, confidence calibration, or explanation quality. The output is not parseable as specified.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_9",
+      "scores": {
+        "label_accuracy": 1,
+        "confidence_calibration": 1,
+        "explanation_quality": 1,
+        "parseable": 1
+      },
+      "raw_output": "NO RESULT FOR THIS PAIR",
+      "judge_reasoning": "The classification output 'NO RESULT FOR THIS PAIR' is not a valid relationship label (e.g., follow-up/reaction/competing/unrelated). It fails to provide any classification, confidence score, or explanation, making it impossible to evaluate accuracy, calibration, or explanation quality. The output is not a parseable JSON array with the required keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    }
+  ],
+  "failure_count": 10
+}

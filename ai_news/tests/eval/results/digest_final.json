@@ -1,0 +1,51 @@
+{
+  "prompt_type": "digest",
+  "version": "final",
+  "sample_count": 3,
+  "dimension_averages": {
+    "headline_quality": 5.33,
+    "summary_quality": 5.0,
+    "accuracy": 4.67,
+    "tone": 6.67
+  },
+  "overall_score": 5.42,
+  "results": [
+    {
+      "sample_id": "digest_all",
+      "scores": {
+        "headline_quality": 1,
+        "summary_quality": 3,
+        "accuracy": 1,
+        "tone": 5
+      },
+      "raw_output": "{\n  \"headline\": \"LeCun's AMI Labs Secures $1.03B to Build World Models, Signaling Major AI Investment Push\",\n  \"executiveSummary\": \"Yann LeCun's AMI Labs raised over $1 billion to develop AI world models that learn from real-world data, representing a significant investment in next-generation AI. Other major funding rounds include Wonderful's $150M Series B and Kai's $125M for an agentic AI security platform, while Google's Gemini in Sheets achieved state-of-the-art performance for data analysis",
+      "judge_reasoning": "The headline is completely fabricated, referencing 'LeCun's AMI Labs' and a $1.03B funding round not present in the input items. The executive summary hallucinates two stories ('AMI Labs' and 'Kai's $125M') while incorrectly attributing the $150M round to 'Wonderful' (input says 'Wonderful raises $150M'). It only accurately mentions Google's Gemini in Sheets. The tone is professional but irrelevant due to severe accuracy failures.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_news",
+      "scores": {
+        "headline_quality": 7,
+        "summary_quality": 5,
+        "accuracy": 4,
+        "tone": 7
+      },
+      "raw_output": "{\n  \"headline\": \"Nvidia Pivots to CPUs at GTC, LeCun's AMI Labs Raises $1.03B for World Models\",\n  \"executiveSummary\": \"Nvidia's GTC event signals a strategic pivot toward CPUs for agentic AI, while the company also announces a $26 billion, five-year investment in open-source AI models and launches the Nemotron 3 Super (128B). In major funding, Yann LeCun's AMI Labs secures $1.03 billion at a $3.5 billion valuation to develop world models. Security concerns rise as an AI-powered bot compromises ",
+      "judge_reasoning": "Headline is specific and combines two top stories, but could be more dynamic. Summary includes some accurate details (Nvidia pivot, AMI Labs funding, GitHub bot) but hallucinates several items not in the input (Nvidia's $26B investment, Nemotron 3 Super, rogue AI agents, HBM4E, Asia supply chain). Tone is professional and journalistic.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_research",
+      "scores": {
+        "headline_quality": 8,
+        "summary_quality": 7,
+        "accuracy": 9,
+        "tone": 8
+      },
+      "raw_output": "{\n  \"headline\": \"AI Models Preserve Bayesian Geometry; Reasoning Judges Enable Adversarial Policy Training\",\n  \"executiveSummary\": \"Research reveals that modern large language models retain a geometric substrate for Bayesian inference, with last-layer value representations organizing along a dominant axis correlated with predictive entropy. This finding suggests a fundamental computational structure persists across model scales. In another key development, reasoning LLMs-as-judges show promise f",
+      "judge_reasoning": "Headline is specific and attention-grabbing, directly referencing two key research themes. Summary covers multiple developments with concrete details (e.g., geometric substrate, adversarial policies, 30% secrecy rate improvement), though it could be more focused on the top 2-3 items. Accuracy is high, with no evident hallucinations; all mentioned topics correspond to input items. Tone is professional and journalistic.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

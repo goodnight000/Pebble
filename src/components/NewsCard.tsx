@@ -11,11 +11,18 @@ const TRUST_CONFIG: Record<string, { color: string; icon: React.ReactNode }> = {
   developing: { color: '#eab308', icon: <ShieldQuestion className="w-3 h-3" /> },
   unverified: { color: '#6b7280', icon: <ShieldAlert className="w-3 h-3" /> },
   disputed: { color: '#ef4444', icon: <ShieldAlert className="w-3 h-3" /> },
+  verified_artifact: { color: '#16a34a', icon: <ShieldCheck className="w-3 h-3" /> },
+  official_statement: { color: '#15803d', icon: <ShieldCheck className="w-3 h-3" /> },
+  corroborated_report: { color: '#2563eb', icon: <Shield className="w-3 h-3" /> },
+  single_source_report: { color: '#0f766e', icon: <Shield className="w-3 h-3" /> },
+  community_signal: { color: '#6b7280', icon: <ShieldQuestion className="w-3 h-3" /> },
+  corrected_or_retracted: { color: '#dc2626', icon: <ShieldAlert className="w-3 h-3" /> },
 };
 
 const TrustBadge: React.FC<{ item: NewsItem; language: Language }> = ({ item, language }) => {
-  if (!item.trustLabel) return null;
-  const cfg = TRUST_CONFIG[item.trustLabel];
+  const badgeKey = item.verificationState ?? item.trustLabel;
+  if (!badgeKey) return null;
+  const cfg = TRUST_CONFIG[badgeKey];
   if (!cfg) return null;
 
   return (
@@ -24,7 +31,7 @@ const TrustBadge: React.FC<{ item: NewsItem; language: Language }> = ({ item, la
       style={{ color: cfg.color, borderColor: cfg.color }}
     >
       {cfg.icon}
-      {getTrustLabel(language, item.trustLabel)}
+      {getTrustLabel(language, badgeKey)}
     </span>
   );
 };
@@ -53,6 +60,9 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, language, featured = false })
   const isGitHub = item.contentType === 'github';
   const isHigh = item.significanceScore >= 85;
   const primarySource = item.sources?.[0];
+  const sourceLabel = primarySource?.viaSource
+    ? `${primarySource.title} ${getUiText(language, 'via')} ${primarySource.viaSource}`
+    : primarySource?.title;
   const maxVisibleTags = 4;
   const visibleTags = item.tags.slice(0, maxVisibleTags);
   const hiddenTagCount = Math.max(0, item.tags.length - visibleTags.length);
@@ -114,39 +124,43 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, language, featured = false })
               <span className="wf-chip wf-chip--category" style={{ borderColor: cat.color, color: cat.color, background: cat.bgMuted }}>
                 {getCategoryLabel(language, item.category)}
               </span>
-              {primarySource?.title && <span className="wf-card-source">{primarySource.title}</span>}
             </div>
             <div className="wf-card-header__right">
               <TrustBadge item={item} language={language} />
             </div>
           </div>
           <div className="wf-card-header__bottom">
-            <span className="wf-card-time mono">{formatTimestamp(item.timestamp)}</span>
-            <div
-              className="wf-signal-pill"
-              style={{
-                color: scoreStyle.color,
-                borderColor: scoreStyle.border,
-                background: scoreStyle.bg,
-              }}
-            >
-              {isGitHub ? (
-                <Star
-                  className="w-3 h-3"
-                  fill={isHigh ? cat.color : 'none'}
-                  style={{ color: isHigh ? cat.color : undefined }}
-                />
-              ) : (
-                <Zap
-                  className="w-3 h-3"
-                  fill={isHigh ? cat.color : 'none'}
-                  style={{ color: isHigh ? cat.color : undefined }}
-                />
-              )}
-              <span className="wf-signal-pill__label">{getUiText(language, 'signal')}</span>
-              <span className="wf-signal-pill__value mono">{item.significanceScore}</span>
+            <div className="wf-card-header__left">
+              {sourceLabel && <span className="wf-card-source">{sourceLabel}</span>}
+            </div>
+            <div className="wf-card-header__right">
+              <div
+                className="wf-signal-pill"
+                style={{
+                  color: scoreStyle.color,
+                  borderColor: scoreStyle.border,
+                  background: scoreStyle.bg,
+                }}
+              >
+                {isGitHub ? (
+                  <Star
+                    className="w-3 h-3"
+                    fill={isHigh ? cat.color : 'none'}
+                    style={{ color: isHigh ? cat.color : undefined }}
+                  />
+                ) : (
+                  <Zap
+                    className="w-3 h-3"
+                    fill={isHigh ? cat.color : 'none'}
+                    style={{ color: isHigh ? cat.color : undefined }}
+                  />
+                )}
+                <span className="wf-signal-pill__label">{getUiText(language, 'signal')}</span>
+                <span className="wf-signal-pill__value mono">{item.significanceScore}</span>
+              </div>
             </div>
           </div>
+          <span className="wf-card-time mono">{formatTimestamp(item.timestamp)}</span>
         </div>
 
         <h3 className={`wf-card-title ${featured ? 'wf-card-title--feature' : ''} mb-3 transition-colors duration-200 ${featured ? 'line-clamp-4' : 'line-clamp-3'}`}>

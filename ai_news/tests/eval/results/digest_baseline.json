@@ -1,0 +1,51 @@
+{
+  "prompt_type": "digest",
+  "version": "baseline",
+  "sample_count": 3,
+  "dimension_averages": {
+    "headline_quality": 6.33,
+    "summary_quality": 6.0,
+    "accuracy": 5.67,
+    "tone": 8.33
+  },
+  "overall_score": 6.58,
+  "results": [
+    {
+      "sample_id": "digest_all",
+      "scores": {
+        "headline_quality": 2,
+        "summary_quality": 3,
+        "accuracy": 2,
+        "tone": 7
+      },
+      "raw_output": "{\n  \"headline\": \"LeCun's AMI Labs Secures $1.03B to Build 'World Models' as AI Funding and Security Accelerate\",\n  \"executiveSummary\": \"Yann LeCun's AMI Labs raised $1.03 billion at a $3.5 billion valuation to develop AI 'world models' that learn from real-world data, aiming to improve physical understanding in fields like healthcare. In parallel, major funding rounds continued with Wonderful's $150M Series B and Kai's $125M for an agentic AI security platform, while Google's Gemini in Sheets ac",
+      "judge_reasoning": "The headline is highly inaccurate, inventing a story ('LeCun's AMI Labs Secures $1.03B') not present in the input items. The executive summary also hallucinates details (Kai's funding, AMI Labs) and misrepresents the input, though it correctly references a few items (Gemini, Corvex, CISA, Wonderful). The tone is professional but undermined by the factual errors.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_news",
+      "scores": {
+        "headline_quality": 8,
+        "summary_quality": 7,
+        "accuracy": 6,
+        "tone": 9
+      },
+      "raw_output": "{\n  \"headline\": \"Nvidia Pivots to CPU-Centric AI at GTC as LeCun's AMI Labs Secures $1.03B for World Models\",\n  \"executiveSummary\": \"Nvidia is shifting its AI chip strategy to emphasize central processing units (CPUs) at its GTC conference, driven by the rise of agentic AI, while also announcing a $26 billion, five-year investment in open-source AI models and launching the Nemotron 3 Super (128B) model. In major funding news, Yann LeCun's AMI Labs raised $1.03 billion at a $3.5 billion valuation",
+      "judge_reasoning": "Headline is specific and combines two top stories effectively. Summary covers key developments with concrete details like funding amounts and model names, but includes hallucinated details (e.g., $26B investment, Nemotron 3 Super model) not present in the input items. Tone is professional and journalistic throughout.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_research",
+      "scores": {
+        "headline_quality": 9,
+        "summary_quality": 8,
+        "accuracy": 9,
+        "tone": 9
+      },
+      "raw_output": "{\n  \"headline\": \"Production LLMs Found to Preserve Geometric Substrate for Bayesian Inference\",\n  \"executiveSummary\": \"A new study reveals that modern large language models like Llama-3 and Mistral retain the low-dimensional geometric structures that enable Bayesian inference, with last-layer value representations aligning along a single dominant axis correlated with predictive entropy. This finding suggests LLMs perform approximate Bayesian updates along this substrate, though targeted interven",
+      "judge_reasoning": "Headline is specific, attention-grabbing, and directly references the top research story. Summary accurately covers 2-3 key developments with concrete details (e.g., Llama-3/Mistral, 99.5% success rate, reasoning LLM judges deceiving others). It accurately reflects the input items without hallucination. Tone is professional and journalistic throughout.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

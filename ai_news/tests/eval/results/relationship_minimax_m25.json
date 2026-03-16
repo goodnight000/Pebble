@@ -1,0 +1,121 @@
+{
+  "prompt_type": "relationship",
+  "version": "minimax_m25",
+  "sample_count": 8,
+  "dimension_averages": {
+    "label_accuracy": 8.5,
+    "confidence_calibration": 3.12,
+    "explanation_quality": 6.75,
+    "parseable": 5.62
+  },
+  "overall_score": 6.0,
+  "results": [
+    {
+      "sample_id": "pair_0",
+      "scores": {
+        "label_accuracy": 8,
+        "confidence_calibration": 3,
+        "explanation_quality": 6,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 1,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.15,\n  \"explanation\": \"A is a current news article about OpenAI's competitive strategy while B is a 2010 academic paper on statistical machine translation - no narrative connection\"\n}",
+      "judge_reasoning": "Label 'unrelated' is correct - Cluster A is current OpenAI news while B is a 2010 academic paper on SMT. However, confidence of 0.15 is severely miscalibrated; this is an obvious unrelated pair and confidence should be HIGH. Explanation is adequate but could be more specific about the temporal and topical disconnect. JSON is valid and parseable.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_1",
+      "scores": {
+        "label_accuracy": 10,
+        "confidence_calibration": 2,
+        "explanation_quality": 9,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 2,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A is a lawsuit news story about Grammarly while B is a technical release note for a Vue development toolkit - completely unrelated\"\n}",
+      "judge_reasoning": "Label 'unrelated' is correct - a Grammarly lawsuit vs a Vue SDK release note are clearly unrelated. However, confidence of 0.1 is severely miscalibrated; such an obvious non-relationship should have high confidence (0.9+). Explanation is concise and accurate. JSON is valid with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_2",
+      "scores": {
+        "label_accuracy": 7,
+        "confidence_calibration": 4,
+        "explanation_quality": 6,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 3,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.25,\n  \"explanation\": \"Both involve AI research topics but A is a specific research paper on diffusion models while B is a news article about OpenAI's business strategy - no narrative connection\"\n}",
+      "judge_reasoning": "Label is correct - these are clearly unrelated (technical research paper vs business news). However confidence 0.25 is too low for such an unambiguous case; should be higher (0.7-0.8). Explanation is adequate but oversimplifies by saying both involve 'AI research topics' when B is business journalism, not research. JSON is perfectly valid.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_3",
+      "scores": {
+        "label_accuracy": 10,
+        "confidence_calibration": 2,
+        "explanation_quality": 7,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 4,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A is about Anthropic adding visualization features to Claude while B is about a Japanese payment company IPO - completely unrelated\"\n}",
+      "judge_reasoning": "Label is correct - clusters are completely unrelated (AI product update vs Japanese fintech IPO). Confidence of 0.1 is severely miscalibrated - should be very HIGH for such an obvious unrelated pair. Explanation is accurate and concise but basic. JSON is valid with correct structure.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_4",
+      "scores": {
+        "label_accuracy": 8,
+        "confidence_calibration": 4,
+        "explanation_quality": 6,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 5,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.2,\n  \"explanation\": \"Both are academic papers but from different domains (NLP text similarity vs computer vision) and different time periods - no narrative connection\"\n}",
+      "judge_reasoning": "Label 'unrelated' is correct - NLP text similarity vs computer vision are clearly different domains with no narrative connection. However confidence of 0.2 is too low for such a clear-cut case; higher confidence (0.7-0.8) would be better calibrated. Explanation is adequate but generic - could cite specific NLP vs CV domain difference more precisely. Output is valid JSON with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_5",
+      "scores": {
+        "label_accuracy": 7,
+        "confidence_calibration": 4,
+        "explanation_quality": 8,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"pair\": 1,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.25,\n  \"explanation\": \"A is an academic research paper on agent reasoning while B is a personal project announcement - different actors, purposes, and no narrative continuation\"\n}",
+      "judge_reasoning": "Label is reasonable - academic paper vs personal project are clearly unrelated in terms of actors, purposes, and narrative. However confidence of 0.25 is too low; the relationship is fairly unambiguous, warranting higher confidence (0.7-0.8). Explanation is strong - correctly identifies different actors, purposes, and lack of narrative continuation. JSON is valid with correct keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "pair_6",
+      "scores": {
+        "label_accuracy": 10,
+        "confidence_calibration": 3,
+        "explanation_quality": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"pair\": 2,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.15,\n  \"explanation\": \"A is academic research on image editing/reward modeling while B is a software SDK release - completely different topics and actors\"\n}",
+      "judge_reasoning": "Label 'unrelated' is correct - these are completely different topics (academic CV research vs SDK release). JSON is valid with correct keys. Explanation is adequate but brief. However, confidence of 0.15 is severely miscalibrated - for such an unambiguous 'unrelated' case, confidence should be HIGH (0.9+), not low. Low confidence suggests uncertainty, but there's zero ambiguity here.",
+      "errors": []
+    },
+    {
+      "sample_id": "pair_7",
+      "scores": {
+        "label_accuracy": 8,
+        "confidence_calibration": 3,
+        "explanation_quality": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"pair\": 3,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.2,\n  \"explanation\": \"A is research on diffusion transformers while B is Meta's acquisition of an AI agent company - different topics (multimodal research vs M&A) and no narrative connection\"\n}",
+      "judge_reasoning": "Label is correct - these are clearly unrelated (academic research vs corporate M&A). However, confidence of 0.2 is inappropriately low for such an unambiguous case; it should be high since the topics are completely different domains. Explanation is adequate but could be more specific about why they're unrelated (technical research paper vs business acquisition). JSON is valid.",
+      "errors": []
+    }
+  ],
+  "failure_count": 5
+}

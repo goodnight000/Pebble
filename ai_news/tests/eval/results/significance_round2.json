@@ -1,0 +1,111 @@
+{
+  "prompt_type": "significance",
+  "version": "round2",
+  "sample_count": 8,
+  "dimension_averages": {
+    "calibration": 6.62,
+    "consistency": 6.75,
+    "discrimination": 6.0,
+    "parseable": 10.0
+  },
+  "overall_score": 7.34,
+  "results": [
+    {
+      "sample_id": "5f36ec69-d951-4e00-a9c7-af31d60937be",
+      "scores": {
+        "calibration": 8,
+        "consistency": 9,
+        "discrimination": 8,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 4, \"breadth\": 3, \"novelty\": 5}",
+      "judge_reasoning": "The scores (impact:4, breadth:3, novelty:5) are well-calibrated, falling within the expected 3-6 range for a specialized research paper. They are consistent with the article's apparent importance as a niche technical contribution to neural network verification. The discrimination is appropriate, as the scores correctly reflect a moderate, incremental advance rather than a major breakthrough. The output is valid JSON with correct integer keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "d1f18103-b42d-4722-baab-fe3a4acf5460",
+      "scores": {
+        "calibration": 1,
+        "consistency": 1,
+        "discrimination": 1,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 1, \"breadth\": 1, \"novelty\": 1}",
+      "judge_reasoning": "The output is valid JSON with correct integer keys, but the scores are poorly calibrated: an article about a major geopolitical conflict involving the U.S., Israel, and Iran with potential global market impact should not receive the lowest possible scores (1) across all dimensions. This fails to differentiate it from trivial news, showing no discrimination. The scores are inconsistent with the article's apparent high importance.",
+      "errors": []
+    },
+    {
+      "sample_id": "f0285af5-7448-4640-98fa-df10abe677cd",
+      "scores": {
+        "calibration": 8,
+        "consistency": 7,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 5, \"breadth\": 6, \"novelty\": 5}",
+      "judge_reasoning": "The scores are well-calibrated within the 3-6 range for a niche technical article, with impact (5) and novelty (5) appropriately moderate. Consistency is good as the article addresses a practical but not revolutionary problem. Discrimination is adequate but could be sharper; the breadth score (6) seems slightly high for a specialized tool. The output is perfectly parseable JSON.",
+      "errors": []
+    },
+    {
+      "sample_id": "014332c4-cf02-490d-8676-3d6cc4560e84",
+      "scores": {
+        "calibration": 8,
+        "consistency": 7,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 4, \"breadth\": 5, \"novelty\": 4}",
+      "judge_reasoning": "The scores are well-calibrated within the 3-6 range for a significant but not globally critical security incident. The impact score of 4 is appropriate for a targeted campaign against specific sectors, not a widespread breach. Breadth of 5 correctly reflects limited sector targeting. Novelty of 4 is reasonable for a known campaign type (social engineering via recruitment). Consistency is good as the scores align with a mid-tier security incident from a major vendor. Discrimination is adequate but could be sharper; a campaign with 'sophisticated' social engineering and ongoing activity might warrant slightly higher novelty. The output is perfectly parseable JSON.",
+      "errors": []
+    },
+    {
+      "sample_id": "3724f844-e4e2-400a-a1e0-9a3f88422f06",
+      "scores": {
+        "calibration": 7,
+        "consistency": 8,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 5, \"breadth\": 6, \"novelty\": 5}",
+      "judge_reasoning": "The scores are well-calibrated, placing the article in the mid-range (5-6) as appropriate for an open-source release on Hacker News, which is significant but not groundbreaking. They are consistent with the article's apparent importance as a practical tool for a niche audience. Discrimination is adequate but could be sharper; the scores do not strongly differentiate this from other mid-tier news. The output is perfectly parseable JSON.",
+      "errors": []
+    },
+    {
+      "sample_id": "1429cb7b-dc50-4ffc-8e46-abc94e725259",
+      "scores": {
+        "calibration": 8,
+        "consistency": 9,
+        "discrimination": 8,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 2, \"breadth\": 3, \"novelty\": 2}",
+      "judge_reasoning": "The scores are well-calibrated, with low values (2-3) appropriate for a minor, routine advisory adding a single vulnerability. They are consistent with the article's low global importance (73.76 is moderate, but the event is a standard catalog update). The discrimination is good, as it correctly identifies this as low-impact news compared to major incidents. The output is valid, parseable JSON with correct integer keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "20134cf7-f045-4589-b8e5-d59ecf5a009c",
+      "scores": {
+        "calibration": 5,
+        "consistency": 5,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 6, \"breadth\": 7, \"novelty\": 7}",
+      "judge_reasoning": "The output is valid JSON with integer keys. The scores (impact:6, breadth:7, novelty:7) are somewhat elevated for a Hacker News article with a moderate global score (34.97). While the topic is significant, the scores may be slightly high for a non-major news event, suggesting imperfect calibration. The scoring is consistent with the article's importance but could be more discriminating by lowering scores for a more typical article. The discrimination is adequate but not strong.",
+      "errors": []
+    },
+    {
+      "sample_id": "e2b3d90b-e5ae-42a2-a7a9-ef59b62d7ef9",
+      "scores": {
+        "calibration": 8,
+        "consistency": 8,
+        "discrimination": 7,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 3, \"breadth\": 4, \"novelty\": 3}",
+      "judge_reasoning": "The scores (impact:3, breadth:4, novelty:3) are well-calibrated, as this is a provocative opinion piece from a CEO, not a major global event; they are consistent with the article's likely moderate significance; and they appropriately discriminate it from high-impact news. The output is valid JSON with correct integer keys.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

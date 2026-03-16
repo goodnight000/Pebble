@@ -1,0 +1,51 @@
+{
+  "prompt_type": "digest",
+  "version": "round2",
+  "sample_count": 3,
+  "dimension_averages": {
+    "headline_quality": 6.0,
+    "summary_quality": 5.33,
+    "accuracy": 4.0,
+    "tone": 7.33
+  },
+  "overall_score": 5.67,
+  "results": [
+    {
+      "sample_id": "digest_all",
+      "scores": {
+        "headline_quality": 2,
+        "summary_quality": 3,
+        "accuracy": 1,
+        "tone": 6
+      },
+      "raw_output": "{\n  \"headline\": \"AMI Labs Secures $1.03 Billion to Build World Models, Leading a Week of Major AI Funding and Security Advances\",\n  \"executiveSummary\": \"Yann LeCun's AMI Labs raised $1.03 billion to develop AI 'world models' that learn from real-world data, representing the largest funding round in the provided items. Other significant developments include Wonderful's $150 million Series B, Kai's launch of an agentic AI security platform with $125 million in funding, and Corvex's new hardware-en",
+      "judge_reasoning": "The headline is specific but references 'AMI Labs' and a '$1.03 Billion' funding round not present in the input items, making it inaccurate. The summary hallucinates multiple stories (AMI Labs, Kai's platform) and misattributes details (e.g., 'Yann LeCun's AMI Labs'), while failing to accurately cover the actual input items like the CISA order or the Bayesian research paper. The tone is professional but undermined by the factual errors.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_news",
+      "scores": {
+        "headline_quality": 7,
+        "summary_quality": 5,
+        "accuracy": 4,
+        "tone": 7
+      },
+      "raw_output": "{\n  \"headline\": \"Nvidia Pivots to CPU Focus at GTC as AMI Labs Secures $1.03 Billion for World Models\",\n  \"executiveSummary\": \"Nvidia is shifting its chip strategy to emphasize central processing units for agentic AI, while Yann LeCun's AMI Labs raised $1.03 billion at a $3.5 billion valuation to develop AI world models. The company also announced a $26 billion investment over five years for open-source AI models and launched the Nemotron 3 Super (128B) with published weights and training method",
+      "judge_reasoning": "Headline is specific and combines two top stories effectively. Summary quality is low because it only covers two items and hallucinates details (e.g., '$26 billion investment', 'Nemotron 3 Super') not present in the input titles. Accuracy is poor due to these fabricated elements. Tone is professional and journalistic.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_research",
+      "scores": {
+        "headline_quality": 9,
+        "summary_quality": 8,
+        "accuracy": 7,
+        "tone": 9
+      },
+      "raw_output": "{\n  \"headline\": \"LLMs Preserve Geometric Substrate for Bayesian Inference, Enabling Targeted Uncertainty Manipulation\",\n  \"executiveSummary\": \"A study across major LLM families reveals that modern language models retain a geometric substrate—low-dimensional value manifolds and orthogonal keys—that enables Bayesian-like inference, with last-layer value representations organizing along a dominant axis correlated with predictive entropy. Targeted interventions on this axis in Pythia-410M selectivel",
+      "judge_reasoning": "Headline is specific, attention-grabbing, and directly references the top input item. Summary covers 2-3 key developments with concrete details (e.g., 10.9% improvement, 99.5% success rate). Accuracy is penalized because the summary includes details about robotic sample scraping and diffusion-based trajectory generators that are not present in the input items (the input mentions 'Learning Adaptive Force Control...' and 'FRIEND: Federated Learning...', but not the specific performance metrics or diffusion-based generator). Tone is professional and journalistic.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

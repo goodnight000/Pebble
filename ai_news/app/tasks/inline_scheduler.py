@@ -32,7 +32,44 @@ async def _run_periodic(name: str, interval_seconds: float, fn, initial_delay: f
         await asyncio.sleep(interval_seconds)
 
 
-async def _run_daily(name: str, hour_utc: int, minute_utc: int, fn) -> None:
+def _digest_exists_for_today() -> bool:
+    """Check if a daily digest row already exists for today (UTC)."""
+    from sqlalchemy import func as sa_func
+
+    from app.db import session_scope
+    from app.models import DailyDigest
+
+    today = datetime.now(timezone.utc).date()
+    settings = get_settings()
+    with session_scope() as session:
+        count = (
+            session.query(DailyDigest)
+            .filter(
+                DailyDigest.user_id == settings.public_user_id,
+                sa_func.date(DailyDigest.date) == today,
+            )
+            .count()
+        )
+        return count > 0
+
+
+async def _run_daily(name: str, hour_utc: int, minute_utc: int, fn, catch_up: bool = False) -> None:
+    # If catch_up is enabled and scheduled time already passed today, run immediately
+    if catch_up:
+        now = datetime.now(timezone.utc)
+        target_today = now.replace(hour=hour_utc, minute=minute_utc, second=0, microsecond=0)
+        if now > target_today:
+            try:
+                needs_run = not _digest_exists_for_today()
+            except Exception:
+                needs_run = True
+            if needs_run:
+                print(f"[inline-scheduler] {name} catch-up: scheduled time already passed, running now")
+                try:
+                    await asyncio.to_thread(fn)
+                except Exception as exc:
+                    print(f"[inline-scheduler] {name} catch-up failed: {exc}")
+
     while True:
         now = datetime.now(timezone.utc)
         target = now.replace(hour=hour_utc, minute=minute_utc, second=0, microsecond=0)
@@ -73,4 +110,4 @@ def maybe_start_inline_scheduler() -> None:
     loop.create_task(_run_periodic("urgent-notify", 300.0, notify_urgent, initial_delay=10))
     loop.create_task(_run_periodic("entity-resolution", 21600.0, run_entity_resolution, initial_delay=180))
     loop.create_task(_run_periodic("relationship-inference", 3600.0, run_relationship_inference, initial_delay=210))
-    loop.create_task(_run_daily("daily-digest", 6, 0, run_daily_digest))
+    loop.create_task(_run_daily("daily-digest", 6, 0, run_daily_digest, catch_up=True))

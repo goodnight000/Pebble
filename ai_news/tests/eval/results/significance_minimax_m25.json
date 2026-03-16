@@ -1,0 +1,111 @@
+{
+  "prompt_type": "significance",
+  "version": "minimax_m25",
+  "sample_count": 8,
+  "dimension_averages": {
+    "calibration": 4.5,
+    "consistency": 4.5,
+    "discrimination": 4.12,
+    "parseable": 10.0
+  },
+  "overall_score": 5.78,
+  "results": [
+    {
+      "sample_id": "5f36ec69-d951-4e00-a9c7-af31d60937be",
+      "scores": {
+        "calibration": 6,
+        "consistency": 7,
+        "discrimination": 5,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 5, \"breadth\": 4, \"novelty\": 5}",
+      "judge_reasoning": "Scores are reasonably calibrated in the 4-5 range for a niche CS research paper, avoiding extremes. They are internally consistent (moderate impact/breadth/novelty for a specialized technical contribution). However, discrimination is only moderate—the global score of 56.92 is quite low, suggesting this is fairly minor content, yet the impact score of 5 feels slightly generous for what appears to be a narrow technical preprint. The JSON is valid with integer keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "d1f18103-b42d-4722-baab-fe3a4acf5460",
+      "scores": {
+        "calibration": 1,
+        "consistency": 1,
+        "discrimination": 1,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 1, \"breadth\": 1, \"novelty\": 1}",
+      "judge_reasoning": "The scoring is severely miscalibrated - this article covers potential WWIII escalation between US/Israel and Iran, with global oil market impacts and 'death and destruction' threats, yet receives all 1s. This is clearly an 8+ impact story about major geopolitical conflict, yet scores are as low as possible. No discrimination between this major event and routine news. Output is valid JSON.",
+      "errors": []
+    },
+    {
+      "sample_id": "f0285af5-7448-4640-98fa-df10abe677cd",
+      "scores": {
+        "calibration": 6,
+        "consistency": 6,
+        "discrimination": 5,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 5, \"breadth\": 5, \"novelty\": 4}",
+      "judge_reasoning": "Scores (5,5,4) fall appropriately in the 3-6 middle range, showing reasonable calibration. The scoring is consistent with this being a niche technical tool announcement rather than major news. However, the global score of 76.87 suggests higher overall importance than the moderate individual scores indicate, raising some discrimination concerns. Output is valid JSON.",
+      "errors": []
+    },
+    {
+      "sample_id": "014332c4-cf02-490d-8676-3d6cc4560e84",
+      "scores": {
+        "calibration": 4,
+        "consistency": 3,
+        "discrimination": 3,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 3, \"breadth\": 4, \"novelty\": 3}",
+      "judge_reasoning": "Scores are too low for a current Microsoft-documented active threat campaign targeting enterprises. Impact (3) is particularly undervalued - this is an ongoing social engineering operation with real customer detections. Novelty (3) also seems low given the specific recruitment-abuse vector and Microsoft-level attribution. The 79.89 global score seems inconsistent with this being a credible, current security incident from a primary source. JSON is valid.",
+      "errors": []
+    },
+    {
+      "sample_id": "3724f844-e4e2-400a-a1e0-9a3f88422f06",
+      "scores": {
+        "calibration": 7,
+        "consistency": 7,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 4, \"breadth\": 4, \"novelty\": 3}",
+      "judge_reasoning": "Scores (3-4) are appropriately middle-of-range for a niche technical open-source release, aligning with the moderate global score of 47.38. The three dimensions are consistent with each other and appropriately reflect this as a specialized Kubernetes/GPU tooling release rather than major news. However, discrimination is uncertain without comparative context, and the novelty score of 3 could arguably be higher for a unified pooling solution. JSON is valid with integer keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "1429cb7b-dc50-4ffc-8e46-abc94e725259",
+      "scores": {
+        "calibration": 2,
+        "consistency": 2,
+        "discrimination": 3,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 1, \"breadth\": 1, \"novelty\": 1}",
+      "judge_reasoning": "All scores at minimum (1) are poorly calibrated - this is a genuine CISA security advisory about an actively exploited vulnerability (CVE-2025-68613) in n8n software, which poses real risk to federal systems. While not major global news, impact should be 3-4 (real exploitation, not theoretical). Breadth at 1 is reasonable (single product). Novelty at 1 is borderline (routine CISA catalog updates). The uniform 1s fail to differentiate from truly trivial content like minor product announcements. JSON is valid.",
+      "errors": []
+    },
+    {
+      "sample_id": "20134cf7-f045-4589-b8e5-d59ecf5a009c",
+      "scores": {
+        "calibration": 7,
+        "consistency": 7,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 6, \"breadth\": 6, \"novelty\": 7}",
+      "judge_reasoning": "The scores are reasonably calibrated - mid-range (6-7) appropriately reflects significant but not yet confirmed/fully manifested threat. Consistency is good - novelty 7 captures the genuinely novel emergent behavior, while impact/breadth 6 reflect potential severity without overstating. Discrimination is adequate but slightly weak - this represents a paradigm-shifting security concern that could warrant higher scores (7-8) to better differentiate from routine vulnerability reports. JSON is valid with correct integer keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "e2b3d90b-e5ae-42a2-a7a9-ef59b62d7ef9",
+      "scores": {
+        "calibration": 3,
+        "consistency": 3,
+        "discrimination": 4,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 2, \"breadth\": 2, \"novelty\": 2}",
+      "judge_reasoning": "All scores are 2, which is at the very low end of the scale. While the article is from a secondary source (Hacker News) and may not represent breaking news, it covers a Palantir CEO making politically charged claims about AI's impact on democratic voters and economic power - a topic with meaningful societal implications. A score of 2 seems overly conservative; 3-4 would be more calibrated. The JSON is valid with correct integer keys.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

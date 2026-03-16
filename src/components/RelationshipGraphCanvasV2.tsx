@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { drag, select, zoom, zoomIdentity } from 'd3';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { drag, easeCubicOut, select, zoom, zoomIdentity } from 'd3';
 import type { D3DragEvent, ZoomBehavior, ZoomTransform } from 'd3';
 import type { Language, RelationshipGraphResponse } from '@/types';
 import {
@@ -48,6 +48,8 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
   const [draggedClusterId, setDraggedClusterId] = useState<string | null>(null);
   const [positionOverrides, setPositionOverrides] = useState<Record<string, RelationshipGraphPosition>>({});
   const [viewTransform, setViewTransform] = useState<ZoomTransform>(zoomIdentity);
+  const edgeOpacitiesRef = useRef(new Map<string, number>());
+  const edgeRafRef = useRef(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -236,25 +238,23 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
     };
   }, [graph.nodes]);
 
-  useEffect(() => {
+  const drawEdges = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
+    if (!canvas) return false;
 
     const context = canvas.getContext('2d');
-    if (!context) {
-      return;
-    }
+    if (!context) return false;
 
-    const devicePixelRatio = window.devicePixelRatio || 1;
-    canvas.width = Math.max(1, Math.floor(dimensions.width * devicePixelRatio));
-    canvas.height = Math.max(1, Math.floor(dimensions.height * devicePixelRatio));
-    canvas.style.width = `${dimensions.width}px`;
-    canvas.style.height = `${dimensions.height}px`;
+    const dpr = window.devicePixelRatio || 1;
+    const w = dimensions.width;
+    const h = dimensions.height;
+    canvas.width = Math.max(1, Math.floor(w * dpr));
+    canvas.height = Math.max(1, Math.floor(h * dpr));
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
 
-    context.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
-    context.clearRect(0, 0, dimensions.width, dimensions.height);
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.clearRect(0, 0, w, h);
 
     context.save();
     context.translate(viewTransform.x, viewTransform.y);
@@ -262,23 +262,28 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
     context.lineCap = 'round';
 
     const inverseScale = 1 / viewTransform.k;
+    const focusedEdgeIds = focusNeighborhood ? focusNeighborhood.edges.map((c) => c.id) : [];
+    const focusedNodeIds = focusClusterId ? [focusClusterId] : [];
+    let needsAnotherFrame = false;
 
     for (const edge of graph.edges) {
       const source = projectedPositions.get(edge.source);
       const target = projectedPositions.get(edge.target);
+      if (!source || !target) continue;
 
-      if (!source || !target) {
-        continue;
+      const tier = resolveRelationshipGraphEdgeTier(edge, { focusedEdgeIds, focusedNodeIds });
+      const targetAlpha = tier === 'hidden' ? 0 : tier === 'focused' ? 0.92 : 0.42;
+      const targetWidth = tier === 'focused' ? 2.4 : 1.4;
+      const currentAlpha = edgeOpacitiesRef.current.get(edge.id) ?? targetAlpha;
+      const diff = targetAlpha - currentAlpha;
+      const lerpedAlpha = Math.abs(diff) < 0.01 ? targetAlpha : currentAlpha + diff * 0.14;
+      edgeOpacitiesRef.current.set(edge.id, lerpedAlpha);
+
+      if (Math.abs(lerpedAlpha - targetAlpha) > 0.01) {
+        needsAnotherFrame = true;
       }
 
-      const tier = resolveRelationshipGraphEdgeTier(edge, {
-        focusedEdgeIds: focusNeighborhood ? focusNeighborhood.edges.map((candidate) => candidate.id) : [],
-        focusedNodeIds: focusClusterId ? [focusClusterId] : [],
-      });
-
-      if (tier === 'hidden') {
-        continue;
-      }
+      if (lerpedAlpha < 0.01) continue;
 
       context.beginPath();
       context.moveTo(source.x, source.y);
@@ -298,8 +303,8 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
         context.setLineDash([]);
       }
 
-      context.lineWidth = (tier === 'focused' ? 2.4 : 1.4) * inverseScale;
-      context.globalAlpha = tier === 'focused' ? 0.92 : 0.42;
+      context.lineWidth = targetWidth * inverseScale;
+      context.globalAlpha = lerpedAlpha;
       context.strokeStyle = edge.type === 'follow-up'
         ? 'rgba(34, 139, 230, 0.86)'
         : edge.type === 'reaction'
@@ -317,7 +322,23 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
     context.restore();
     context.setLineDash([]);
     context.globalAlpha = 1;
+
+    return needsAnotherFrame;
   }, [dimensions.height, dimensions.width, focusClusterId, focusNeighborhood, graph.edges, projectedPositions, viewTransform.k, viewTransform.x, viewTransform.y]);
+
+  useEffect(() => {
+    cancelAnimationFrame(edgeRafRef.current);
+
+    const animate = () => {
+      const needsMore = drawEdges();
+      if (needsMore) {
+        edgeRafRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    edgeRafRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(edgeRafRef.current);
+  }, [drawEdges]);
 
   const visibleEdgeIds = useMemo(
     () => graph.edges
@@ -337,7 +358,11 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
       return;
     }
 
-    select(container).call(zoomBehavior.scaleBy, factor);
+    select(container)
+      .transition()
+      .duration(350)
+      .ease(easeCubicOut)
+      .call(zoomBehavior.scaleBy as any, factor);
   };
 
   const fitGraph = () => {
@@ -348,10 +373,14 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
       return;
     }
 
-    select(container).call(
-      zoomBehavior.transform,
-      zoomIdentity.translate(baseViewport.translateX, baseViewport.translateY).scale(baseViewport.scale),
-    );
+    select(container)
+      .transition()
+      .duration(600)
+      .ease(easeCubicOut)
+      .call(
+        zoomBehavior.transform as any,
+        zoomIdentity.translate(baseViewport.translateX, baseViewport.translateY).scale(baseViewport.scale),
+      );
   };
 
   const fitCurrentGraph = () => {
@@ -362,10 +391,14 @@ const RelationshipGraphCanvasV2: React.FC<RelationshipGraphCanvasV2Props> = ({
       return;
     }
 
-    select(container).call(
-      zoomBehavior.transform,
-      zoomIdentity.translate(fitViewport.translateX, fitViewport.translateY).scale(fitViewport.scale),
-    );
+    select(container)
+      .transition()
+      .duration(600)
+      .ease(easeCubicOut)
+      .call(
+        zoomBehavior.transform as any,
+        zoomIdentity.translate(fitViewport.translateX, fitViewport.translateY).scale(fitViewport.scale),
+      );
   };
 
   if (graph.nodes.length === 0) {

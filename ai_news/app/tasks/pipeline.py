@@ -41,7 +41,13 @@ from app.scoring.importance import GlobalScoreInputs, compute_global_score_v2
 from app.scoring.llm_judge import compute_final_score
 from app.scoring.signals import is_official_source, log_norm, research_rigor_score
 from app.scoring.time_decay import compute_urgent, rank_score
-from app.scoring.trust import TrustScoreInputs, compute_trust_score, estimate_independent_sources
+from app.scoring.trust import estimate_independent_sources
+from app.scoring.verification import (
+    VerificationInputs,
+    compute_verification,
+    legacy_trust_components,
+    legacy_trust_label_for_state,
+)
 from app.services.realtime_events import build_new_cluster_event, build_urgent_update_event, publish_realtime_event
 from app.tasks.celery_app import celery_app
 
@@ -627,6 +633,7 @@ def _score_article(
     source: Source,
     *,
     attach_cluster: bool,
+    allow_llm: bool = True,
 ) -> Article:
     embedding = bytes_to_vector(article.embedding)
     cluster_id = None
@@ -708,19 +715,33 @@ def _score_article(
     article.event_rarity = signal_breakdown.get("event_rarity")
     article.independent_sources = independent_count
 
-    # ── 2. Compute trust score ───────────────────────────────────────
-    trust_inputs = TrustScoreInputs(
+    # ── 2. Compute verification and compatibility trust fields ──────
+    verification_inputs = VerificationInputs(
         cluster_articles=cluster_articles,
         source_authority=source.authority,
-        is_primary_source=is_official_source(article.final_url),
         text=article.text,
         url=article.final_url,
         primary_entity=primary_entity,
         independent_sources=independent_count,
         event_type=article.event_type,
+        source_kind=source.kind,
+        source_name=source.name,
+        created_at=article.created_at,
     )
-    trust_score, trust_label, trust_components = compute_trust_score(trust_inputs)
-    article.trust_score = trust_score
+    verification = compute_verification(verification_inputs)
+    trust_label = legacy_trust_label_for_state(
+        verification.verification_state,
+        verification.verification_confidence,
+    )
+    trust_components = legacy_trust_components(verification, article.text)
+    article.verification_mode = verification.verification_mode
+    article.verification_state = verification.verification_state
+    article.freshness_state = verification.freshness_state
+    article.verification_confidence = verification.verification_confidence
+    article.verification_signals = verification.verification_signals
+    article.update_status = verification.update_status
+    article.canonical_evidence_url = verification.canonical_evidence_url
+    article.trust_score = verification.verification_confidence
     article.trust_label = trust_label
     article.trust_components = trust_components
     article.hedging_ratio = trust_components.get("hedging_ratio")
@@ -733,13 +754,17 @@ def _score_article(
     if cluster:
         cluster.cluster_velocity = signal_breakdown.get("cluster_velocity")
         cluster.independent_sources_count = independent_count
-        cluster.has_official_confirmation = trust_components.get("confirmation_level") == "official"
-        cluster.cluster_trust_score = trust_score
+        cluster.has_official_confirmation = verification.verification_state == "official_statement"
+        cluster.cluster_trust_score = verification.verification_confidence
         cluster.cluster_trust_label = trust_label
+        cluster.cluster_verification_state = verification.verification_state
+        cluster.cluster_freshness_state = verification.freshness_state
+        cluster.cluster_verification_confidence = verification.verification_confidence
+        cluster.cluster_verification_signals = verification.verification_signals
 
     # ── 3. LLM judge (for articles scoring >= 40) ────────────────────
     llm_score_val = None
-    if article.global_score >= 40:
+    if allow_llm and article.global_score >= 40:
         llm = LLMClient()
         result = llm.judge_significance(
             raw.title,
@@ -757,6 +782,9 @@ def _score_article(
         article.global_score, llm_score_val,
         confirmation_level=article.confirmation_level,
         trust_label=article.trust_label,
+        verification_state=article.verification_state,
+        verification_confidence=article.verification_confidence,
+        update_status=article.update_status,
     )
 
     # ── 5. Determine urgent ──────────────────────────────────────────
@@ -766,6 +794,8 @@ def _score_article(
         independent_count,
         is_official_source(article.final_url),
         article.trust_label,
+        verification_state=article.verification_state,
+        verification_confidence=article.verification_confidence,
     )
 
     if cluster_id:
@@ -777,8 +807,15 @@ def _update_article_scores(session, article: Article, raw: RawItem, source: Sour
     return _score_article(session, article, raw, source, attach_cluster=True)
 
 
-def _refresh_existing_article_scores(session, article: Article, raw: RawItem, source: Source) -> Article:
-    return _score_article(session, article, raw, source, attach_cluster=False)
+def _refresh_existing_article_scores(
+    session,
+    article: Article,
+    raw: RawItem,
+    source: Source,
+    *,
+    allow_llm: bool = True,
+) -> Article:
+    return _score_article(session, article, raw, source, attach_cluster=False, allow_llm=allow_llm)
 
 
 @celery_app.task(name="app.tasks.pipeline.run_priority_poll")

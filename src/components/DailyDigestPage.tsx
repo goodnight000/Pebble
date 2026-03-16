@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { AIService } from '@/services/aiService';
 import { DigestArchiveEntry, Language, LongformDigest } from '@/types';
@@ -19,7 +19,7 @@ const formatDisplayDate = (dateStr: string, language: Language): string => {
 
 const todayStr = () => {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 };
 
 const sanitizeHtml = (html: string): string => {
@@ -36,45 +36,46 @@ const DailyDigestPage: React.FC<DailyDigestPageProps> = ({ aiService, language }
   const [loading, setLoading] = useState(true);
   const [showArchive, setShowArchive] = useState(false);
 
-  const loadDigest = useCallback(async (date: string) => {
+  useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    try {
-      const data = await aiService.fetchDailyDigest(date, language);
-      setDigest(data);
-    } catch (err) {
+    aiService.fetchDailyDigest(selectedDate, language).then((data) => {
+      if (!cancelled) setDigest(data);
+    }).catch((err) => {
       console.error('Failed to load digest', err);
-      setDigest(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [aiService, language]);
+      // Keep existing digest on error so we don't flash "no digest"
+    }).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [selectedDate, language, aiService]);
 
-  const loadArchive = useCallback(async () => {
-    try {
-      const data = await aiService.fetchDigestArchive();
-      setArchive(data);
-    } catch (err) {
+  useEffect(() => {
+    aiService.fetchDigestArchive().then(setArchive).catch((err) => {
       console.error('Failed to load archive', err);
+    });
+  }, [aiService, selectedDate]);
+
+  // Build a navigable date list: archive dates plus selectedDate if missing
+  const navDates = React.useMemo(() => {
+    const dates = archive.map(a => a.date);
+    if (selectedDate && !dates.includes(selectedDate)) {
+      // Insert selectedDate in sorted desc position
+      dates.push(selectedDate);
+      dates.sort((a, b) => b.localeCompare(a));
     }
-  }, [aiService]);
-
-  useEffect(() => {
-    void loadDigest(selectedDate);
-  }, [selectedDate, loadDigest]);
-
-  useEffect(() => {
-    void loadArchive();
-  }, [loadArchive]);
+    return dates;
+  }, [archive, selectedDate]);
 
   const navigateDate = (direction: -1 | 1) => {
-    const idx = archive.findIndex(a => a.date === selectedDate);
+    const idx = navDates.indexOf(selectedDate);
     if (idx === -1) {
-      if (archive.length > 0) setSelectedDate(archive[0].date);
+      if (navDates.length > 0) setSelectedDate(navDates[0]);
       return;
     }
-    const newIdx = idx - direction; // archive is desc, so -1 = newer, +1 = older
-    if (newIdx >= 0 && newIdx < archive.length) {
-      setSelectedDate(archive[newIdx].date);
+    const newIdx = idx - direction; // list is desc, so -1 = newer, +1 = older
+    if (newIdx >= 0 && newIdx < navDates.length) {
+      setSelectedDate(navDates[newIdx]);
     }
   };
 
@@ -151,7 +152,7 @@ const DailyDigestPage: React.FC<DailyDigestPageProps> = ({ aiService, language }
         <button
           onClick={() => navigateDate(-1)}
           className="wf-button flex items-center gap-1 text-xs"
-          disabled={archive.findIndex(a => a.date === selectedDate) >= archive.length - 1}
+          disabled={navDates.indexOf(selectedDate) >= navDates.length - 1}
         >
           <ChevronLeft className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">{language === 'en' ? 'Older' : '\u66F4\u65E9'}</span>
@@ -168,7 +169,7 @@ const DailyDigestPage: React.FC<DailyDigestPageProps> = ({ aiService, language }
         <button
           onClick={() => navigateDate(1)}
           className="wf-button flex items-center gap-1 text-xs"
-          disabled={archive.findIndex(a => a.date === selectedDate) <= 0}
+          disabled={navDates.indexOf(selectedDate) <= 0}
         >
           <span className="hidden sm:inline">{language === 'en' ? 'Newer' : '\u66F4\u65B0'}</span>
           <ChevronRight className="w-3.5 h-3.5" />

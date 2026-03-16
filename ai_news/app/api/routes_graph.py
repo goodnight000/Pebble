@@ -13,7 +13,10 @@ from fastapi import APIRouter, Depends, Query
 
 from app.clustering.relationships import compute_cluster_relationships
 from app.common.time import utcnow
+from sqlalchemy.orm import defer
+
 from app.db import get_db
+from app.llm.cache import get_cached, set_cached
 from app.llm.client import LLMClient
 from app.models import Article, Cluster, ClusterMember, RawItem, Source
 
@@ -76,6 +79,12 @@ def _pca_2d(embeddings: np.ndarray) -> np.ndarray:
 
 
 def _compute_cluster_trust(cluster, top_article, now) -> tuple[float, str]:
+    if getattr(cluster, "cluster_verification_confidence", None) is not None:
+        return (
+            float(cluster.cluster_verification_confidence or 0),
+            cluster.cluster_trust_label or top_article.trust_label or "unverified",
+        )
+
     corroboration_boost = 10 if (cluster.independent_sources_count or 0) >= 3 else 0
     cluster_trust_score = min(100, (top_article.trust_score or 0) + corroboration_boost)
 
@@ -173,7 +182,14 @@ def get_graph(
     locale: str = Query("en", pattern="^(en|zh)$"),
     db=Depends(get_db),
 ):
+    # Check response cache (5-min TTL, keyed by hour bucket for consistency)
     now = _naive_utc(utcnow())
+    bucket = now.strftime("%Y-%m-%dT%H:") + str(now.minute // 5 * 5).zfill(2)
+    cache_key = f"api_graph:{hours}:{locale}:{bucket}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+
     cutoff = now - timedelta(hours=hours)
 
     # Step 1: Query clusters
@@ -196,6 +212,7 @@ def get_graph(
         .join(Article, ClusterMember.article_id == Article.id)
         .join(RawItem, Article.raw_item_id == RawItem.id)
         .join(Source, RawItem.source_id == Source.id)
+        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
         .filter(ClusterMember.cluster_id.in_(cluster_ids))
         .all()
     )
@@ -418,7 +435,7 @@ def get_graph(
     if locale == "zh":
         localized_clusters, translation_status = llm.translate_graph_clusters(result_clusters)
 
-    return {
+    response = {
         "clusters": localized_clusters,
         "edges": edges_payload,
         "projection_seed": projection_seed,
@@ -427,6 +444,8 @@ def get_graph(
         "source_locale": "en",
         "translation_status": translation_status,
     }
+    set_cached(cache_key, response, ttl=60 * 15)  # 15-min TTL
+    return response
 
 
 @router.get("/topic-trends")
@@ -439,6 +458,7 @@ def get_topic_trends(locale: str = Query("en", pattern="^(en|zh)$"), db=Depends(
     rows = (
         db.query(Article, RawItem)
         .join(RawItem, Article.raw_item_id == RawItem.id)
+        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
         .filter(
             (RawItem.published_at >= cutoff) | (
                 RawItem.published_at.is_(None) & (RawItem.fetched_at >= cutoff)

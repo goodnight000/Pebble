@@ -1,0 +1,51 @@
+{
+  "prompt_type": "digest",
+  "version": "round4",
+  "sample_count": 3,
+  "dimension_averages": {
+    "headline_quality": 5.0,
+    "summary_quality": 5.33,
+    "accuracy": 4.67,
+    "tone": 7.33
+  },
+  "overall_score": 5.58,
+  "results": [
+    {
+      "sample_id": "digest_all",
+      "scores": {
+        "headline_quality": 2,
+        "summary_quality": 4,
+        "accuracy": 2,
+        "tone": 7
+      },
+      "raw_output": "{\n  \"headline\": \"LeCun's AMI Labs Secures $1.03B to Build World Models as AI Funding Surges\",\n  \"executiveSummary\": \"Yann LeCun's AMI Labs raised $1.03 billion to develop AI world models, marking a major investment in systems that learn from real-world data. This funding milestone is part of a broader surge in AI capital, highlighted by OpenAI's reported $110 billion raise and Wonderful's $150 million Series B. Meanwhile, security remains a critical focus, with Corvex launching hardware-enforced",
+      "judge_reasoning": "The headline is entirely fabricated ('LeCun's AMI Labs Secures $1.03B') and does not reference any of the provided input items, making it inaccurate and not attention-grabbing in a relevant way. The summary hallucinates the AMI Labs story and OpenAI's $110B raise, neither of which are in the input. It does accurately mention Corvex, CISA, and Wonderful, but the fabricated stories dominate. The tone is professional and journalistic, which is the only positive aspect.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_news",
+      "scores": {
+        "headline_quality": 7,
+        "summary_quality": 8,
+        "accuracy": 9,
+        "tone": 8
+      },
+      "raw_output": "{\n  \"headline\": \"Nvidia Pivots to CPUs, LeCun's AMI Labs Raises $1B, and AI Security Risks Emerge\",\n  \"executiveSummary\": \"Nvidia is shifting focus from GPUs to CPUs for agentic AI, while Yann LeCun's AMI Labs secured $1.03 billion to build world models. Concurrently, reports highlight growing AI security threats, including rogue agents exploiting vulnerabilities and an AI-powered bot compromising GitHub workflows.\"\n}",
+      "judge_reasoning": "Headline is specific and references top stories but could be more dynamic. Summary effectively covers three key developments with concrete details (Nvidia's CPU pivot, AMI Labs funding, security threats). Accuracy is high with no hallucinations, though 'rogue agents' is a slight extrapolation from the input. Tone is professional and journalistic throughout.",
+      "errors": []
+    },
+    {
+      "sample_id": "digest_research",
+      "scores": {
+        "headline_quality": 6,
+        "summary_quality": 4,
+        "accuracy": 3,
+        "tone": 7
+      },
+      "raw_output": "{\n  \"headline\": \"AI Research Reveals Geometric Blueprint for Bayesian Inference in LLMs and Advances in Robust Robot Control\",\n  \"executiveSummary\": \"A key finding shows that modern language models preserve a geometric substrate—low-dimensional value manifolds and orthogonal keys—that enables Bayesian inference, with interventions confirming its role in uncertainty representation. This matters as it provides a structural understanding of how LLMs approximate probabilistic reasoning. Other notabl",
+      "judge_reasoning": "Headline is specific but misrepresents the second part; 'Advances in Robust Robot Control' is not a primary focus of the input. Summary is poor: it hallucinates multiple items (DEFT, MNO, SIMSPINE) not present in the input, and misrepresents the FRIEND paper's focus. Accuracy is low due to significant hallucination. Tone is professional but undermined by inaccuracies.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

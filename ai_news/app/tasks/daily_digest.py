@@ -112,7 +112,8 @@ def _build_today_for_user(db, user_id: str) -> list[dict]:
         ts = _event_time(raw, source)
         if ts is None:
             continue
-        age_hours = (now - ts).total_seconds() / 3600
+        ts_naive = ts.replace(tzinfo=None) if ts.tzinfo else ts
+        age_hours = (now - ts_naive).total_seconds() / 3600
         if age_hours < 0 or age_hours > max_age_hours:
             continue
         # Per-event-type decay with user recency bias
@@ -419,6 +420,12 @@ def run_daily_digest():
                         llm_authored=True,
                     )
                     session.add(lf_digest)
+
+    # Invalidate digest response caches so the next API request picks up fresh data
+    from app.llm.cache import delete_by_prefix
+    delete_by_prefix("api_digest_today:")
+    delete_by_prefix("api_digest_daily:")
+    delete_by_prefix("api_digest_archive:")
 
     for payload in pending_realtime_events:
         publish_realtime_event("digests", "digest_refresh", payload)

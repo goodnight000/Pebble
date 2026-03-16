@@ -118,6 +118,15 @@ class TestBidirectionalJudge(unittest.TestCase):
         result = self._compute(60.0, 80.0)
         self.assertIsInstance(result, float)
 
+    def test_corrected_item_does_not_get_upward_boost(self):
+        result = self._compute(
+            60.0,
+            90.0,
+            verification_state="corrected_or_retracted",
+            update_status="corrected",
+        )
+        self.assertAlmostEqual(result, 60.0, places=2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
+from app.api.routes_admin import router as admin_router
 from app.api.routes_api import router as api_router
 from app.api.routes_health import router as health_router
 from app.api.routes_graph import router as graph_router
@@ -14,6 +15,7 @@ from app.tasks.inline_scheduler import maybe_start_inline_scheduler
 
 app = FastAPI(title="AI News API")
 
+app.include_router(admin_router)
 app.include_router(api_router)
 app.include_router(health_router)
 app.include_router(graph_router, prefix="/v1/graph")

@@ -53,3 +53,22 @@ def set_cached(key: str, payload: dict, ttl: int = 60 * 60 * 24 * 7):
         return
     expires_at = time.time() + ttl if ttl else None
     _memory_cache[key] = (expires_at, payload)
+
+
+def delete_cached(key: str):
+    client = _redis_client()
+    if client is not None:
+        client.delete(key)
+        return
+    _memory_cache.pop(key, None)
+
+
+def delete_by_prefix(prefix: str):
+    client = _redis_client()
+    if client is not None:
+        for k in client.scan_iter(match=f"{prefix}*"):
+            client.delete(k)
+        return
+    keys_to_delete = [k for k in _memory_cache if k.startswith(prefix)]
+    for k in keys_to_delete:
+        _memory_cache.pop(k, None)

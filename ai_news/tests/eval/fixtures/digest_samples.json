@@ -1,0 +1,166 @@
+{
+  "groups": [
+    {
+      "content_type": "all",
+      "article_count": 13,
+      "articles": [
+        {
+          "title": "Gemini in Google Sheets just achieved state-of-the-art performance.",
+          "summary": "Today we announced new beta features for Gemini in Sheets to help you create, organize and edit entire sheets, from basic tasks to complex data analysis — just describe …"
+        },
+        {
+          "title": "Corvex Launches Secure Model Weights, Delivering Hardware-Enforced Protection for AI Inference on Third-Party Infrastructure",
+          "summary": "Patent-pending solution gives AI model builders and security-conscious enterprises cryptographic, owner-controlled key custody, protecting model weights from even the infrastructure provider ARLINGTON, Va., March 12, 2026 /PRNewswire/ -- Corvex, Inc., an engineering-led AI infrastructure..."
+        },
+        {
+          "title": "The Bayesian Geometry of Transformer Attention",
+          "summary": "Transformers often appear to perform Bayesian reasoning in context, but verifying this rigorously has been impossible: natural data lack analytic posteriors, and large models conflate reasoning with memorization. We address this by constructing \\emph{Bayesian wind tunnels} -- controlled environments where the true posterior is known in closed form and memorization is provably impossible. In these settings, small transformers reproduce Bayesian posteriors with $10^{-3}$-$10^{-4}$ bit accuracy, while capacity-matched MLPs fail by orders of magnitude, establishing a clear architectural separation. Across two tasks -- bijection elimination and Hidden Markov Model (HMM) state tracking -- we find that transformers implement Bayesian inference through a consistent geometric mechanism: residual streams serve as the belief substrate, feed-forward networks perform the posterior update, and attention provides content-addressable routing. Geometric diagnostics reveal orthogonal key bases, progressive query-key alignment, and a low-dimensional value manifold parameterized by posterior entropy. During training this manifold unfurls while attention patterns remain stable, a \\emph{frame-precision dissociation} predicted by recent gradient analyses. Taken together, these results demonstrate that hierarchical attention realizes Bayesian inference by geometric design, explaining both the necessity of attention and the failure of flat architectures. Bayesian wind tunnels provide a foundation for mechanistically connecting small, verifiable systems to reasoning phenomena observed in large language models."
+        },
+        {
+          "title": "CISA orders feds to patch n8n RCE flaw exploited in attacks",
+          "summary": "The U.S. Cybersecurity and Infrastructure Security Agency (CISA) ordered government agencies on Wednesday to patch their systems against an actively exploited n8n vulnerability. [...]"
+        },
+        {
+          "title": "Wonderful raises $150M Series B at $2B valuation",
+          "summary": "The funding round, led by Insight Partners, comes just four months after Wonderful raised a $100 million Series A."
+        },
+        {
+          "title": "https://www. europesays.com/2839324/ Kai Launches Agentic AI Security Platform With $125M Funding # AgenticAI # AgenticArtificialIntelligenc",
+          "summary": "https://www. europesays.com/2839324/ Kai Launches Agentic AI Security Platform With $125M Funding # AgenticAI # AgenticArtificialIntelligence # AI # ArtificialIntelligence # Cybersecurity # ExposureManagement # SecurityOperations # ThreatIntelligence"
+        },
+        {
+          "title": "Get free ChatGPT Pro for open-source maintainers",
+          "summary": "Open-source maintainers do critical work, often behind the scenes, to keep the software ecosystem healthy. Over the past year, the Codex Open Source Fund ($1 million) has supported projects that need API credits, including teams using Codex"
+        },
+        {
+          "title": "Unboxing The Tenstorrent Grayskull Ai Accelerator",
+          "summary": "Unboxing the Tenstorrent Grayskull AI Accelerator! Dr. Ian Cutress from TechTechPotato sat down with Tenstorrent Fellow Jasmina Vasiljevic to talk about our soon to be released Grayskull Devkits. Dr. Ian Cutress from TechTechPotato sat down"
+        },
+        {
+          "title": "The Download: murky AI surveillance laws, and the White House cracks down on defiant labs",
+          "summary": "This is today’s edition of The Download, our weekday newsletter that provides a daily dose of what’s going on in the world of technology. Is the Pentagon allowed to surveil Americans with AI? The ongoing public feud between the Department of Defense and the AI company Anthropic has raised a deep and still unanswered question:…"
+        },
+        {
+          "title": "Tenstorrent Unveils First Gen Compact Ai Accelerator Device",
+          "summary": "Tenstorrent Unveils First Gen Compact AI Accelerator Device Tenstorrent unveiled its first-generation compact AI accelerator device designed in partnership with Razer™, the leading brand for gamers, today at CES 2026. The compact and modula"
+        },
+        {
+          "title": "LeCun's AMI Labs Raises $1.03 Billion to Build World Models",
+          "summary": "TechCrunch AI startup AMI Labs, cofounded by ACM A. M. Turing Award laureate Yann LeCun, has raised $1.03 billion at a $3.5-billion valuation to develop “world models,” a type of AI designed to learn from real-world data rather than only language. The company aims to build systems that better understand physical reality, potentially improving fields such as healthcare, where AI errors can have serious consequences. From \"LeCun’s AMI Labs Raises $1.03 Billion to Build World Models\" TechCrunch (03/09/26) Anna Heim View Full Article"
+        },
+        {
+          "title": "Google paid $17.1 million for vulnerability reports in 2025",
+          "summary": "In 2025, Google paid a record $17 million to 747 security researchers through its Vulnerability Reward Program (VRP), a 40% increase from 2024. The highest single reward reached $250,000. Total payouts since 2010 now exceed $81.6 million. Key 2025 highlights include the launch of an AI VRP and rewards for the OSV-SCALIBR open-source tool. Specific program payouts included $3.7M for Chrome, $3.5M for Cloud, and $2.9M for Android and devices. Google emphasized that collaboration with the global research community is essential for securing its evolving technology and AI systems."
+        },
+        {
+          "title": "MCP Weekly: OpenAI Raises $110B, Anthropic Faces Defense Showdown",
+          "summary": "This installment covers major developments from February 27th to March 6th, 2026, including the Anthropic and Department of War standoff, a record-breaking OpenAI funding round, major new model releases, always-on developer agents from Curs"
+        }
+      ]
+    },
+    {
+      "content_type": "news",
+      "article_count": 12,
+      "articles": [
+        {
+          "title": "Nvidia's GTC will mark an AI chip pivot, the CPU is taking center stage",
+          "summary": "Nvidia's graphics processing units have been the hottest-selling chips for years, but the sudden advent of agentic artificial intelligence has brought on a renaissance for its more modest host chip, the central processing unit. Now, Nvidia "
+        },
+        {
+          "title": "LeCun's AMI Labs Raises $1.03 Billion to Build World Models",
+          "summary": "TechCrunch AI startup AMI Labs, cofounded by ACM A. M. Turing Award laureate Yann LeCun, has raised $1.03 billion at a $3.5-billion valuation to develop “world models,” a type of AI designed to learn from real-world data rather than only language. The company aims to build systems that better understand physical reality, potentially improving fields such as healthcare, where AI errors can have serious consequences. From \"LeCun’s AMI Labs Raises $1.03 Billion to Build World Models\" TechCrunch (03/09/26) Anna Heim View Full Article"
+        },
+        {
+          "title": "The Download: murky AI surveillance laws, and the White House cracks down on defiant labs",
+          "summary": "This is today’s edition of The Download, our weekday newsletter that provides a daily dose of what’s going on in the world of technology. Is the Pentagon allowed to surveil Americans with AI? The ongoing public feud between the Department of Defense and the AI company Anthropic has raised a deep and still unanswered question:…"
+        },
+        {
+          "title": "How our open-source AI model SpeciesNet is helping to promote wildlife conservation",
+          "summary": "Photos of animals being identified by the SpeciesNet AI model"
+        },
+        {
+          "title": "AI-Powered Bot Compromises GitHub Actions Workflows",
+          "summary": "Recently, an autonomous AI-powered bot systematically exploited GitHub Actions workflows across major open-source repositories, achieving remote code execution on multiple targets and stealing credentials with write permissions. Varun Sharm"
+        },
+        {
+          "title": "HBM4E Raises The Bar For AI Memory Bandwidth",
+          "summary": "The speed at which accelerators can be fed with data has become just as critical as raw compute capability. The post HBM4E Raises The Bar For AI Memory Bandwidth appeared first on Semiconductor Engineering ."
+        },
+        {
+          "title": "8 powerful apt commands every Linux user should know - or else you're missing out",
+          "summary": "The Debian/Ubuntu package manager isn't just for installing and removing software. There's more to Apt than you might know."
+        },
+        {
+          "title": "‘Exploit every vulnerability’: rogue AI agents published passwords and overrode anti-virus software",
+          "summary": "Exclusive: Lab tests discover ‘new form of insider risk’ with artificial intelligence agents engaging in autonomous, even ‘aggressive’ behaviours Robert Booth UK technology editor Rogue artificial intelligence agents have worked together to smuggle sensitive information out of supposedly secure systems, in the latest sign cyber-defences may be overwhelmed by unforeseen scheming by AIs. With companies increasingly asking AI agents to carry out complex tasks in internal systems, the behaviour has sparked concerns that supposedly helpful technology could pose a serious inside threat. Continue reading..."
+        },
+        {
+          "title": "AI Cluster Runtime: Reproducible Configs for GPU-Accelerated Kubernetes Clusters",
+          "summary": "AI Cluster Runtime is an open-source project by NVIDIA that simplifies Kubernetes GPU cluster configuration. It provides \"recipes\"—version-locked, validated YAML files containing optimized drivers, runtimes, and system settings. These recipes ensure reproducibility across cloud and on-premises environments by including dependency orders and constraints. Users can browse recipes via a repository, API, or the `aicr` CLI. The tool also allows users to snapshot existing cluster states to generate baselines, ensuring new deployments match validated configurations and reducing setup time."
+        },
+        {
+          "title": "Nvidia pondrá $26.000M en 5 años para crear modelos de IA open source y lanza Nemotron 3 Super (128B), publicando pesos y método de entrenam",
+          "summary": "Nvidia pondrá $26.000M en 5 años para crear modelos de IA open source y lanza Nemotron 3 Super (128B), publicando pesos y método de entrenamiento. https:// aidoo.news/noticia/Wlw9E6 # Tecnologia # OpenSource # ModelosDeIA # LLM # Investigacion"
+        },
+        {
+          "title": "Unboxing The Tenstorrent Grayskull Ai Accelerator",
+          "summary": "Unboxing the Tenstorrent Grayskull AI Accelerator! Dr. Ian Cutress from TechTechPotato sat down with Tenstorrent Fellow Jasmina Vasiljevic to talk about our soon to be released Grayskull Devkits. Dr. Ian Cutress from TechTechPotato sat down"
+        },
+        {
+          "title": "📰 Chip Price Hikes Surge in 2026: How Asia’s AI Chip Supply Chain Is Reshaping Global Tech Chip price hikes are spreading across Asia as AI-",
+          "summary": "📰 Chip Price Hikes Surge in 2026: How Asia’s AI Chip Supply Chain Is Reshaping Global Tech Chip price hikes are spreading across Asia as AI-driven demand fuels record capital spending. Taiwan’s pivotal role in global semiconductor supply is being tested like never before.... # AINews # AI # Teknoloji # MachineLearning # Haber 🔗 https:// aihaberleri.org/en/news/chip-p rice-hikes-surge-in-2026-how-asias-ai-chip-supply-chain-is-reshaping-global-tech"
+        }
+      ]
+    },
+    {
+      "content_type": "research",
+      "article_count": 11,
+      "articles": [
+        {
+          "title": "Geometric Scaling of Bayesian Inference in LLMs",
+          "summary": "Recent work has shown that small transformers trained in controlled \"wind-tunnel'' settings can implement exact Bayesian inference, and that their training dynamics produce a geometric substrate -- low-dimensional value manifolds and progressively orthogonal keys -- that encodes posterior structure. We investigate whether this geometric signature persists in production-grade language models. Across Pythia, Phi-2, Llama-3, and Mistral families, we find that last-layer value representations organize along a single dominant axis whose position strongly correlates with predictive entropy, and that domain-restricted prompts collapse this structure into the same low-dimensional manifolds observed in synthetic settings. To probe the role of this geometry, we perform targeted interventions on the entropy-aligned axis of Pythia-410M during in-context learning. Removing or perturbing this axis selectively disrupts the local uncertainty geometry, whereas matched random-axis interventions leave it intact. However, these single-layer manipulations do not produce proportionally specific degradation in Bayesian-like behavior, indicating that the geometry is a privileged readout of uncertainty rather than a singular computational bottleneck. Taken together, our results show that modern language models preserve the geometric substrate that enables Bayesian inference in wind tunnels, and organize their approximate Bayesian updates along this substrate."
+        },
+        {
+          "title": "Examining Reasoning LLMs-as-Judges in Non-Verifiable LLM Post-Training",
+          "summary": "Reasoning LLMs-as-Judges, which can benefit from inference-time scaling, provide a promising path for extending the success of reasoning models to non-verifiable domains where the output correctness/quality cannot be directly checked. However, while reasoning judges have shown better performance on static evaluation benchmarks, their effectiveness in actual policy training has not been systematically examined. Therefore, we conduct a rigorous study to investigate the actual impact of non-reasoning and reasoning judges in reinforcement-learning-based LLM alignment. Our controlled synthetic setting, where a \"gold-standard\" judge (gpt-oss-120b) provides preference annotations to train smaller judges, reveals key differences between non-reasoning and reasoning judges: non-reasoning judges lead to reward hacking easily, while reasoning judges can lead to policies that achieve strong performance when evaluated by the gold-standard judge. Interestingly, we find that the reasoning-judge-trained policies achieve such strong performance by learning to generate highly effective adversarial outputs that can also score well on popular benchmarks such as Arena-Hard by deceiving other LLM-judges. Combined with our further analysis, our study highlights both important findings and room for improvements for applying (reasoning) LLM-judges in non-verifiable LLM post-training."
+        },
+        {
+          "title": "RCTs & Human Uplift Studies: Methodological Challenges and Practical Solutions for Frontier AI Evaluation",
+          "summary": "Human uplift studies - or studies that measure AI effects on human performance relative to a status quo, typically using randomized controlled trial (RCT) methodology - are increasingly used to inform deployment, governance, and safety decisions for frontier AI systems. While the methods underlying these studies are well-established, their interaction with the distinctive properties of frontier AI systems remains underexamined, particularly when results are used to inform high-stakes decisions. We present findings from interviews with 16 expert practitioners with experience conducting human uplift studies in domains including biosecurity, cybersecurity, education, and labor. Across interviews, experts described a recurring tension between standard causal inference assumptions and the object of study itself. Rapidly evolving AI systems, shifting baselines, heterogeneous and changing user proficiency, and porous real-world settings strain assumptions underlying internal, external, and construct validity, complicating the interpretation and appropriate use of uplift evidence. We synthesize these challenges across key stages of the human uplift research lifecycle and map them to practitioner-reported solutions, clarifying both the limits and the appropriate uses of evidence from human uplift studies in high-stakes decision-making."
+        },
+        {
+          "title": "Learning Adaptive Force Control for Contact-Rich Sample Scraping with Heterogeneous Materials",
+          "summary": "The increasing demand for accelerated scientific discovery, driven by global challenges, highlights the need for advanced AI-driven robotics. Deploying robotic chemists in human-centric labs is key for the next horizon of autonomous discovery, as complex tasks still demand the dexterity of human scientists. Robotic manipulation in this context is uniquely challenged by handling diverse chemicals (granular, powdery, or viscous liquids), under varying lab conditions. For example, humans use spatulas for scraping materials from vial walls. Automating this process is challenging because it goes beyond simple robotic insertion tasks and traditional lab automation, requiring the execution of fine-granular movements within a constrained environment (the sample vial). Our work proposes an adaptive control framework to address this, relying on a low-level Cartesian impedance controller for stable and compliant physical interaction and a high-level reinforcement learning agent that learns to dynamically adjust interaction forces at the end-effector. The agent is guided by perception feedback, which provides the material's location. We first created a task-representative simulation environment with a Franka Research 3 robot, a scraping tool, and a sample vial containing heterogeneous materials. To facilitate the learning of an adaptive policy and model diverse characteristics, the sample is modelled as a collection of spheres, where each sphere is assigned a unique dislodgement force threshold, which is procedurally generated using Perlin noise. We train an agent to autonomously learn and adapt the optimal contact wrench for a sample scraping task in simulation and then successfully transfer this policy to a real robotic setup. Our method was evaluated across five different material setups, outperforming a fixed-wrench baseline by an average of 10.9%."
+        },
+        {
+          "title": "FRIEND: Federated Learning for Joint Optimization of multi-RIS Configuration and Eavesdropper Intelligent Detection in B5G Networks",
+          "summary": "As wireless systems evolve toward Beyond 5G (B5G), the adoption of cell-free (CF) millimeter-wave (mmWave) architectures combined with Reconfigurable Intelligent Surfaces (RIS) is emerging as a key enabler for ultra-reliable, high-capacity, scalable, and secure Industrial Internet of Things (IIoT) communications. However, safeguarding these complex and distributed environments against eavesdropping remains a critical challenge, particularly when conventional security mechanisms struggle to overcome scalability, and latency constraints. In this paper, a novel framework for detecting malicious users in RIS-enhanced cell-free mmWave networks using Federated Learning (FL) is presented. The envisioned setup features multiple access points (APs) operating without traditional cell boundaries, assisted by RIS nodes to dynamically shape the wireless propagation environment. Edge devices collaboratively train a Deep Convolutional Neural Network (DCNN) on locally observed Channel State Information (CSI), eliminating the need for raw data exchange. Moreover, an early-exit mechanism is incorporated in that model to jointly satisfy computational complexity requirements. Performance evaluation indicates that the integration of FL and multi-RIS coordination improves approximately 30% the achieved secrecy rate (SR) compared to baseline non-RIS-assisted methods while maintaining near-optimal detection accuracy levels. This work establishes a distributed, privacy-preserving approach to physical layer eavesdropping detection tailored for next-generation IIoT deployments."
+        },
+        {
+          "title": "COMIC: Agentic Sketch Comedy Generation",
+          "summary": "We propose a fully automated AI system that produces short comedic videos similar to sketch shows such as Saturday Night Live. Starting with character references, the system employs a population of agents loosely based on real production studio roles, structured to optimize the quality and diversity of ideas and outputs through iterative competition, evaluation, and improvement. A key contribution is the introduction of LLM critics aligned with real viewer preferences through the analysis of a corpus of comedy videos on YouTube to automatically evaluate humor. Our experiments show that our framework produces results approaching the quality of professionally produced sketches while demonstrating state-of-the-art performance in video generation."
+        },
+        {
+          "title": "Mamba Neural Operator: Who Wins? Transformers vs. State-Space Models for PDEs",
+          "summary": "Partial differential equations (PDEs) are widely used to model complex physical systems, but solving them efficiently remains a significant challenge. Recently, Transformers have emerged as the preferred architecture for PDEs due to their ability to capture intricate dependencies. However, they struggle with representing continuous dynamics and long-range interactions. To overcome these limitations, we introduce the Mamba Neural Operator (MNO), a novel framework that enhances neural operator-based techniques for solving PDEs. MNO establishes a formal theoretical connection between structured state-space models (SSMs) and neural operators, offering a unified structure that can adapt to diverse architectures, including Transformer-based models. By leveraging the structured design of SSMs, MNO captures long-range dependencies and continuous dynamics more effectively than traditional Transformers. Through extensive analysis, we show that MNO significantly boosts the expressive power and accuracy of neural operators, making it not just a complement but a superior framework for PDE-related tasks, bridging the gap between efficient representation and accurate solution approximation. Our code is available on https://github.com/Math-ML-X/Mamba-Neural-Operator"
+        },
+        {
+          "title": "Moving On, Even When You're Broken: Fail-Active Trajectory Generation via Diffusion Policies Conditioned on Embodiment and Task",
+          "summary": "Robot failure is detrimental and disruptive, often requiring human intervention to recover. Our vision is 'fail-active' operation, allowing robots to safely complete their tasks even when damaged. Focusing on 'actuation failures', we introduce DEFT, a diffusion-based trajectory generator conditioned on the robot's current embodiment and task constraints. DEFT generalizes across failure types, supports constrained and unconstrained motions, and enables task completion under arbitrary failure. We evaluate DEFT in both simulation and real-world scenarios using a 7-DoF robotic arm. DEFT outperforms its baselines over thousands of failure conditions, achieving a 99.5% success rate for unconstrained motions versus RRT's 42.4%, and 46.4% for constrained motions versus differential IK's 30.9%. Furthermore, DEFT demonstrates robust zero-shot generalization by maintaining performance on failure conditions unseen during training. Finally, we perform real-world evaluations on two multi-step tasks, drawer manipulation and whiteboard erasing. These experiments demonstrate DEFT succeeding on tasks where classical methods fail. Our results show that DEFT achieves fail-active manipulation across arbitrary failure configurations and real-world deployments."
+        },
+        {
+          "title": "Pixel Motion Diffusion is What We Need for Robot Control",
+          "summary": "We present DAWN (Diffusion is All We Need for robot control), a unified diffusion-based framework for language-conditioned robotic manipulation that bridges high-level motion intent and low-level robot action via structured pixel motion representation. In DAWN, both the high-level and low-level controllers are modeled as diffusion processes, yielding a fully trainable, end-to-end system with interpretable intermediate motion abstractions. DAWN achieves state-of-the-art results on the challenging CALVIN benchmark, demonstrating strong multi-task performance, and further validates its effectiveness on MetaWorld. Despite the substantial domain gap between simulation and reality and limited real-world data, we demonstrate reliable real-world transfer with only minimal finetuning, illustrating the practical viability of diffusion-based motion abstractions for robotic control. Our results show the effectiveness of combining diffusion modeling with motion-centric representations as a strong baseline for scalable and robust robot learning. Project page: https://eronguyen.github.io/DAWN/"
+        },
+        {
+          "title": "SIMSPINE: A Biomechanics-Aware Simulation Framework for 3D Spine Motion Annotation and Benchmarking",
+          "summary": "Modeling spinal motion is fundamental to understanding human biomechanics, yet remains underexplored in computer vision due to the spine's complex multi-joint kinematics and the lack of large-scale 3D annotations. We present a biomechanics-aware keypoint simulation framework that augments existing human pose datasets with anatomically consistent 3D spinal keypoints derived from musculoskeletal modeling. Using this framework, we create the first open dataset, named SIMSPINE, which provides sparse vertebra-level 3D spinal annotations for natural full-body motions in indoor multi-camera capture without external restraints. With 2.14 million frames, this enables data-driven learning of vertebral kinematics from subtle posture variations and bridges the gap between musculoskeletal simulation and computer vision. In addition, we release pretrained baselines covering fine-tuned 2D detectors, monocular 3D pose lifting models, and multi-view reconstruction pipelines, establishing a unified benchmark for biomechanically valid spine motion estimation. Specifically, our 2D spine baselines improve the state-of-the-art from 0.63 to 0.80 AUC in controlled environments, and from 0.91 to 0.93 AP for in-the-wild spine tracking. Together, the simulation framework and SIMSPINE dataset advance research in vision-based biomechanics, motion analysis, and digital human modeling by enabling reproducible, anatomically grounded 3D spine estimation under natural conditions."
+        },
+        {
+          "title": "MCMC Informed Neural Emulators for Uncertainty Quantification in Dynamical Systems",
+          "summary": "Neural networks are a commonly used approach to replace physical models with computationally cheap surrogates. Parametric uncertainty quantification can be included in training, assuming that an accurate prior distribution of the model parameters is available. Here we study the common opposite situation, where direct screening or random sampling of model parameters leads to exhaustive training times and evaluations at unphysical parameter values. Our solution is to decouple uncertainty quantification from network architecture. Instead of sampling network weights, we introduce the model-parameter distribution as an input to network training via Markov chain Monte Carlo (MCMC). In this way, the surrogate achieves the same uncertainty quantification as the underlying physical model, but with substantially reduced computation time. The approach is fully agnostic with respect to the neural network choice. In our examples, we present a quantile emulator for prediction and a novel autoencoder-based ODE network emulator that can flexibly estimate different trajectory paths corresponding to different ODE model parameters. Moreover, we present a mathematical analysis that provides a transparent way to relate potential performance loss to measurable distribution mismatch."
+        }
+      ]
+    }
+  ]
+}

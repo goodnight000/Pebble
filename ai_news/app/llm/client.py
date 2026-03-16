@@ -123,7 +123,7 @@ class LLMClient:
         try:
             content = self.chat(
                 [
-                    {"role": "system", "content": "Translate to zh-CN. Return strict JSON only."},
+                    {"role": "system", "content": "You are a professional translator specializing in AI/tech content. Translate to simplified Chinese (zh-CN). Preserve all JSON structure, URLs, technical terms, company/product names, and proper nouns in their original form. Return strict JSON only."},
                     {"role": "user", "content": instruction.format(payload=json.dumps(payload, ensure_ascii=False))},
                 ],
                 json_object=True,
@@ -146,7 +146,7 @@ class LLMClient:
         prompt = CLASSIFY_PROMPT.format(event_types=", ".join(EVENT_TYPES), topics=", ".join(TOPICS), text=text[:2000])
         raw = self.chat(
             [
-                {"role": "system", "content": "You are a classifier. Return strict JSON only."},
+                {"role": "system", "content": "You are an AI news classifier. Return strict JSON only with keys: event_type (string), topics (object mapping topic names to float probabilities)."},
                 {"role": "user", "content": prompt},
             ],
             json_object=True,
@@ -168,7 +168,7 @@ class LLMClient:
         prompt = SUMMARY_PROMPT.format(text=text[:2000])
         summary = self.chat(
             [
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "You are an AI news editor. Write concise, factual summaries. Return only the summary text, no preamble."},
                 {"role": "user", "content": prompt},
             ],
             json_object=False,
@@ -178,10 +178,10 @@ class LLMClient:
         return summary
 
     _SECTION_PROMPTS = {
-        "all": "Summarize these AI news items into a concise headline and executive summary.",
-        "news": "Summarize today's key AI industry news, product launches, funding, and business developments. Focus on what matters for industry practitioners.",
-        "research": "Highlight the most notable AI research papers and scientific advances. Focus on novel methods, benchmark results, and emerging techniques.",
-        "github": "Summarize the trending open-source AI tools, libraries, and notable releases. Focus on what developers should know about.",
+        "all": "Synthesize these AI news items into a compelling headline and 2-3 sentence executive summary. Lead with the single most important development, then note 1-2 other key themes.",
+        "news": "Synthesize today's AI industry news into a headline and executive summary. Focus on the most consequential product launches, funding rounds, partnerships, or strategic moves. Mention specific company names and concrete numbers.",
+        "research": "Synthesize today's AI research into a headline and executive summary. Lead with the most impactful finding, then note other notable papers. Explain what was found and why it matters — not just that a paper was published.",
+        "github": "Synthesize today's trending open-source AI tools into a headline and executive summary. Focus on what developers can actually use — new libraries, framework updates, or tools that solve real problems.",
     }
 
     _EMPTY_SECTION_HEADLINES = {
@@ -215,14 +215,10 @@ class LLMClient:
         try:
             content = self.chat(
                 [
-                    {"role": "system", "content": "You are a newsroom editor. Return strict JSON only."},
+                    {"role": "system", "content": "You write headlines and summaries for an AI news digest. You may ONLY reference stories from the numbered list below. NEVER invent stories. Return strict JSON only."},
                     {
                         "role": "user",
-                        "content": (
-                            f"{prompt_text}\n\n"
-                            f"ITEMS:\n{json.dumps(items)}\n\n"
-                            "Return JSON with keys: headline, executiveSummary."
-                        ),
+                        "content": self._build_digest_user_prompt(items, prompt_text),
                     },
                 ],
                 json_object=True,
@@ -242,6 +238,21 @@ class LLMClient:
 
         set_cached(cache_key, result)
         return result
+
+    @staticmethod
+    def _build_digest_user_prompt(items: list[dict], task_text: str) -> str:
+        """Build a digest prompt with explicit numbered story list to prevent hallucination."""
+        titles = "\n".join(f"  {i+1}. {item.get('title', '?')}" for i, item in enumerate(items))
+        return (
+            f"AVAILABLE STORIES (you may ONLY reference these — nothing else exists):\n{titles}\n\n"
+            f"Full items with summaries:\n{json.dumps(items)}\n\n"
+            f"Task: {task_text}\n\n"
+            "RULES:\n"
+            "- Every company, product, or fact you mention MUST come from the numbered list above\n"
+            "- If a story is not in the list, it does not exist — do not invent it\n"
+            "- Prefer shorter, accurate output over longer, padded output\n\n"
+            'Return JSON: {"headline": "...", "executiveSummary": "..."}'
+        )
 
     def generate_digest_copy(self, items: list[dict]) -> dict:
         if not items:
@@ -265,14 +276,10 @@ class LLMClient:
         try:
             content = self.chat(
                 [
-                    {"role": "system", "content": "You are a newsroom editor. Return strict JSON only."},
+                    {"role": "system", "content": "You write headlines and summaries for an AI news digest. You may ONLY reference stories from the numbered list below. NEVER invent stories. Return strict JSON only."},
                     {
                         "role": "user",
-                        "content": (
-                            "Summarize these AI news items into a concise headline and executive summary.\n\n"
-                            f"ITEMS:\n{json.dumps(items)}\n\n"
-                            "Return JSON with keys: headline, executiveSummary."
-                        ),
+                        "content": self._build_digest_user_prompt(items, "Synthesize these into a headline and executive summary."),
                     },
                 ],
                 json_object=True,
@@ -365,13 +372,17 @@ class LLMClient:
         try:
             content = self.chat(
                 [
-                    {"role": "system", "content": "Translate to zh-CN. Return strict JSON only."},
+                    {"role": "system", "content": "You are a professional translator specializing in AI/tech content. Translate to simplified Chinese (zh-CN). Preserve all JSON structure, URLs, technical terms, company/product names, and proper nouns. Return strict JSON only."},
                     {
                         "role": "user",
                         "content": (
-                            "Translate the following AI News Digest into professional simplified Chinese (zh-CN).\n\n"
+                            "Translate this AI News Digest into professional simplified Chinese (zh-CN).\n\n"
                             f"DIGEST:\n{json.dumps(digest)}\n\n"
-                            "Return the same JSON structure with translated text fields only."
+                            "Rules:\n"
+                            "- Translate text fields (headline, executiveSummary, title, summary) only\n"
+                            "- Preserve sources, tags, URLs, and structural fields unchanged\n"
+                            "- Keep company/product names and technical terms in English\n"
+                            "- Return the same JSON structure"
                         ),
                     },
                 ],
@@ -426,9 +437,13 @@ class LLMClient:
             cache_namespace="translate_digest_sections",
             payload=payload,
             instruction=(
-                "Translate the following digest sections into professional simplified Chinese (zh-CN).\n\n"
+                "Translate these AI digest section headlines and summaries into professional simplified Chinese (zh-CN).\n\n"
                 "PAYLOAD:\n{payload}\n\n"
-                "Return the same JSON structure with translated headline and executiveSummary fields only."
+                "Rules:\n"
+                "- Translate headline and executiveSummary fields only\n"
+                "- Keep company/product names and technical terms in English\n"
+                "- Headlines should be punchy and natural in Chinese, not literal translations\n"
+                "- Return the same JSON structure"
             ),
         )
         translated = parsed.get("digests") if isinstance(parsed, dict) else None
@@ -463,9 +478,13 @@ class LLMClient:
             cache_namespace="translate_news_items",
             payload=payload,
             instruction=(
-                "Translate the following news items into professional simplified Chinese (zh-CN).\n\n"
+                "Translate these AI news items into professional simplified Chinese (zh-CN).\n\n"
                 "PAYLOAD:\n{payload}\n\n"
-                "Return JSON with the same structure and translated title, summary, and tags fields only."
+                "Rules:\n"
+                "- Translate title, summary, and tags fields only\n"
+                "- Keep company names (OpenAI, Google, Meta), product names, and technical terms in English\n"
+                "- Use natural Chinese phrasing, not word-for-word translation\n"
+                "- Return the same JSON structure"
             ),
         )
         translated = parsed.get("items") if isinstance(parsed, dict) else None
@@ -508,9 +527,13 @@ class LLMClient:
             cache_namespace="translate_signal_map_clusters",
             payload=payload,
             instruction=(
-                "Translate the following signal map cluster headlines and article titles into professional simplified Chinese (zh-CN).\n\n"
+                "Translate these AI news cluster headlines and article titles into professional simplified Chinese (zh-CN).\n\n"
                 "PAYLOAD:\n{payload}\n\n"
-                "Return JSON with the same structure and translated headline/title fields only."
+                "Rules:\n"
+                "- Translate headline and title fields only\n"
+                "- Keep company/product names, model names, and technical terms in English\n"
+                "- Use concise, journalistic Chinese phrasing\n"
+                "- Return the same JSON structure"
             ),
         )
         translated = parsed.get("clusters") if isinstance(parsed, dict) else None
@@ -563,7 +586,7 @@ class LLMClient:
         try:
             response = self.chat(
                 [
-                    {"role": "system", "content": "You are a classifier. Return strict JSON only."},
+                    {"role": "system", "content": "You are an AI industry analyst scoring news significance. Score conservatively — most articles are 3-6 on each dimension. Return strict JSON only."},
                     {"role": "user", "content": prompt},
                 ],
                 json_object=True,

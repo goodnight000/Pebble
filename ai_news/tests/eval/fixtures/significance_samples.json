@@ -1,0 +1,209 @@
+[
+  {
+    "id": "5f36ec69-d951-4e00-a9c7-af31d60937be",
+    "title": "Incremental Neural Network Verification via Learned Conflicts",
+    "text_preview": "Computer Science > Logic in Computer Science [Submitted on 12 Mar 2026] Title:Incremental Neural Network Verification via Learned Conflicts View PDF HTML (experimental)Abstract:Neural network verification is often used as a core component within larger analysis procedures, which generate sequences of closely related verification queries over the same network. In existing neural network verifiers, each query is typically solved independently, and information learned during previous runs is discarded, leading to repeated exploration of the same infeasible regions of the search space. In this work, we aim to expedite verification by reducing this redundancy. We propose an incremental verification technique that reuses learned conflicts across related verification queries. The technique can be",
+    "source_name": "arXiv cs.LG",
+    "event_type": "RESEARCH_PAPER",
+    "global_score": 56.92,
+    "final_score": 56.19
+  },
+  {
+    "id": "d1f18103-b42d-4722-baab-fe3a4acf5460",
+    "title": "Trump's AI-Powered World Wars",
+    "text_preview": "In the last few days, President Donald Trump has said that the U.S-Israel war on Iran will end soon, after oil prices jumped and the growing regional conflict continued to shake markets. After a wave of heavy bombardments throughout Iran, Secretary of War Pete Hegseth promised another round, “The most fighters, the most bombers, the most strikes.” “Hegseth has, yes, said that it’s going to be basically death and destruction from the air, and they’re delivering that,” Hooman Majd, an Iranian American writer and journalist, tells The Intercept Briefing. “Killing civilians is a hallmark of American air war. This particular campaign Operation Epic Fury is set apart by the relentlessness of the attacks,” adds Nick Turse, senior reporter for The Intercept. “The two militaries — U.S. and Israel —",
+    "source_name": "Hacker News",
+    "event_type": "OTHER",
+    "global_score": 33.09,
+    "final_score": 33.09
+  },
+  {
+    "id": "f0285af5-7448-4640-98fa-df10abe677cd",
+    "title": "AI Cluster Runtime: Reproducible Configs for GPU-Accelerated Kubernetes Clusters",
+    "text_preview": "Every AI cluster running on Kubernetes requires a full software stack that works together, from low-level driver and kernel settings to high-level operator and workload configurations. You get one cluster working, and spend days getting the next one to match. Upgrade a component, and something else breaks. Move to a new cloud and start over. AI Cluster Runtime is a new open-source project designed to remove cluster configuration from the critical path. It publishes optimized, validated, and reproducible Kubernetes configurations as recipes you can deploy onto your clusters. How AI Cluster Runtime works To support GPU clusters across cloud and on-premises AI factories, NVIDIA validates specific combinations of drivers, runtimes, operators, kernel modules, and system settings for AI workload",
+    "source_name": "Hacker News",
+    "event_type": "CHIP_HARDWARE",
+    "global_score": 76.87,
+    "final_score": 74.44
+  },
+  {
+    "id": "014332c4-cf02-490d-8676-3d6cc4560e84",
+    "title": "Contagious Interview: Malware delivered through fake developer job interviews",
+    "text_preview": "Microsoft Defender Experts has observed the Contagious Interview campaign, a sophisticated social engineering operation active since at least December 2022. Microsoft continues to detect activity associated with this campaign in recent customer environments, targeting software developers at enterprise solution providers and media and communications firms by abusing the trust inherent in modern recruitment workflows. Threat actors repeatedly achieve initial access through convincingly staged recruitment processes that mirror legitimate technical interviews. These engagements often include recruiter outreach, technical discussions, assignments, and follow-ups, ultimately persuading victims to execute malicious packages or commands under the guise of routine evaluation tasks. This campaign re",
+    "source_name": "Microsoft Security Blog",
+    "event_type": "SECURITY_INCIDENT",
+    "global_score": 79.89,
+    "final_score": 79.89
+  },
+  {
+    "id": "3724f844-e4e2-400a-a1e0-9a3f88422f06",
+    "title": "Open-source GPU virtualization and pooling for Kubernetes",
+    "text_preview": "TensorFusion.AI Less GPUs, More AI Apps. Explore the docs » View Demo | Report Bug | Request Feature Tensor Fusion is a state-of-the-art GPU virtualization and pooling solution designed to optimize GPU cluster utilization to its fullest potential. - Deploy in Kubernetes with Cloud Console - Deploy in Kubernetes with Helm chart - Create new cluster in VM/BareMetal - Run vGPU in VM Hypervisor - Learn Essential Concepts & Architecture - Discord channel: https://discord.gg/2bybv9yQNk - Discuss anything about TensorFusion: Github Discussions - Contact us with WeCom for Greater China region: 企业微信 - Email us: support@tensor-fusion.com - Schedule 1:1 meeting with TensorFusion founders - Fractional GPU and flexible oversubscription - Remote GPU sharing with SOTA GPU-over-IP technology, less than 4%",
+    "source_name": "Hacker News",
+    "event_type": "OPEN_SOURCE_RELEASE",
+    "global_score": 47.38,
+    "final_score": 47.38
+  },
+  {
+    "id": "1429cb7b-dc50-4ffc-8e46-abc94e725259",
+    "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
+    "text_preview": "CISA Adds One Known Exploited Vulnerability to Catalog CISA has added one new vulnerability to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. - CVE-2025-68613 n8n Improper Control of Dynamically-Managed Code Resources Vulnerability This type of vulnerability is a frequent attack vector for malicious cyber actors and poses significant risks to the federal enterprise. Binding Operational Directive (BOD) 22-01: Reducing the Significant Risk of Known Exploited Vulnerabilities established the KEV Catalog as a living list of known Common Vulnerabilities and Exposures (CVEs) that carry significant risk to the federal enterprise. BOD 22-01 requires Federal Civilian Executive Branch (FCEB) agencies to remediate identified vulnerabilities by the due date",
+    "source_name": "CISA Cybersecurity Advisories",
+    "event_type": "SECURITY_INCIDENT",
+    "global_score": 73.76,
+    "final_score": 73.76
+  },
+  {
+    "id": "20134cf7-f045-4589-b8e5-d59ecf5a009c",
+    "title": "Emergent Cyber Behavior: When AI Agents Become Offensive Threat Actors",
+    "text_preview": "Executive summary AI agents deployed for routine enterprise tasks are autonomously hacking the systems they operate in. No one asked them to. No adversarial prompting was involved. The agents independently discovered vulnerabilities, escalated privileges, disabled security tools, and exfiltrated data, all while trying to complete ordinary assignments. Standard cybersecurity solutions, as we knew them before the advent of LLMs, were not designed to address the risk of agentic threat actors. Companies that deploy AI agents and do not consider this risk as part of their threat model may end up exposed and missing important security controls. Introduction Companies are already shipping AI agents with access to internal systems, shell commands, and network resources. These agents are useful pre",
+    "source_name": "Hacker News",
+    "event_type": "OTHER",
+    "global_score": 34.97,
+    "final_score": 34.97
+  },
+  {
+    "id": "e2b3d90b-e5ae-42a2-a7a9-ef59b62d7ef9",
+    "title": "Alex Karp: \"People are likely gonna have less good, and less interesting jobs\"",
+    "text_preview": "Palantir CEO Makes Shocking Confession on Disrupting Democratic Power They’re saying the quiet part out loud now. Palantir CEO Alex Karp thinks his AI technology will lessen the power of “highly educated, often female voters, who vote mostly Democrat” while increasing the power of working-class men. “This technology disrupts humanities-trained—largely Democratic—voters, and makes their economic power less. And increases the economic power of vocationally trained, working-class, often male, working-class voters,” Karp said in a CNBC interview Thursday. “And so these disruptions are gonna disrupt every aspect of our society. And to make this work, we have to come to an agreement of what it is we’re going to do with the technology; how are we gonna explain to people who are likely gonna have ",
+    "source_name": "Hacker News",
+    "event_type": "OTHER",
+    "global_score": 33.64,
+    "final_score": 33.64
+  },
+  {
+    "id": "e6eed624-1b14-4b8c-8da2-33fb10d4c9a3",
+    "title": "HOG-Diff: Higher-Order Guided Diffusion for Graph Generation",
+    "text_preview": "Computer Science > Machine Learning [Submitted on 6 Feb 2025 (v1), last revised 12 Mar 2026 (this version, v3)] Title:HOG-Diff: Higher-Order Guided Diffusion for Graph Generation View PDF HTML (experimental)Abstract:Graph generation is a critical yet challenging task, as empirical analyses require a deep understanding of complex, non-Euclidean structures. Diffusion models have recently made significant advances in graph generation, but these models are typically adapted from image generation frameworks and overlook inherent higher-order topology, limiting their ability to capture graph topology. In this work, we propose Higher-order Guided Diffusion (HOG-Diff), a principled framework that progressively generates plausible graphs with inherent topological structures. HOG-Diff follows a coar",
+    "source_name": "arXiv cs.LG",
+    "event_type": "RESEARCH_PAPER",
+    "global_score": 56.56,
+    "final_score": 55.86
+  },
+  {
+    "id": "fdb6c7c3-768e-437a-af5a-dd2033892161",
+    "title": "I Have 30 Years of Career Left. AI Made Me Rethink All of Them",
+    "text_preview": "I Have 30 Years of Career Left. AI Made Me Rethink All of Them. On judgment, hype, the joy of still building things, and learning to prepare for a future nobody can predict. I’m turning 40 this year. That means, if I’m lucky, I have roughly 30 more working years ahead of me. Thirty years of building things, making career decisions, and trying to stay relevant in an industry that reinvents itself every five to seven years. Until recently, that felt manageable. I’ve been in software engineering for over 20 years. I’ve survived the transition from monoliths to microservices, the mobile revolution, the cloud migration wave, the DevOps transformation. Each one felt significant at the time. Each one changed what we built or how we built it. But none of them changed whether we were needed. AI doe",
+    "source_name": "Hacker News",
+    "event_type": "OTHER",
+    "global_score": 32.88,
+    "final_score": 32.88
+  },
+  {
+    "id": "df89d89d-7d93-4f59-ab26-bfeffcc5e030",
+    "title": "Parsing to Stanford Dependencies: Trade-offs between speed and accuracy",
+    "text_preview": "Daniel Cer, Marie-Catherine de Marneffe, Daniel Jurafsky, and Christopher D. Manning. 2010. Parsing to Stanford Dependencies: Trade-offs between speed and accuracy. In 7th International Conference on Language Resources and Evaluation (LREC 2010).",
+    "source_name": "Stanford NLP Publications",
+    "event_type": "OTHER",
+    "global_score": 33.17,
+    "final_score": 33.17
+  },
+  {
+    "id": "9d11ca05-5039-43e2-a464-127f53fe0666",
+    "title": "8,600 n8n workflow templates organized into a browsable GitHub repo",
+    "text_preview": "🚀 The largest open-source collection of n8n workflow templates on GitHub. 8,697+ ready-to-import automation workflows across 25 categories — from AI agents and email automation to web scraping, CRM integrations, and beyond. Whether you're automating your first workflow or building complex multi-step integrations, this collection has you covered. Every template is a .json file you can import directly into n8n in seconds. Getting started takes less than a minute: - 🔍 Browse the categories below to find what you need - 📥 Download the .json template file - 🚀 Import into n8n: Workflow menu → Import from File That's it — your automation is ready to configure and run! 🎉 📚 New to n8n? Check out our step-by-step importing guide and credential setup walkthrough. Hand-picked templates showcasing the ",
+    "source_name": "Hacker News",
+    "event_type": "OPEN_SOURCE_RELEASE",
+    "global_score": 48.31,
+    "final_score": 46.56
+  },
+  {
+    "id": "0a76149e-73f0-4c6a-bbb1-988306135d40",
+    "title": "Hive0163 Uses AI-Assisted Slopoly Malware for Persistent Access in Ransomware Attacks",
+    "text_preview": "Cybersecurity researchers have disclosed details of a suspected artificial intelligence (AI)-generated malware codenamed Slopoly put to use by a financially motivated threat actor named Hive0163. \"Although still relatively unspectacular, AI-generated malware such as Slopoly shows how easily threat actors can weaponize AI to develop new malware frameworks in a fraction of the time it used to take,\" IBM X-Force researcher Golo Mühr said in a report shared with The Hacker News. Hive0163's operations are driven by extortion through large-scale data exfiltration and ransomware. The e-crime group is primarily associated with a wide range of malicious tools, including NodeSnake, Interlock RAT, JunkFiction loader, and Interlock ransomware. In one ransomware attack observed by the company in early ",
+    "source_name": "The Hacker News (THN)",
+    "event_type": "SECURITY_INCIDENT",
+    "global_score": 65.05,
+    "final_score": 56.37
+  },
+  {
+    "id": "b65f954c-7c1f-4aa7-9163-ad3e5e63b712",
+    "title": "Learning Distributed Word Representations for Natural Logic Reasoning",
+    "text_preview": "Samuel R. Bowman, Christopher Potts, and Christopher D. Manning. 2015. Learning Distributed Word Representations for Natural Logic Reasoning. In Knowledge Representation and Reasoning: Integrating Symbolic and Neural Approaches: Papers from the 2015 AAAI Spring Symposium.",
+    "source_name": "Stanford NLP Publications",
+    "event_type": "OTHER",
+    "global_score": 33.17,
+    "final_score": 33.17
+  },
+  {
+    "id": "b88c61bb-c560-4a14-b8d8-82a375c7e2f3",
+    "title": "Implicatures and Nested Beliefs in Approximate Decentralized-POMDPs",
+    "text_preview": "Adam Vogel, Christopher Potts, and Dan Jurafsky. 2013. Implicatures and Nested Beliefs in Approximate Decentralized-POMDPs. In Proceedings of the 51st Annual Meeting of the Association for Computational Linguistics.",
+    "source_name": "Stanford NLP Publications",
+    "event_type": "OTHER",
+    "global_score": 33.16,
+    "final_score": 33.16
+  },
+  {
+    "id": "6ca8f26a-af9a-427e-9d06-481d41566ef2",
+    "title": "Unboxing The Tenstorrent Grayskull Ai Accelerator",
+    "text_preview": "Unboxing the Tenstorrent Grayskull AI Accelerator! Dr. Ian Cutress from TechTechPotato sat down with Tenstorrent Fellow Jasmina Vasiljevic to talk about our soon to be released Grayskull Devkits. Dr. Ian Cutress from TechTechPotato sat down with Tenstorrent Fellow Jasmina Vasiljevic to talk about our soon to be released Grayskull Devkits. Find out more about or DevKits at www.tenstorrent.com/cards Other articles Tenstorrent and Infinia Technologies Partner to Build Sovereign AI Infrastructure Signing during Abu Dhabi Finance Week formalizes collaboration between Tenstorrent and Infinia on sovereign AI systems Tenstorrent Announces Participation in CHASSIS Program Tenstorrent Joins Initiative for Automotive Chiplet Technology Tenstorrent Unveils First Gen Compact AI Accelerator Device Tenst",
+    "source_name": "Tenstorrent Vision (Sitemap)",
+    "event_type": "CHIP_HARDWARE",
+    "global_score": 62.09,
+    "final_score": 62.09
+  },
+  {
+    "id": "d078fb27-0946-437c-bd46-5146648d7ecb",
+    "title": "amusi/CVPR2026-Papers-with-Code",
+    "text_preview": "CVPR 2026 decisions are now available on OpenReview！25.42% = 4090 / 16092 注1：欢迎各位大佬提交issue，分享CVPR 2026论文和开源项目！ 注2：关于往年CV顶会论文以及其他优质CV论文和大盘点，详见： https://github.com/amusi/daily-paper-computer-vision 欢迎扫码加入【CVer学术交流群】，可以获取CVPR 2026等最前沿工作！这是最大的计算机视觉AI知识星球！每日更新，第一时间分享最新最前沿的计算机视觉、AIGC、扩散模型、多模态、深度学习、自动驾驶、医疗影像和遥感等方向的学习资料，快加入学起来！ - 3DGS(Gaussian Splatting) - Agent) - Avatars - Backbone - CLIP - Mamba - Embodied AI - GAN - GNN - 多模态大语言模型(MLLM) - 大语言模型(LLM) - 具身智能(Embodied AI) - 空间智能(Spatial Intelligence - NAS - OCR - NeRF - DETR - 扩散模型(Diffusion Models) - ReID(重识别) - 长尾分布(Long-Tail) - Vision Transformer - 视觉和语言(Vision-Language) - 自监督学习(Self-supervised Learning) - 数据增强(Data Augmentation) - 目标检测(Object Detection) - 异常检测(Anomaly Detection) - 目标跟踪(Visual Tracking) - 语义分割(Semantic Segmentation) - 实例分割(Ins",
+    "source_name": "GitHub Trending AI",
+    "event_type": "OTHER",
+    "global_score": 41.69,
+    "final_score": 41.69
+  },
+  {
+    "id": "1241266a-43f6-4527-a4e1-f468c805750f",
+    "title": "MCP Weekly: OpenAI Raises $110B, Anthropic Faces Defense Showdown",
+    "text_preview": "This installment covers major developments from February 27th to March 6th, 2026, including the Anthropic and Department of War standoff, a record-breaking OpenAI funding round, major new model releases, always-on developer agents from Cursor, and a wave of infrastructure investment across the ecosystem. TL;DR The AI industry saw massive infrastructure and financial plays: OpenAI secured a record-breaking $110 billion funding round and a major AWS distribution deal. NVIDIA committed $4 billion to optical interconnect technology for future AI factories. Concurrently, agentic infrastructure startups (WorkOS, Guild.ai, JetStream) raised nearly $180 million for enterprise security and orchestration tools. OpenAI launched GPT-5.4 for autonomous computer-use and the Codex App for multi-agent orc",
+    "source_name": "Hacker News",
+    "event_type": "STARTUP_FUNDING",
+    "global_score": 63.43,
+    "final_score": 71.9
+  },
+  {
+    "id": "c05ae6b4-638d-4339-84c5-788f606ad18f",
+    "title": "ollama/ollama",
+    "text_preview": "Start building with open models. curl -fsSL https://ollama.com/install.sh | sh irm https://ollama.com/install.ps1 | iex curl -fsSL https://ollama.com/install.sh | sh The official Ollama Docker image ollama/ollama is available on Docker Hub. ollama You'll be prompted to run a model or connect Ollama to your existing agents or applications such as claude , codex , openclaw and more. To launch a specific integration: ollama launch claude Supported integrations include Claude Code, Codex, Droid, and OpenCode. Use OpenClaw to turn Ollama into a personal AI assistant across WhatsApp, Telegram, Slack, Discord, and more: ollama launch openclaw Run and chat with Gemma 3: ollama run gemma3 See ollama.com/library for the full list. See the quickstart guide for more details. Ollama has a REST API for ",
+    "source_name": "GitHub Trending AI",
+    "event_type": "OTHER",
+    "global_score": 40.09,
+    "final_score": 40.09
+  },
+  {
+    "id": "69cb2ba6-9cae-44e0-b6d7-1f8289071f9c",
+    "title": "Aneri",
+    "text_preview": "Product Introducing Flows in ElevenCreative Authors Growth How Voice AI Is Reshaping the Future of Learning At SXSW, ElevenLabs will take the stage for a deeply personal and powerful conversation about voice, identity, and the future of AI-powered restoration. Today, we are proud to release 11 Voices: a short documentary series featuring eleven extraordinary individuals who lost their ability to speak and, through the ElevenLabs Impact Program, are now able to communicate again in their own voices. Improving clinical documentation by 62% with real-time AI transcription.",
+    "source_name": "ElevenLabs Blog (Sitemap)",
+    "event_type": "OTHER",
+    "global_score": 32.81,
+    "final_score": 32.81
+  },
+  {
+    "id": "d901d9b7-eaed-4882-aa68-3ea20d679d2b",
+    "title": "promptfoo/promptfoo: Test your prompts, agents, and RAGs. Red teaming/pentesting/vulnerability scanning for AI. Compare p",
+    "text_preview": "promptfoo is a CLI and library for evaluating and red-teaming LLM apps. Stop the trial-and-error approach - start shipping secure, reliable AI apps. Website · Getting Started · Red Teaming · Documentation · Discord npm install -g promptfoo promptfoo init --example getting-started Also available via brew install promptfoo and pip install promptfoo . You can also use npx promptfoo@latest to run any command without installing. Most LLM providers require an API key. Set yours as an environment variable: export OPENAI_API_KEY=sk-abc123 Once you're in the example directory, run an eval and view results: cd getting-started promptfoo eval promptfoo view See Getting Started (evals) or Red Teaming (vulnerability scanning) for more. - Test your prompts and models with automated evaluations - Secure y",
+    "source_name": "GitHub Trending AI (Scraper)",
+    "event_type": "SECURITY_INCIDENT",
+    "global_score": 72.33,
+    "final_score": 72.33
+  },
+  {
+    "id": "62748aea-0ecb-42bb-81e4-7421aff7223b",
+    "title": "nunchaku-ai/nunchaku",
+    "text_preview": "Paper | Docs | Website | Blog | Demo | Hugging Face | ModelScope | ComfyUI Nunchaku is a high-performance inference engine optimized for 4-bit neural networks, as introduced in our paper SVDQuant. For the underlying quantization library, check out DeepCompressor. Join our user groups on Discord and WeChat to engage in discussions with the community! More details can be found here. If you have any questions, run into issues, or are interested in contributing, don’t hesitate to reach out! - [2026-01-12] 🚀 v1.2.0 Released! Enjoy a 20–30% Z-Image performance boost, seamless LoRA support with native ComfyUI nodes, INT4 support for 20-series GPUs, and compatibility with ComfyUI 0.7! - [2025-12-20] 🔥 Release 4-bit Tongyi-MAI/Z-Image-Turbo! Download on Hugging Face or ModelScope, and try it with o",
+    "source_name": "GitHub Trending AI",
+    "event_type": "OTHER",
+    "global_score": 40.09,
+    "final_score": 40.56
+  },
+  {
+    "id": "ac693ed8-f2aa-4b6b-affa-fabd695c9750",
+    "title": "Claude Opus 4 6",
+    "text_preview": "Introducing Claude Opus 4.6 We’re upgrading our smartest model. The new Claude Opus 4.6 improves on its predecessor’s coding skills. It plans more carefully, sustains agentic tasks for longer, can operate more reliably in larger codebases, and has better code review and debugging skills to catch its own mistakes. And, in a first for our Opus-class models, Opus 4.6 features a 1M token context window in beta1. Opus 4.6 can also apply its improved abilities to a range of everyday work tasks: running financial analyses, doing research, and using and creating documents, spreadsheets, and presentations. Within Cowork, where Claude can multitask autonomously, Opus 4.6 can put all these skills to work on your behalf. The model’s performance is state-of-the-art on several evaluations. For example, ",
+    "source_name": "Anthropic Research (Sitemap)",
+    "event_type": "MODEL_RELEASE",
+    "global_score": 97.9,
+    "final_score": 97.9
+  }
+]

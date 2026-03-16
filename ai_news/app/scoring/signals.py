@@ -45,8 +45,8 @@ def entity_prominence_score(entities: dict[str, float] | None) -> float:
 
 EVENT_IMPACT: dict[str, float] = {
     "MODEL_RELEASE": 1.0,
-    "CHIP_HARDWARE": 0.95,
-    "SECURITY_INCIDENT": 0.90,
+    "CHIP_HARDWARE": 0.70,         # Was 0.95 — let signals differentiate minor vs major
+    "SECURITY_INCIDENT": 0.65,     # Was 0.90 — routine advisories shouldn't auto-boost
     "BIG_TECH_ANNOUNCEMENT": 0.80,
     "GOVERNMENT_ACTION": 0.80,
     "POLICY_REGULATION": 0.80,

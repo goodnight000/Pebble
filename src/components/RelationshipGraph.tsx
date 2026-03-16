@@ -136,7 +136,12 @@ const RelationshipGraph: React.FC<RelationshipGraphProps> = ({ aiService, langua
   if (!activeGraphSnapshot && graphLoading) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-        <div className="h-12 w-12 rounded-full border-2 border-[var(--ink)] border-t-[var(--accent)] animate-spin" />
+        <div className="relationship-graph-loader">
+          <div className="relationship-graph-loader__ring" />
+          <div className="relationship-graph-loader__orbit">
+            <div className="relationship-graph-loader__dot" />
+          </div>
+        </div>
         <span className="text-xs font-bold uppercase tracking-widest text-[var(--muted)]">
           {getUiText(language, 'relationshipGraphLoading')}
         </span>

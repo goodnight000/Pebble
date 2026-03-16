@@ -1,0 +1,127 @@
+{
+  "prompt_type": "relationship",
+  "version": "final",
+  "sample_count": 8,
+  "dimension_averages": {
+    "label_accuracy": 9.5,
+    "confidence_calibration": 9.25,
+    "explanation_quality": 8.88,
+    "parseable": 3.0
+  },
+  "overall_score": 7.66,
+  "results": [
+    {
+      "sample_id": "pair_0",
+      "scores": {
+        "label_accuracy": 10,
+        "confidence_calibration": 10,
+        "explanation_quality": 9,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 1,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A discusses OpenAI's internal race against Claude, while B is a 2010 research paper on a statistical machine translation toolkit with no narrative link.\"\n}",
+      "judge_reasoning": "Label 'unrelated' is correct: Cluster A is about OpenAI's competitive response to Claude, while Cluster B is a 2010 academic paper on statistical machine translation. Confidence 0.1 appropriately reflects high certainty of no relationship. Explanation is concise and specific, citing key differences. Output is valid JSON with all required keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_1",
+      "scores": {
+        "label_accuracy": 10,
+        "confidence_calibration": 10,
+        "explanation_quality": 10,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 2,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A covers a lawsuit against Grammarly over AI misuse, while B is a software release for an AI SDK with no narrative connection.\"\n}",
+      "judge_reasoning": "The classification is correct: the clusters are unrelated (one about a lawsuit, the other a software release). Confidence of 0.1 is appropriately low for this clear non-relationship. The explanation is concise and cites specific evidence. The output is valid JSON with all required keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_2",
+      "scores": {
+        "label_accuracy": 10,
+        "confidence_calibration": 10,
+        "explanation_quality": 10,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 3,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A is a research paper on diffusion models, while B is a news article about OpenAI's internal race, with no direct narrative relationship.\"\n}",
+      "judge_reasoning": "The label 'unrelated' is correct as the clusters discuss distinct topics (diffusion model research vs. OpenAI corporate news). Confidence of 0.1 appropriately reflects high uncertainty for unrelated pairs. The explanation concisely cites specific evidence from both clusters. The output is valid JSON with all required keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_3",
+      "scores": {
+        "label_accuracy": 10,
+        "confidence_calibration": 10,
+        "explanation_quality": 9,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 4,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A is about Anthropic's Claude AI update, while B is about a Japanese digital payments company's IPO, with no meaningful narrative connection.\"\n}",
+      "judge_reasoning": "The label 'unrelated' is correct as the clusters cover distinct topics (AI update vs. fintech IPO). Confidence of 0.1 is appropriately low. The explanation is concise and specific, though could be slightly more detailed. The output is valid JSON with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_4",
+      "scores": {
+        "label_accuracy": 9,
+        "confidence_calibration": 9,
+        "explanation_quality": 8,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 5,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A is a 2009 research paper on text semantic similarity, while B is a 2026 research paper on multimodal perception, with no direct narrative link.\"\n}",
+      "judge_reasoning": "Label 'unrelated' is accurate given the distinct topics (text similarity vs. multimodal perception) and time gap (2009 vs. 2026). Confidence of 0.1 appropriately reflects low ambiguity. Explanation is concise and cites specific evidence (years, topics). Output is valid JSON with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_5",
+      "scores": {
+        "label_accuracy": 9,
+        "confidence_calibration": 8,
+        "explanation_quality": 8,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 1,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.2,\n  \"explanation\": \"Both discuss AI agents but A is a research paper on reasoning over documents while B is a personal project announcement for a social media agent, with no direct narrative link.\"\n}",
+      "judge_reasoning": "The label 'unrelated' is correct as the clusters share only a high-level 'AI agent' theme but differ fundamentally in context (academic research vs. personal project). Confidence of 0.2 is appropriately low given the superficial connection. The explanation clearly contrasts the clusters with specific evidence. The output is valid JSON with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_6",
+      "scores": {
+        "label_accuracy": 9,
+        "confidence_calibration": 9,
+        "explanation_quality": 8,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 2,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.1,\n  \"explanation\": \"A is a research paper on image editing/generation, while B is a software release for an AI SDK; no meaningful connection beyond broad AI topics.\"\n}",
+      "judge_reasoning": "Label 'unrelated' is accurate as clusters cover distinct domains (academic research vs. software release). Confidence 0.1 appropriately reflects low connection. Explanation is concise and specific, though could note the shared date as coincidental. Output is valid JSON with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    },
+    {
+      "sample_id": "pair_7",
+      "scores": {
+        "label_accuracy": 9,
+        "confidence_calibration": 8,
+        "explanation_quality": 9,
+        "parseable": 3
+      },
+      "raw_output": "{\n  \"pair\": 3,\n  \"label\": \"unrelated\",\n  \"confidence\": 0.15,\n  \"explanation\": \"A is a research paper on diffusion transformers, while B is a news item about a corporate acquisition of an AI agent social network; no direct narrative relationship.\"\n}",
+      "judge_reasoning": "Label 'unrelated' is correct as clusters cover distinct topics (research vs. acquisition). Confidence 0.15 appropriately low for unrelatedness. Explanation is concise and specific, citing key differences. Output is valid JSON with correct keys.",
+      "errors": [
+        "not_json_array"
+      ]
+    }
+  ],
+  "failure_count": 8
+}

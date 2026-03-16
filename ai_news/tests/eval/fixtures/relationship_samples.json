@@ -1,0 +1,192 @@
+[
+  {
+    "cluster_a": {
+      "cluster_id": "1f352173-b929-49a2-89a2-cf176a1eff50",
+      "headline": "Inside OpenAI’s Race to Catch Up to Claude Code",
+      "top_summary": "Sam Altman sits with his legs pretzeled in an office chair, staring deeply into the ceiling. To be fair, the new OpenAI headquarters—a temple of glass and blond wood in San Francisco’s Mission Bay—seems to invite this kind of contemplation. A kiosk behind reception holds booklets that describe the “",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "hardware_chips"
+    },
+    "cluster_b": {
+      "cluster_id": "d99e8fad-b86c-4a4d-9f7d-c42c94a70e54",
+      "headline": "Phrasal: a toolkit for statistical machine translation with facilities for extraction and incorporation of arbitrary model features",
+      "top_summary": "Daniel Cer, Michel Galley, Daniel Jurafsky, and Christopher D. Manning. 2010. Phrasal: a toolkit for statistical machine translation with facilities for extraction and incorporation of arbitrary model features. In Proceedings of the NAACL HLT 2010 Demonstration Session.",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "llms"
+    },
+    "expected_related": false
+  },
+  {
+    "cluster_a": {
+      "cluster_id": "b47149d1-7b90-484d-bb29-c3ff7543b549",
+      "headline": "One of Grammarly’s ‘experts’ is suing the company over its identity-stealing AI feature",
+      "top_summary": "For months, Grammarly has been using the identities of real people (including us) for its “Expert Review” AI suggestions without getting their permission, and now it’s facing a lawsuit from one of the journalists included, as previously reported by Wired. The class-action complaint filed by journali",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "enterprise_apps"
+    },
+    "cluster_b": {
+      "cluster_id": "d00a2730-4e50-46f6-94b4-e70bbfd9a415",
+      "headline": "@ai-sdk/vue@4.0.0-beta.14",
+      "top_summary": "@ai-sdk/vue@4.0.0-beta.14 Pre-release Pre-release vercel-ai-sdk released this 11 Mar 16:39 · 8 commits to main since this release Patch Changes - ai@7.0.0-beta.14",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "agents"
+    },
+    "expected_related": false
+  },
+  {
+    "cluster_a": {
+      "cluster_id": "6a55bcd2-1fba-4302-97d2-5d164584308c",
+      "headline": "EndoCoT: Scaling Endogenous Chain-of-Thought Reasoning in Diffusion Models",
+      "top_summary": "Computer Science > Computer Vision and Pattern Recognition [Submitted on 12 Mar 2026] Title:EndoCoT: Scaling Endogenous Chain-of-Thought Reasoning in Diffusion Models View PDF HTML (experimental)Abstract:Recently, Multimodal Large Language Models (MLLMs) have been widely integrated into diffusion fr",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "enterprise_apps"
+    },
+    "cluster_b": {
+      "cluster_id": "1f352173-b929-49a2-89a2-cf176a1eff50",
+      "headline": "Inside OpenAI’s Race to Catch Up to Claude Code",
+      "top_summary": "Sam Altman sits with his legs pretzeled in an office chair, staring deeply into the ceiling. To be fair, the new OpenAI headquarters—a temple of glass and blond wood in San Francisco’s Mission Bay—seems to invite this kind of contemplation. A kiosk behind reception holds booklets that describe the “",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "hardware_chips"
+    },
+    "expected_related": false
+  },
+  {
+    "cluster_a": {
+      "cluster_id": "7bfe904c-1ccf-44c6-ab80-4f3a96265352",
+      "headline": "Anthropic's Claude AI can respond with charts, diagrams, and other visuals now",
+      "top_summary": "Anthropic’s latest update to Claude will allow the AI chatbot to generate custom charts, diagrams, and other visualizations during your conversation. If Claude determines a visual is useful based on the context of your chat, it will insert the image in-line, rather than in its side panel. Anthropic’",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "agents"
+    },
+    "cluster_b": {
+      "cluster_id": "1a650e77-8cde-453f-aee3-d5d9f1bfec69",
+      "headline": "SoftBank-Backed PayPay Shares Jump 14% After $880 Million IPO",
+      "top_summary": "Shares of PayPay Corp. jumped 14% in its trading debut Thursday after the digital payments firm’s $879.8 million US IPO, the biggest listing for a Japanese company on a US stock exchange in a decade.",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "startups_funding"
+    },
+    "expected_related": false
+  },
+  {
+    "cluster_a": {
+      "cluster_id": "5bd5ea4a-7cd8-4304-baaa-714dfb5e6c0a",
+      "headline": "Random Walks for Text Semantic Similarity",
+      "top_summary": "@inproceedings{ramage-etal-2009-random, title = \"Random Walks for Text Semantic Similarity\", author = \"Ramage, Daniel and Rafferty, Anna N. and Manning, Christopher D.\", editor = \"Choudhury, Monojit and Hassan, Samer and Mukherjee, Animesh and Muresan, Smaranda\", booktitle = \"Proceedings of the 2009",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "llms"
+    },
+    "cluster_b": {
+      "cluster_id": "d44a57a7-aacd-4211-a8b9-d5197de68d8a",
+      "headline": "OmniStream: Mastering Perception, Reconstruction and Action in Continuous Streams",
+      "top_summary": "Computer Science > Computer Vision and Pattern Recognition [Submitted on 12 Mar 2026] Title:OmniStream: Mastering Perception, Reconstruction and Action in Continuous Streams View PDF HTML (experimental)Abstract:Modern visual agents require representations that are general, causal, and physically str",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "multimodal"
+    },
+    "expected_related": false
+  },
+  {
+    "cluster_a": {
+      "cluster_id": "89c64589-263a-477e-bc28-71b9c328364d",
+      "headline": "Strategic Navigation or Stochastic Search? How Agents and Humans Reason Over Document Collections",
+      "top_summary": "Computer Science > Computation and Language [Submitted on 12 Mar 2026] Title:Strategic Navigation or Stochastic Search? How Agents and Humans Reason Over Document Collections View PDFAbstract:Multimodal agents offer a promising path to automating complex document-intensive workflows. Yet, a critical",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "agents"
+    },
+    "cluster_b": {
+      "cluster_id": "e0ee70c3-634b-4a3d-a9f6-7dfa750afe5a",
+      "headline": "🤖 I built NEX — an autonomous AI agent that runs 24/7, learns from Reddit/RSS/YouTube, and posts across Mastodon, Telegram, Discord & YouTub",
+      "top_summary": "To use the Mastodon web application, please enable JavaScript. Alternatively, try one of the native apps for Mastodon for your platform.",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "agents"
+    },
+    "expected_related": false
+  },
+  {
+    "cluster_a": {
+      "cluster_id": "22656e99-f21e-4fc5-ba9b-8201e2f353a8",
+      "headline": "Trust Your Critic: Robust Reward Modeling and Reinforcement Learning for Faithful Image Editing and Generation",
+      "top_summary": "Computer Science > Computer Vision and Pattern Recognition [Submitted on 12 Mar 2026] Title:Trust Your Critic: Robust Reward Modeling and Reinforcement Learning for Faithful Image Editing and Generation View PDF HTML (experimental)Abstract:Reinforcement learning (RL) has emerged as a promising parad",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "multimodal"
+    },
+    "cluster_b": {
+      "cluster_id": "505ca714-8a8e-4877-b750-269ce41ad60d",
+      "headline": "@ai-sdk/rsc@3.0.0-beta.16",
+      "top_summary": "@ai-sdk/rsc@3.0.0-beta.16 Pre-release Pre-release vercel-ai-sdk released this 12 Mar 18:50 · 1 commit to main since this release Patch Changes - ai@7.0.0-beta.15",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "agents"
+    },
+    "expected_related": false
+  },
+  {
+    "cluster_a": {
+      "cluster_id": "b68841ce-76fb-4537-a10a-cc758695a591",
+      "headline": "One Model, Many Budgets: Elastic Latent Interfaces for Diffusion Transformers",
+      "top_summary": "Computer Science > Computer Vision and Pattern Recognition [Submitted on 12 Mar 2026] Title:One Model, Many Budgets: Elastic Latent Interfaces for Diffusion Transformers View PDF HTML (experimental)Abstract:Diffusion transformers (DiTs) achieve high generative quality but lock FLOPs to image resolut",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "multimodal"
+    },
+    "cluster_b": {
+      "cluster_id": "4d97c67d-fc92-4c32-88cd-35c25daad8fc",
+      "headline": "Meta acquires Moltbook, the AI agent social network",
+      "top_summary": "Meta has acquired Moltbook, the Reddit-esque simulated social network made up of AI agents that went viral a few weeks ago. The company will hire Moltbook creator Matt Schlicht and his business partner, Ben Parr, to work within Meta Superintelligence Labs. The terms of the deal have not been disclos",
+      "entities": [],
+      "dominant_event_type": "M_AND_A",
+      "dominant_topic": "agents"
+    },
+    "expected_related": false
+  },
+  {
+    "cluster_a": {
+      "cluster_id": "9451b853-6803-42ed-8eaf-4170864cae0a",
+      "headline": "Gigant rynku CRM wzmacnia swoje portfolio, kupując jeden z najciekawszych startupów ery AI. Przejęcie Forethought ma skrócić mapę drogową ro",
+      "top_summary": "To use the Mastodon web application, please enable JavaScript. Alternatively, try one of the native apps for Mastodon for your platform.",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "startups_funding"
+    },
+    "cluster_b": {
+      "cluster_id": "266153cb-2a6c-4758-bab1-f17e450ed6f6",
+      "headline": "🤖 I built NEX — an autonomous AI agent that runs 24/7, learns from Reddit/RSS/YouTube, and posts across Mastodon, Telegram, Discord & YouTub",
+      "top_summary": "To use the Mastodon web application, please enable JavaScript. Alternatively, try one of the native apps for Mastodon for your platform.",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "agents"
+    },
+    "expected_related": false
+  },
+  {
+    "cluster_a": {
+      "cluster_id": "505ca714-8a8e-4877-b750-269ce41ad60d",
+      "headline": "@ai-sdk/rsc@3.0.0-beta.16",
+      "top_summary": "@ai-sdk/rsc@3.0.0-beta.16 Pre-release Pre-release vercel-ai-sdk released this 12 Mar 18:50 · 1 commit to main since this release Patch Changes - ai@7.0.0-beta.15",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "agents"
+    },
+    "cluster_b": {
+      "cluster_id": "89c64589-263a-477e-bc28-71b9c328364d",
+      "headline": "Strategic Navigation or Stochastic Search? How Agents and Humans Reason Over Document Collections",
+      "top_summary": "Computer Science > Computation and Language [Submitted on 12 Mar 2026] Title:Strategic Navigation or Stochastic Search? How Agents and Humans Reason Over Document Collections View PDFAbstract:Multimodal agents offer a promising path to automating complex document-intensive workflows. Yet, a critical",
+      "entities": [],
+      "dominant_event_type": "OTHER",
+      "dominant_topic": "agents"
+    },
+    "expected_related": false
+  }
+]

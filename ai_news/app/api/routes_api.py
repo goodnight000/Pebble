@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import numpy as np
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import defer
 from starlette.responses import StreamingResponse
 
 from app.common.mmr import mmr_select
@@ -15,8 +16,10 @@ from app.common.time import utcnow
 from app.common.url_filters import is_evergreen_or_directory_url
 from app.config import get_settings
 from app.api.card_taxonomy import CATEGORY_PRIORITY, Category, build_topic_chips, category_for
+from app.api.source_labels import build_grounding_source
 from app.db import get_db
 from app.integrations.supabase import get_realtime_channel_map
+from app.llm.cache import get_cached, set_cached, delete_by_prefix
 from app.llm.client import LLMClient
 from app.models import Article, Cluster, ClusterMember, DailyDigest, RawItem, Source, UserEntityWeight, UserPref, UserSourceWeight, UserTopicWeight
 from app.scoring.signals import log_norm
@@ -270,6 +273,7 @@ def _select_articles(
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
+        .options(defer(Article.html), defer(Article.llm_reasoning))
         .filter(_freshness_filter(cutoff))
     )
     if content_type:
@@ -367,9 +371,12 @@ def _select_articles(
             "contentType": _content_type_for(source.kind, article.event_type),
             "timestamp": _to_iso(ts),
             "tags": tags,
-            "sources": [{"title": source.name, "uri": article.final_url, "source": source.name}],
+            "sources": [build_grounding_source(source=source, url=article.final_url)],
             "trustLabel": article.trust_label,
             "trustComponents": article.trust_components,
+            "verificationState": getattr(article, "verification_state", None),
+            "verificationConfidence": getattr(article, "verification_confidence", None),
+            "freshnessState": getattr(article, "freshness_state", None),
             "finalScore": article.final_score or article.global_score,
             "editorialRank": editorial_rank,
             "urgent": bool(article.urgent),
@@ -420,6 +427,7 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
+        .options(defer(Article.html), defer(Article.llm_reasoning))
         .filter(Article.id.in_(article_ids))
         .filter(func.coalesce(Article.final_score, Article.global_score) >= 1)
         .all()
@@ -501,9 +509,12 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
             "contentType": _content_type_for(source.kind, article.event_type),
             "timestamp": _to_iso(ts),
             "tags": tags,
-            "sources": [{"title": source.name, "uri": article.final_url, "source": source.name}],
+            "sources": [build_grounding_source(source=source, url=article.final_url)],
             "trustLabel": article.trust_label,
             "trustComponents": article.trust_components,
+            "verificationState": getattr(article, "verification_state", None),
+            "verificationConfidence": getattr(article, "verification_confidence", None),
+            "freshnessState": getattr(article, "freshness_state", None),
             "finalScore": article.final_score or article.global_score,
             "editorialRank": editorial_rank,
             "urgent": bool(article.urgent),
@@ -560,6 +571,13 @@ def compat_news_weekly(limit: int = 10, locale: str = Query("en", pattern="^(en|
 def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depends(get_db)):
     settings = get_settings()
     now = _naive_utc(utcnow())
+
+    # Check response cache (keyed by date + locale, invalidated on digest generation)
+    cache_key = f"api_digest_today:{now.date().isoformat()}:{locale}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+
     cutoff = now - timedelta(hours=24)
     candidates = _select_articles(db, user_id=settings.public_user_id, cutoff=cutoff, half_life_base=18, limit=30)
     all_items = _diversify_by_category(sorted(candidates, key=lambda x: x["significanceScore"], reverse=True), 12)
@@ -635,7 +653,7 @@ def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depen
         localized_breaking = None
         breaking_status = "ready"
     translation_status = _merge_translation_status(items_status, digests_status, breaking_status)
-    return {
+    response = {
         "digests": localized_digests,
         # Keep top-level fields for backward compat
         "headline": localized_digests["all"]["headline"],
@@ -647,6 +665,8 @@ def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depen
         "sourceLocale": "en",
         "translationStatus": translation_status,
     }
+    set_cached(cache_key, response, ttl=60 * 60 * 2)  # 2h TTL, invalidated by digest task
+    return response
 
 
 @router.get("/digest/archive")
@@ -655,6 +675,11 @@ def digest_archive(
     db=Depends(get_db),
 ):
     """Return a list of dates that have longform digests available."""
+    cache_key = f"api_digest_archive:{limit}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+
     settings = get_settings()
     rows = (
         db.query(
@@ -671,7 +696,7 @@ def digest_archive(
         .limit(limit)
         .all()
     )
-    return {
+    response = {
         "digests": [
             {
                 "date": str(row.digest_date),
@@ -681,6 +706,8 @@ def digest_archive(
             for row in rows
         ]
     }
+    set_cached(cache_key, response, ttl=60 * 60)  # 1h TTL
+    return response
 
 
 @router.get("/digest/daily")
@@ -700,6 +727,12 @@ def digest_daily(
             target_date = _naive_utc(utcnow()).date()
     else:
         target_date = _naive_utc(utcnow()).date()
+
+    # Check response cache
+    cache_key = f"api_digest_daily:{target_date.isoformat()}:{locale}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
 
     row = (
         db.query(DailyDigest)
@@ -744,7 +777,7 @@ def digest_daily(
             headline = translated.get("headline") or headline
             subtitle = translated.get("subtitle") or subtitle
 
-    return {
+    response = {
         "date": str(target_date),
         "headline": headline,
         "subtitle": subtitle,
@@ -753,6 +786,9 @@ def digest_daily(
         "locale": locale,
         "available": True,
     }
+    # Longform is stable once generated — cache for 24h
+    set_cached(cache_key, response, ttl=60 * 60 * 24)
+    return response
 
 
 @router.post("/refresh")
@@ -804,6 +840,7 @@ async def compat_stream(request: Request, db=Depends(get_db)):
                     .join(Source, RawItem.source_id == Source.id)
                     .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
                     .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
+                    .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
                     .filter(Article.created_at > last_seen)
                     .order_by(Article.created_at.asc())
                     .limit(25)
@@ -869,14 +906,17 @@ async def compat_stream(request: Request, db=Depends(get_db)):
                         summary=summary,
                         source_name=source.name,
                     ),
-                    "sources": [{"title": source.name, "uri": article.final_url, "source": source.name}],
+                    "sources": [build_grounding_source(source=source, url=article.final_url)],
                     "trustLabel": article.trust_label,
                     "trustComponents": article.trust_components,
+                    "verificationState": getattr(article, "verification_state", None),
+                    "verificationConfidence": getattr(article, "verification_confidence", None),
+                    "freshnessState": getattr(article, "freshness_state", None),
                     "finalScore": article.final_score or article.global_score,
                 }
                 yield "event: news\n"
                 yield f"data: {json.dumps(match)}\n\n"
 
-            await asyncio.sleep(4)
+            await asyncio.sleep(15)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

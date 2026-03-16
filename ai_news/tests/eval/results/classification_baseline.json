@@ -1,0 +1,111 @@
+{
+  "prompt_type": "classification",
+  "version": "baseline",
+  "sample_count": 8,
+  "dimension_averages": {
+    "accuracy": 7.25,
+    "topic_quality": 6.12,
+    "discrimination": 5.62,
+    "parseable": 10.0
+  },
+  "overall_score": 7.25,
+  "results": [
+    {
+      "sample_id": "3219c18f-2bde-4350-b20f-74cc5e239ec8",
+      "scores": {
+        "accuracy": 9,
+        "topic_quality": 8,
+        "discrimination": 7,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"event_type\": \"RESEARCH_PAPER\",\n  \"topics\": {\n    \"llms\": 0.0,\n    \"multimodal\": 0.0,\n    \"agents\": 0.0,\n    \"robotics\": 0.0,\n    \"vision\": 0.0,\n    \"audio_speech\": 0.0,\n    \"hardware_chips\": 0.0,\n    \"open_source\": 0.0,\n    \"startups_funding\": 0.0,\n    \"enterprise_apps\": 0.0,\n    \"safety_policy\": 0.0,\n    \"research_methods\": 0.8\n  }\n}",
+      "judge_reasoning": "The event_type 'RESEARCH_PAPER' is highly accurate given the article is a conference proceedings citation. Topic probabilities are reasonable, with 'research_methods' correctly high (0.8) and others zero, though 'research_methods' could be slightly higher. Discrimination is good but not perfect; the output doesn't distinguish between sub-types of research (e.g., NLP-specific vs. general AI). The JSON is perfectly parseable with correct keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "29b968b7-e42d-4a60-ba5d-5ac13b551acd",
+      "scores": {
+        "accuracy": 1,
+        "topic_quality": 1,
+        "discrimination": 1,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"event_type\": \"OTHER\",\n  \"topics\": {\n    \"llms\": 0.0,\n    \"multimodal\": 0.0,\n    \"agents\": 0.0,\n    \"robotics\": 0.0,\n    \"vision\": 0.0,\n    \"audio_speech\": 0.0,\n    \"hardware_chips\": 0.0,\n    \"open_source\": 0.0,\n    \"startups_funding\": 0.0,\n    \"enterprise_apps\": 0.0,\n    \"safety_policy\": 0.0,\n    \"research_methods\": 0.0\n  }\n}",
+      "judge_reasoning": "The article is about U.S. government nominations and withdrawals, not AI-related news. The classification output is valid JSON, but the event_type 'OTHER' is incorrect as it should be a specific non-AI category (e.g., 'GOVERNMENT' or 'POLITICS'). All topic probabilities are 0.0, which is accurate for this non-AI article, but the event_type misclassification severely undermines accuracy and topic_quality. Discrimination is poor because the model fails to distinguish this as non-AI content, defaulting to 'OTHER' without proper categorization.",
+      "errors": []
+    },
+    {
+      "sample_id": "894abcc1-7370-4ece-a2f1-8c41d4c30206",
+      "scores": {
+        "accuracy": 7,
+        "topic_quality": 8,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"event_type\": \"OTHER\",\n  \"topics\": {\n    \"llms\": 0.8,\n    \"open_source\": 0.7,\n    \"safety_policy\": 0.6,\n    \"multimodal\": 0.0,\n    \"agents\": 0.0,\n    \"robotics\": 0.0,\n    \"vision\": 0.0,\n    \"audio_speech\": 0.0,\n    \"hardware_chips\": 0.0,\n    \"startups_funding\": 0.0,\n    \"enterprise_apps\": 0.0,\n    \"research_methods\": 0.0\n  }\n}",
+      "judge_reasoning": "Event_type 'OTHER' is acceptable as the article is about policy discussion, not a specific release or launch, but a more specific type like 'POLICY_UPDATE' would be better. Topic probabilities are well-calibrated: high for 'llms' and 'open_source' (clearly relevant), moderate for 'safety_policy' (somewhat relevant), and zero for irrelevant topics. Discrimination is moderate—while topics are distinct, the event_type lacks granularity compared to similar categories. Output is valid JSON with correct keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "d8f564dc-f0b9-4090-ae80-01084fc40891",
+      "scores": {
+        "accuracy": 9,
+        "topic_quality": 8,
+        "discrimination": 9,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"event_type\": \"RESEARCH_PAPER\",\n  \"topics\": {\n    \"llms\": 0.9,\n    \"multimodal\": 0.0,\n    \"agents\": 0.0,\n    \"robotics\": 0.0,\n    \"vision\": 0.0,\n    \"audio_speech\": 0.0,\n    \"hardware_chips\": 0.0,\n    \"open_source\": 0.0,\n    \"startups_funding\": 0.0,\n    \"enterprise_apps\": 0.0,\n    \"safety_policy\": 0.8,\n    \"research_methods\": 0.7\n  }\n}",
+      "judge_reasoning": "Event_type 'RESEARCH_PAPER' is highly accurate given the article's focus on a new research framework from Johns Hopkins. Topic probabilities are well-discriminated: 'llms' (0.9) and 'safety_policy' (0.8) are clearly relevant, 'research_methods' (0.7) is appropriate, and others are correctly near zero. The output distinguishes well from other event types like MODEL_RELEASE. JSON is perfectly parseable with correct keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "33f79460-fb21-4819-82e9-0fff16b23590",
+      "scores": {
+        "accuracy": 8,
+        "topic_quality": 1,
+        "discrimination": 1,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"event_type\": \"OTHER\",\n  \"topics\": {\n    \"llms\": 0.0,\n    \"multimodal\": 0.0,\n    \"agents\": 0.0,\n    \"robotics\": 0.0,\n    \"vision\": 0.0,\n    \"audio_speech\": 0.0,\n    \"hardware_chips\": 0.0,\n    \"open_source\": 0.0,\n    \"startups_funding\": 0.0,\n    \"enterprise_apps\": 0.0,\n    \"safety_policy\": 0.0,\n    \"research_methods\": 0.0\n  }\n}",
+      "judge_reasoning": "The article is about Linux apt commands, which is a technical tutorial, not an AI event. 'OTHER' is an appropriate event_type, so accuracy is high. However, the topic probabilities are all 0.0, which is incorrect; 'open_source' should have a high probability (e.g., 0.9) as apt is an open-source package manager, and 'enterprise_apps' might have a low probability. Discrimination is low because the output fails to assign any meaningful probabilities, making it unable to distinguish between relevant and irrelevant topics. The JSON is valid and parseable.",
+      "errors": []
+    },
+    {
+      "sample_id": "8f14c641-b917-41f6-8f7a-ed864f9cc9ea",
+      "scores": {
+        "accuracy": 8,
+        "topic_quality": 7,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"event_type\": \"PRODUCT_LAUNCH\",\n  \"topics\": {\n    \"llms\": 0.7,\n    \"multimodal\": 0.0,\n    \"agents\": 0.6,\n    \"robotics\": 0.0,\n    \"vision\": 0.0,\n    \"audio_speech\": 0.0,\n    \"hardware_chips\": 0.0,\n    \"open_source\": 0.0,\n    \"startups_funding\": 0.0,\n    \"enterprise_apps\": 0.9,\n    \"safety_policy\": 0.0,\n    \"research_methods\": 0.0\n  }\n}",
+      "judge_reasoning": "Event type 'PRODUCT_LAUNCH' is accurate as the article describes a new AI tool's features. Topic probabilities are reasonable: high for 'enterprise_apps' (investigation engine), moderate for 'llms' and 'agents' (AI-powered, pattern detection), but 'open_source' should be higher given the title. Discrimination is adequate but could better distinguish from 'OPEN_SOURCE_RELEASE'. Output is valid JSON.",
+      "errors": []
+    },
+    {
+      "sample_id": "6b15f41f-15c4-4e27-a318-5e41150711f9",
+      "scores": {
+        "accuracy": 9,
+        "topic_quality": 8,
+        "discrimination": 9,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"event_type\": \"OPEN_SOURCE_RELEASE\",\n  \"topics\": {\n    \"llms\": 0.0,\n    \"multimodal\": 0.0,\n    \"agents\": 0.0,\n    \"robotics\": 0.0,\n    \"vision\": 0.0,\n    \"audio_speech\": 0.0,\n    \"hardware_chips\": 0.0,\n    \"open_source\": 1.0,\n    \"startups_funding\": 0.0,\n    \"enterprise_apps\": 0.3,\n    \"safety_policy\": 0.0,\n    \"research_methods\": 0.0\n  }\n}",
+      "judge_reasoning": "Event type 'OPEN_SOURCE_RELEASE' is highly accurate for an open-source documentation platform announcement. Topic probabilities are well-discriminated: 'open_source' correctly scored 1.0, 'enterprise_apps' reasonably low at 0.3 (as it's a developer tool), and all irrelevant topics correctly near 0.0. The output distinguishes well from other event types like PRODUCT_LAUNCH. JSON is perfectly parseable with correct keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "78cbc452-7e9c-4e65-9f4f-fb5dd7d86fe7",
+      "scores": {
+        "accuracy": 7,
+        "topic_quality": 8,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\n  \"event_type\": \"POLICY_REGULATION\",\n  \"topics\": {\n    \"llms\": 0.8,\n    \"multimodal\": 0.0,\n    \"agents\": 0.0,\n    \"robotics\": 0.0,\n    \"vision\": 0.0,\n    \"audio_speech\": 0.0,\n    \"hardware_chips\": 0.0,\n    \"open_source\": 0.0,\n    \"startups_funding\": 0.0,\n    \"enterprise_apps\": 0.0,\n    \"safety_policy\": 0.9,\n    \"research_methods\": 0.0\n  }\n}",
+      "judge_reasoning": "Event_type 'POLICY_REGULATION' is reasonable given the article discusses legal action and policy, but could be more specific (e.g., 'LEGAL_ACTION'). Topic probabilities are well-discriminated: high for 'safety_policy' (0.9) and 'llms' (0.8) align with content about Anthropic's red lines and AI safety; low for irrelevant topics. Discrimination is moderate—'POLICY_REGULATION' is broad and could overlap with other event types like 'LEGAL_DISPUTE'. Output is valid JSON with correct keys.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

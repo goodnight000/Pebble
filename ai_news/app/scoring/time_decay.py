@@ -19,6 +19,11 @@ EVENT_HALFLIFE_HOURS: dict[str, float] = {
 }
 
 TRUSTED_LABELS = {"official", "confirmed", "likely"}
+TRUSTED_VERIFICATION_STATES = {
+    "verified_artifact",
+    "official_statement",
+    "corroborated_report",
+}
 
 
 def rank_score(importance_score: float, event_type: str, age_hours: float, content_type: str = "news") -> float:
@@ -37,11 +42,21 @@ def compute_urgent(
     independent_sources: int,
     is_official: bool,
     trust_label: str | None,
+    verification_state: str | None = None,
+    verification_confidence: float | None = None,
 ) -> bool:
     """Determine if article is urgent. Now requires trust_label >= 'likely'."""
     if global_score < 85:
         return False
     if age_hours > 6:
+        return False
+    if verification_state:
+        if verification_state in {"disputed", "corrected_or_retracted"}:
+            return False
+        if verification_state in TRUSTED_VERIFICATION_STATES:
+            return (verification_confidence or 0) >= 70
+        if verification_state == "single_source_report" and (verification_confidence or 0) >= 70:
+            return True
         return False
     if trust_label and trust_label not in TRUSTED_LABELS:
         return False

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Language, NewsItem } from '@/types';
 import { AlertCircle, ArrowRight, Shield, ShieldCheck, ShieldAlert, ShieldQuestion } from 'lucide-react';
-import { getTrustLabel, getUiText } from '@/i18n';
+import { getFreshnessLabel, getTrustLabel, getUiText } from '@/i18n';
 
 const TRUST_CONFIG: Record<string, { color: string; icon: React.ReactNode }> = {
   official: { color: '#22c55e', icon: <ShieldCheck className="w-3 h-3" /> },
@@ -10,9 +10,23 @@ const TRUST_CONFIG: Record<string, { color: string; icon: React.ReactNode }> = {
   developing: { color: '#eab308', icon: <ShieldQuestion className="w-3 h-3" /> },
   unverified: { color: '#6b7280', icon: <ShieldAlert className="w-3 h-3" /> },
   disputed: { color: '#ef4444', icon: <ShieldAlert className="w-3 h-3" /> },
+  verified_artifact: { color: '#16a34a', icon: <ShieldCheck className="w-3 h-3" /> },
+  official_statement: { color: '#15803d', icon: <ShieldCheck className="w-3 h-3" /> },
+  corroborated_report: { color: '#2563eb', icon: <Shield className="w-3 h-3" /> },
+  single_source_report: { color: '#0f766e', icon: <Shield className="w-3 h-3" /> },
+  community_signal: { color: '#6b7280', icon: <ShieldQuestion className="w-3 h-3" /> },
+  corrected_or_retracted: { color: '#dc2626', icon: <ShieldAlert className="w-3 h-3" /> },
 };
 
-const TRUSTED_LABELS = new Set<string | undefined>(['official', 'confirmed', 'likely', undefined]);
+const TRUSTED_LABELS = new Set<string | undefined>([
+  'official',
+  'confirmed',
+  'likely',
+  'verified_artifact',
+  'official_statement',
+  'corroborated_report',
+  undefined,
+]);
 
 interface BreakingAlertProps {
   item: NewsItem;
@@ -32,12 +46,17 @@ const tightenSummary = (summary: string, maxLength = 180) => {
 };
 
 const BreakingAlert: React.FC<BreakingAlertProps> = ({ item, language }) => {
-  if (!TRUSTED_LABELS.has(item.trustLabel)) {
+  const badgeKey = item.verificationState ?? item.trustLabel;
+  const isTrustedSingleSource = badgeKey === 'single_source_report' && (item.verificationConfidence ?? 0) >= 70;
+  if (!TRUSTED_LABELS.has(badgeKey) && !isTrustedSingleSource) {
     return null;
   }
 
-  const trustCfg = item.trustLabel ? TRUST_CONFIG[item.trustLabel] : null;
+  const trustCfg = badgeKey ? TRUST_CONFIG[badgeKey] : null;
   const primarySource = item.sources?.[0];
+  const sourceLabel = primarySource?.viaSource
+    ? `${primarySource.title} ${getUiText(language, 'via')} ${primarySource.viaSource}`
+    : primarySource?.title;
 
   return (
     <div className="group relative overflow-hidden rounded-2xl border-2 border-[var(--accent)] bg-[var(--panel)] shadow-[6px_6px_0_var(--ink)]">
@@ -51,10 +70,10 @@ const BreakingAlert: React.FC<BreakingAlertProps> = ({ item, language }) => {
       <div className="relative flex flex-col gap-5 rounded-2xl p-6 md:p-8">
         <div className="wf-breaking-meta">
           <span className="wf-breaking-label">{getUiText(language, 'breakingIntelligence')}</span>
-          {primarySource?.title && (
+          {sourceLabel && (
             <>
               <span className="wf-breaking-separator" />
-              <span className="wf-breaking-source">{getUiText(language, 'sourceLabel')}: {primarySource.title}</span>
+              <span className="wf-breaking-source">{getUiText(language, 'sourceLabel')}: {sourceLabel}</span>
             </>
           )}
           <span className="wf-breaking-separator" />
@@ -81,7 +100,12 @@ const BreakingAlert: React.FC<BreakingAlertProps> = ({ item, language }) => {
                     style={{ color: trustCfg.color }}
                   >
                     {trustCfg.icon}
-                    {getTrustLabel(language, item.trustLabel)}
+                    {getTrustLabel(language, badgeKey)}
+                  </span>
+                )}
+                {item.freshnessState && (
+                  <span className="wf-chip" style={{ borderColor: 'var(--ink)', color: 'var(--muted)' }}>
+                    {getFreshnessLabel(language, item.freshnessState)}
                   </span>
                 )}
               </div>

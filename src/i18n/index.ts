@@ -2,6 +2,8 @@ import type { Language } from '@/types';
 import {
   CATEGORY_LABELS,
   CONTENT_TYPE_LABELS,
+  FRESHNESS_LABELS,
+  LEGACY_LOCALE_STORAGE_KEYS,
   LOCALE_STORAGE_KEY,
   NAV_LABELS,
   pickMessage,
@@ -21,7 +23,16 @@ export function readStoredLanguage(): Language {
     return 'en';
   }
   const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-  return isLanguage(stored) ? stored : 'en';
+  if (isLanguage(stored)) {
+    return stored;
+  }
+  for (const legacyKey of LEGACY_LOCALE_STORAGE_KEYS) {
+    const legacyValue = window.localStorage.getItem(legacyKey);
+    if (isLanguage(legacyValue)) {
+      return legacyValue;
+    }
+  }
+  return 'en';
 }
 
 export function writeStoredLanguage(language: Language): void {
@@ -29,6 +40,9 @@ export function writeStoredLanguage(language: Language): void {
     return;
   }
   window.localStorage.setItem(LOCALE_STORAGE_KEY, language);
+  for (const legacyKey of LEGACY_LOCALE_STORAGE_KEYS) {
+    window.localStorage.setItem(legacyKey, language);
+  }
 }
 
 export function getUiText(language: Language, key: keyof typeof UI_MESSAGES): string {
@@ -40,6 +54,13 @@ export function getTrustLabel(language: Language, trustLabel: string | null | un
     return trustLabel ?? '';
   }
   return pickMessage(language, TRUST_LABELS[trustLabel]);
+}
+
+export function getFreshnessLabel(language: Language, freshness: string | null | undefined): string {
+  if (!freshness || !FRESHNESS_LABELS[freshness]) {
+    return freshness ?? '';
+  }
+  return pickMessage(language, FRESHNESS_LABELS[freshness]);
 }
 
 export function getCategoryLabel(language: Language, category: string): string {

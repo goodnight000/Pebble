@@ -21,6 +21,16 @@ export interface NewsItem {
   tags: string[];
   sources: GroundingSource[];
   trustLabel?: 'official' | 'confirmed' | 'likely' | 'developing' | 'unverified' | 'disputed';
+  verificationState?:
+    | 'verified_artifact'
+    | 'official_statement'
+    | 'corroborated_report'
+    | 'single_source_report'
+    | 'community_signal'
+    | 'disputed'
+    | 'corrected_or_retracted';
+  verificationConfidence?: number;
+  freshnessState?: 'fresh' | 'maturing' | 'stable';
   trustComponents?: {
     corroboration: number;
     official_confirmation: number;
@@ -41,6 +51,8 @@ export interface GroundingSource {
   title: string;
   uri: string;
   source?: string;
+  viaSource?: string;
+  discoverySource?: string;
 }
 
 export interface DigestResponse {

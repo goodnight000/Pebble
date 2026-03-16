@@ -7,38 +7,43 @@ import re
 
 logger = logging.getLogger(__name__)
 
-SIGNIFICANCE_PROMPT = '''You are an AI industry analyst. Score this news article's significance.
+SIGNIFICANCE_PROMPT = '''Rate this AI news article's significance on three dimensions (each 1-10 integer).
 
-Rate on three dimensions (each 1-10):
+IMPACT — How much does this change the AI landscape?
+  9-10: Industry-reshaping (new frontier model from a top lab, landmark regulation, >$1B acquisition)
+  7-8:  Significant advance in a sub-field (notable model release, major open-source project, $100M+ funding)
+  5-6:  Noteworthy (product update, solid benchmark result, mid-size funding round)
+  3-4:  Minor (small startup news, incremental update, opinion/commentary piece)
+  1-2:  Noise (marketing fluff, minor bug fix, unsubstantiated rumor)
 
-IMPACT: How much does this change the AI landscape?
-  9-10: Industry-reshaping (new frontier model, major acquisition >$1B, landmark regulation)
-  7-8: Significant for a sub-field (notable model release, major open-source project, $100M+ funding)
-  5-6: Noteworthy (product update, benchmark result, mid-size funding)
-  3-4: Minor (small startup news, incremental update, opinion piece)
-  1-2: Noise (marketing fluff, minor bug fix, rumor with no substance)
+BREADTH — How many AI practitioners/stakeholders are affected?
+  9-10: Everyone in AI (foundational infrastructure shift, safety regulation, new base model)
+  7-8:  Large sub-community (all NLP researchers, all ML engineers, all AI startups)
+  5-6:  Specific niche (robotics researchers, speech specialists, one company's user base)
+  3-4:  Very narrow audience
+  1-2:  Almost no one
 
-BREADTH: How many AI practitioners/stakeholders does this affect?
-  9-10: Everyone in AI (infrastructure shift, safety regulation, foundational model)
-  7-8: Large sub-community (all NLP researchers, all ML engineers, all AI startups)
-  5-6: Specific niche (robotics researchers, speech specialists, one company's users)
-  3-4: Very narrow audience
-  1-2: Almost no one
+NOVELTY — How new or surprising is this?
+  9-10: Completely unexpected, no prior leaks or signals
+  7-8:  Surprising, significantly advances expectations
+  5-6:  Expected development, but now confirmed with meaningful substance
+  3-4:  Incremental, predictable follow-up to known story
+  1-2:  Already widely known, rehash, or obvious
 
-NOVELTY: How new/surprising is this?
-  9-10: Completely unexpected, paradigm-shifting
-  7-8: Surprising, advances expectations significantly
-  5-6: Expected development, but meaningful execution
-  3-4: Incremental, predictable
-  1-2: Already known, rehash, or obvious
+Scoring discipline:
+- Most articles should score 3-6 on each dimension. Reserve 8+ for genuinely exceptional news.
+- A routine product update from a major company is still 5-6 impact, not 8+.
+- Funding rounds under $50M are typically 4-5 impact unless the company is unusually notable.
+- Articles not related to AI/ML should score 1-2 on ALL dimensions.
+- General tech tutorials or non-AI software news should score 1-2 across the board.
+- Government actions unrelated to AI/tech should score 1 on all dimensions.
 
-Article title: {title}
+Title: {title}
 Source: {source_name}
 Event type: {event_type}
-Summary (first 500 chars): {text_preview}
+Content preview: {text_preview}
 
-Respond with ONLY a JSON object:
-{{"impact": <int>, "breadth": <int>, "novelty": <int>}}'''
+Return ONLY: {{"impact": <int 1-10>, "breadth": <int 1-10>, "novelty": <int 1-10>}}'''
 
 
 def build_significance_prompt(
@@ -108,18 +113,27 @@ def compute_final_score(
     *,
     confirmation_level: str | None = None,
     trust_label: str | None = None,
+    verification_state: str | None = None,
+    verification_confidence: float | None = None,
+    update_status: str | None = None,
 ) -> float:
     """Blend rule-based and LLM scores, allowing bounded downward correction."""
     if llm_score is None:
         return rule_score
-    blended = 0.70 * rule_score + 0.30 * llm_score
+    if update_status in {"corrected", "retracted"}:
+        return round(min(rule_score, 0.50 * rule_score + 0.50 * llm_score), 2)
+    blended = 0.55 * rule_score + 0.45 * llm_score
     if blended >= rule_score:
         return round(blended, 2)
     # Downward correction with guardrails
     delta = rule_score - blended
+    if verification_state in {"verified_artifact", "official_statement", "corroborated_report"}:
+        delta = delta * 0.5
+    if verification_state == "single_source_report" and (verification_confidence or 0) >= 70:
+        delta = delta * 0.75
     if confirmation_level == "official":
         delta = min(delta, 5.0)
     if trust_label in ("official", "confirmed", "likely"):
         delta = delta * 0.5
-    delta = min(delta, 15.0)
+    delta = min(delta, 20.0)  # Was 15 — allow LLM to correct over-scored articles more
     return round(rule_score - delta, 2)

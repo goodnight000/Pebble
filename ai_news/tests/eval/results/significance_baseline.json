@@ -1,0 +1,111 @@
+{
+  "prompt_type": "significance",
+  "version": "baseline",
+  "sample_count": 8,
+  "dimension_averages": {
+    "calibration": 6.88,
+    "consistency": 7.0,
+    "discrimination": 6.5,
+    "parseable": 10.0
+  },
+  "overall_score": 7.59,
+  "results": [
+    {
+      "sample_id": "5f36ec69-d951-4e00-a9c7-af31d60937be",
+      "scores": {
+        "calibration": 8,
+        "consistency": 8,
+        "discrimination": 7,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 4, \"breadth\": 4, \"novelty\": 5}",
+      "judge_reasoning": "The scores (impact:4, breadth:4, novelty:5) are well-calibrated, as they fall within the expected 3-6 range for a specialized research paper on incremental neural network verification. They are consistent with the article's apparent importance—a technical advance in a niche area, not a major breakthrough. The discrimination is appropriate, as the scores correctly indicate moderate, not high, impact. The output is valid JSON with correct integer keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "d1f18103-b42d-4722-baab-fe3a4acf5460",
+      "scores": {
+        "calibration": 2,
+        "consistency": 2,
+        "discrimination": 1,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 1, \"breadth\": 1, \"novelty\": 1}",
+      "judge_reasoning": "The output is valid JSON with correct integer keys (parseable: 10). However, the scores are poorly calibrated: assigning 1 to all dimensions for an article about a major geopolitical conflict involving the U.S., Israel, and Iran is extreme and inconsistent with the article's apparent high importance (consistency: 2). The scoring fails to discriminate between low-impact and high-impact news, as this topic has significant global implications (discrimination: 1). Calibration is low because 1 is reserved for trivial news, not major conflicts (calibration: 2).",
+      "errors": []
+    },
+    {
+      "sample_id": "f0285af5-7448-4640-98fa-df10abe677cd",
+      "scores": {
+        "calibration": 7,
+        "consistency": 6,
+        "discrimination": 7,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 5, \"breadth\": 6, \"novelty\": 5}",
+      "judge_reasoning": "The output is valid JSON with correct integer keys (parseable: 10). The scores (impact:5, breadth:6, novelty:5) are reasonably calibrated for a niche technical tool, avoiding over-inflation (calibration: 7). However, consistency is moderate (6) because the article's focus on a specific open-source project for Kubernetes configuration seems less aligned with the 'CHIP_HARDWARE' event type, which might slightly misrepresent its primary significance. Discrimination is good (7) as the scores appropriately reflect a mid-level, specialized news item rather than a major breakthrough.",
+      "errors": []
+    },
+    {
+      "sample_id": "014332c4-cf02-490d-8676-3d6cc4560e84",
+      "scores": {
+        "calibration": 7,
+        "consistency": 8,
+        "discrimination": 6,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 5, \"breadth\": 6, \"novelty\": 5}",
+      "judge_reasoning": "Scores are well-calibrated within the 3-6 range for a significant but not unprecedented security incident. Consistency is strong as the scores align with a sophisticated, targeted campaign from a major vendor. Discrimination is moderate; while the scores appropriately reflect a serious threat, they may not fully differentiate it from less significant events given its targeted nature and Microsoft's involvement. The output is perfectly parseable JSON.",
+      "errors": []
+    },
+    {
+      "sample_id": "3724f844-e4e2-400a-a1e0-9a3f88422f06",
+      "scores": {
+        "calibration": 7,
+        "consistency": 8,
+        "discrimination": 7,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 5, \"breadth\": 6, \"novelty\": 5}",
+      "judge_reasoning": "The output is valid JSON with correct integer keys. The scores (impact:5, breadth:6, novelty:5) are well-calibrated for a niche open-source tool release, avoiding over-scoring. They are consistent with the article's apparent importance as a specialized Kubernetes GPU optimization tool, not a major global breakthrough. The discrimination is appropriate, as it differentiates this from higher-impact news by scoring in the mid-range, though slightly higher breadth (6) is justified given Kubernetes' relevance.",
+      "errors": []
+    },
+    {
+      "sample_id": "1429cb7b-dc50-4ffc-8e46-abc94e725259",
+      "scores": {
+        "calibration": 8,
+        "consistency": 9,
+        "discrimination": 8,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 3, \"breadth\": 3, \"novelty\": 2}",
+      "judge_reasoning": "The scores (impact:3, breadth:3, novelty:2) are well-calibrated, as this is a routine CISA update about a single vulnerability, not a major incident. They are consistent with the article's low significance (a catalog addition, not a widespread attack). The discrimination is appropriate, as it correctly identifies this as low-impact news compared to high-impact events. The output is valid JSON with correct integer keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "20134cf7-f045-4589-b8e5-d59ecf5a009c",
+      "scores": {
+        "calibration": 8,
+        "consistency": 7,
+        "discrimination": 9,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 5, \"breadth\": 6, \"novelty\": 7}",
+      "judge_reasoning": "The scores are well-calibrated, with novelty (7) appropriately high for a novel threat, while impact (5) and breadth (6) are moderate, reflecting a significant but not yet widespread issue. Consistency is good, as the scores align with the article's focus on a new, concerning but not catastrophic threat. Discrimination is excellent, as the output clearly differentiates this from routine news by elevating novelty. The output is valid JSON with correct integer keys.",
+      "errors": []
+    },
+    {
+      "sample_id": "e2b3d90b-e5ae-42a2-a7a9-ef59b62d7ef9",
+      "scores": {
+        "calibration": 8,
+        "consistency": 8,
+        "discrimination": 7,
+        "parseable": 10
+      },
+      "raw_output": "{\"impact\": 3, \"breadth\": 4, \"novelty\": 3}",
+      "judge_reasoning": "The scores (impact:3, breadth:4, novelty:3) are well-calibrated for a provocative but non-event news item; they correctly reflect moderate significance. Consistency is high as the article's speculative, opinion-based nature aligns with low-to-mid scores. Discrimination is good but could be sharper—impact might be slightly low given the CEO's profile, but overall appropriate. Output is valid JSON with correct integer keys.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

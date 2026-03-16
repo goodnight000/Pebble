@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { X } from 'lucide-react';
+import { X, ShieldCheck, Shield, ShieldQuestion, ShieldAlert } from 'lucide-react';
 import type {
   Language,
   RelationshipEdgeType,
@@ -7,6 +7,21 @@ import type {
   GraphCluster,
 } from '@/types';
 import { getTrustLabel, getUiText } from '@/i18n';
+
+const TRUST_CONFIG: Record<string, { color: string; icon: React.ReactNode }> = {
+  official: { color: '#22c55e', icon: <ShieldCheck className="w-3 h-3" /> },
+  confirmed: { color: '#3b82f6', icon: <ShieldCheck className="w-3 h-3" /> },
+  likely: { color: '#14b8a6', icon: <Shield className="w-3 h-3" /> },
+  developing: { color: '#eab308', icon: <ShieldQuestion className="w-3 h-3" /> },
+  unverified: { color: '#6b7280', icon: <ShieldAlert className="w-3 h-3" /> },
+  disputed: { color: '#ef4444', icon: <ShieldAlert className="w-3 h-3" /> },
+  verified_artifact: { color: '#16a34a', icon: <ShieldCheck className="w-3 h-3" /> },
+  official_statement: { color: '#15803d', icon: <ShieldCheck className="w-3 h-3" /> },
+  corroborated_report: { color: '#2563eb', icon: <Shield className="w-3 h-3" /> },
+  single_source_report: { color: '#0f766e', icon: <Shield className="w-3 h-3" /> },
+  community_signal: { color: '#6b7280', icon: <ShieldQuestion className="w-3 h-3" /> },
+  corrected_or_retracted: { color: '#dc2626', icon: <ShieldAlert className="w-3 h-3" /> },
+};
 
 interface RelationshipGraphPanelProps {
   cluster: GraphCluster | null;
@@ -90,17 +105,29 @@ const RelationshipGraphPanel: React.FC<RelationshipGraphPanelProps> = ({
       data-testid="relationship-graph-panel"
     >
       <div className="relationship-graph-panel__header">
-        <button
-          type="button"
-          className="cluster-drawer-close"
-          onClick={onClose}
-          aria-label={getUiText(language, 'closeRelationshipPanel')}
-        >
-          <X size={14} />
-        </button>
-        <span className={`trust-badge trust-badge--${cluster.trustLabel}`}>
-          {getTrustLabel(language, cluster.trustLabel)}
-        </span>
+        <div className="relationship-graph-panel__header-top">
+          <button
+            type="button"
+            className="cluster-drawer-close"
+            onClick={onClose}
+            aria-label={getUiText(language, 'closeRelationshipPanel')}
+          >
+            <X size={14} />
+          </button>
+          {(() => {
+            const cfg = TRUST_CONFIG[cluster.trustLabel];
+            if (!cfg) return null;
+            return (
+              <span
+                className="wf-trust-badge"
+                style={{ color: cfg.color, borderColor: cfg.color }}
+              >
+                {cfg.icon}
+                {getTrustLabel(language, cluster.trustLabel)}
+              </span>
+            );
+          })()}
+        </div>
         <h3 className="relationship-graph-panel__headline">{cluster.headline}</h3>
       </div>
 

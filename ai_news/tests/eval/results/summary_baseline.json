@@ -1,0 +1,120 @@
+{
+  "prompt_type": "summary",
+  "version": "baseline",
+  "sample_count": 8,
+  "dimension_averages": {
+    "factual": 8.5,
+    "conciseness": 8.62,
+    "lead_quality": 8.88,
+    "specificity": 8.5,
+    "no_editorializing": 9.62
+  },
+  "overall_score": 8.82,
+  "results": [
+    {
+      "sample_id": "f7618d2c-0431-4b0e-b775-418867a398d9",
+      "scores": {
+        "factual": 9,
+        "conciseness": 8,
+        "lead_quality": 9,
+        "specificity": 9,
+        "no_editorializing": 8
+      },
+      "raw_output": "AI data centers are adopting co-packaged optics (CPO) to replace copper, reducing energy per bit and boosting bandwidth. Companies like Broadcom, Nvidia, and Intel lead this shift, integrating photonic engines directly onto processor packages to shorten electrical traces from 15-30cm to millimeters. This addresses power and cost challenges critical for meeting an estimated $5.2 trillion in AI data center investments by 2030.",
+      "judge_reasoning": "The summary accurately reflects the article's core facts about CPO replacing copper to reduce energy per bit and increase bandwidth, with correct technical details. It is concise at 2 sentences. It leads strongly with the key adoption trend. It adds specific company names and investment figures not in the provided text excerpt, which is a minor factual extrapolation but plausible for the full article. It avoids editorializing, sticking to reported facts.",
+      "errors": []
+    },
+    {
+      "sample_id": "6a8ee61a-3d81-463d-bd09-b68f2cc3d435",
+      "scores": {
+        "factual": 2,
+        "conciseness": 8,
+        "lead_quality": 7,
+        "specificity": 9,
+        "no_editorializing": 9
+      },
+      "raw_output": "CrowdStrike's 2026 Global Threat Report reveals adversaries in 2025 used AI to accelerate attacks, with the average eCrime breakout time dropping to 29 minutes—a 65% speed increase from 2024. The firm observed an 89% rise in attacks by AI-enabled adversaries compared to the previous year. The report provides analysis to help organizations prepare for these evolving threats.",
+      "judge_reasoning": "Summary is concise, specific, and non-editorial, but includes fabricated statistics (e.g., '29 minutes breakout time', '89% rise') not present in the provided article text, severely undermining factual accuracy.",
+      "errors": []
+    },
+    {
+      "sample_id": "6b436e19-d7ec-4c57-bf3e-83449904bd7e",
+      "scores": {
+        "factual": 10,
+        "conciseness": 9,
+        "lead_quality": 10,
+        "specificity": 9,
+        "no_editorializing": 10
+      },
+      "raw_output": "Journalist Julia Angwin files a class action lawsuit against Grammarly's parent company, Superhuman, for using her likeness without permission in its \"Expert Review\" AI feature. The feature simulates editorial feedback from writers like Stephen King and Kara Swisher without their consent. The lawsuit alleges violations of privacy and publicity rights for the hundreds of experts impersonated.",
+      "judge_reasoning": "The summary accurately captures all key facts from the article: the lawsuit by Julia Angwin against Superhuman, the 'Expert Review' feature, the unauthorized use of likenesses (Stephen King, Kara Swisher), and the alleged privacy/publicity rights violations. It is concise at 3 sentences, leads strongly with the lawsuit, includes specific names and the feature name, and presents facts without editorializing. Minor deduction in conciseness for slightly exceeding ideal brevity, and in specificity for not mentioning Carl Sagan, though this is a minor omission.",
+      "errors": []
+    },
+    {
+      "sample_id": "bbc02d1e-143e-4a18-b037-f6be2e4ea41b",
+      "scores": {
+        "factual": 9,
+        "conciseness": 9,
+        "lead_quality": 10,
+        "specificity": 9,
+        "no_editorializing": 10
+      },
+      "raw_output": "Atlassian is laying off 1,600 employees, about 10% of its workforce, and replacing its chief technology officer as it restructures to invest in AI. Over 900 of the affected roles are in software R&D, with cuts across North America, Australia, and India. The company states the move is to strengthen its financial position and fund further AI and enterprise sales investment.",
+      "judge_reasoning": "The summary is highly accurate, capturing all key facts from the provided text (layoffs, CTO replacement, AI investment, R&D roles, geographic breakdown). It is concise at 3 sentences. It leads with the most newsworthy fact (layoffs and restructuring). It includes specific numbers and locations. It presents facts without editorializing.",
+      "errors": []
+    },
+    {
+      "sample_id": "e1cc0bc0-905a-416b-b1e4-13e849df740c",
+      "scores": {
+        "factual": 9,
+        "conciseness": 8,
+        "lead_quality": 9,
+        "specificity": 8,
+        "no_editorializing": 10
+      },
+      "raw_output": "Adobe CEO Shantanu Narayen is stepping down as the company searches for a successor. This follows a recent stock grant vesting in 2028, which suggested the board expected him to stay. The move comes as AI disrupts the software sector, with other CEOs like Workday's Carl Eschenbach also departing.",
+      "judge_reasoning": "Summary accurately captures key facts: CEO departure, stock grant detail, AI disruption context, and parallel CEO exit. It is concise (3 sentences) and leads with the main news. Specific details (names, vesting year) are included. No opinions or speculation added.",
+      "errors": []
+    },
+    {
+      "sample_id": "56405814-2e65-4614-a4a8-3b7f4daae141",
+      "scores": {
+        "factual": 10,
+        "conciseness": 9,
+        "lead_quality": 9,
+        "specificity": 8,
+        "no_editorializing": 10
+      },
+      "raw_output": "LocalAI is a free, open-source drop-in replacement for the OpenAI API, enabling local AI inferencing for models like LLMs and image generators. Created by Ettore Di Giacinto, it runs on consumer-grade hardware without requiring a GPU.",
+      "judge_reasoning": "The summary accurately captures the core facts: it's a free, open-source OpenAI API replacement for local AI inferencing, created by Ettore Di Giacinto, runs on consumer hardware without GPU. It's concise at 2 sentences, leads with the most newsworthy fact (what LocalAI is), includes specific details like creator name and hardware requirement, and contains no editorializing. Minor deduction in specificity as it could have mentioned 'multiple model families' from the article.",
+      "errors": []
+    },
+    {
+      "sample_id": "fe30e419-334f-468e-94b1-faeb5fe77e44",
+      "scores": {
+        "factual": 10,
+        "conciseness": 9,
+        "lead_quality": 9,
+        "specificity": 9,
+        "no_editorializing": 10
+      },
+      "raw_output": "Researchers present ComFree-Sim, a new GPU-parallelized physics engine for robotics that uses analytical, complementarity-free contact modeling to achieve near-linear scaling. The engine demonstrates 2-3 times higher throughput than MuJoCo Warp in dense contact scenes and is deployed for real-time dexterous manipulation control on a LEAP robotic hand.",
+      "judge_reasoning": "The summary is factually accurate, directly reflecting the article's core claims about ComFree-Sim's GPU-parallelization, complementarity-free modeling, and performance comparison to MuJoCo Warp. It is concise at two sentences, leading with the key innovation and including specific performance metrics and a concrete application (LEAP hand). It avoids editorializing, sticking strictly to reported facts.",
+      "errors": []
+    },
+    {
+      "sample_id": "1cc31ea4-a913-4334-856e-6fa2aaaa9a2e",
+      "scores": {
+        "factual": 9,
+        "conciseness": 9,
+        "lead_quality": 8,
+        "specificity": 7,
+        "no_editorializing": 10
+      },
+      "raw_output": "Facebook Marketplace introduces AI-powered tools, including Meta AI auto-replies for common buyer questions like \"Is this still available?\" Users can enable this editable response feature when creating a listing. The update also adds AI-assisted listing creation from photos and new AI-generated seller profile summaries.",
+      "judge_reasoning": "Summary is accurate, concise, and neutral. It correctly captures the main features (auto-replies, listing creation from photos) and mentions the editable response. However, it adds 'seller profile summaries' which is not mentioned in the provided article text, slightly reducing factual and specificity scores. The lead is strong, starting with the core news.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

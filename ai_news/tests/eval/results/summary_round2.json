@@ -1,0 +1,120 @@
+{
+  "prompt_type": "summary",
+  "version": "round2",
+  "sample_count": 8,
+  "dimension_averages": {
+    "factual": 7.25,
+    "conciseness": 8.75,
+    "lead_quality": 8.5,
+    "specificity": 7.75,
+    "no_editorializing": 9.5
+  },
+  "overall_score": 8.35,
+  "results": [
+    {
+      "sample_id": "f7618d2c-0431-4b0e-b775-418867a398d9",
+      "scores": {
+        "factual": 4,
+        "conciseness": 8,
+        "lead_quality": 7,
+        "specificity": 7,
+        "no_editorializing": 8
+      },
+      "raw_output": "AI data centers are adopting co-packaged optics to reduce energy per bit and increase bandwidth. Key adopters include Broadcom, Nvidia, Intel, Marvell, and Ayar Labs. According to McKinsey & Company, meeting global AI demand will require $5.2 trillion in data center investments by 2030.",
+      "judge_reasoning": "The summary is concise and well-structured, but it introduces specific company names (Broadcom, Nvidia, etc.) and a McKinsey investment figure not present in the provided article text, which constitutes hallucination. The lead is decent but not the most newsworthy fact from the excerpt. It avoids editorializing.",
+      "errors": []
+    },
+    {
+      "sample_id": "6a8ee61a-3d81-463d-bd09-b68f2cc3d435",
+      "scores": {
+        "factual": 2,
+        "conciseness": 8,
+        "lead_quality": 7,
+        "specificity": 9,
+        "no_editorializing": 9
+      },
+      "raw_output": "In 2025, the average eCrime breakout time dropped to 29 minutes, a 65% increase in speed from 2024, with the fastest observed breakout time being 27 seconds. Adversaries utilized AI tools, leading to an 89% increase in attacks by AI-enabled adversaries compared to 2024.",
+      "judge_reasoning": "The summary is concise, specific with numbers, and avoids editorializing, but it is largely factually inaccurate. The provided article text does not mention the specific statistics (29-minute breakout time, 65% increase, 27-second fastest time, 89% increase in AI-enabled attacks). These details appear to be hallucinated or from a different source, as the article text only discusses general trends like subtlety and targeting trusted relationships. Therefore, the factual score is very low.",
+      "errors": []
+    },
+    {
+      "sample_id": "6b436e19-d7ec-4c57-bf3e-83449904bd7e",
+      "scores": {
+        "factual": 8,
+        "conciseness": 9,
+        "lead_quality": 9,
+        "specificity": 8,
+        "no_editorializing": 10
+      },
+      "raw_output": "Journalist Julia Angwin has filed a class action lawsuit against Grammarly's parent company, Superhuman, alleging the company violated privacy and publicity rights by using her name and likeness without permission in its AI \"Expert Review\" feature. The feature, which simulates feedback from figures like Stephen King and Kara Swisher, is available to subscribers paying $144 a year.",
+      "judge_reasoning": "Summary accurately captures the lawsuit, parties, and feature details without hallucination. It is concise (2 sentences) and leads with the most newsworthy fact (the lawsuit). Includes specific names (Julia Angwin, Superhuman, Stephen King, Kara Swisher) and the subscription cost. Sticks strictly to facts with no added opinion.",
+      "errors": []
+    },
+    {
+      "sample_id": "bbc02d1e-143e-4a18-b037-f6be2e4ea41b",
+      "scores": {
+        "factual": 10,
+        "conciseness": 9,
+        "lead_quality": 10,
+        "specificity": 8,
+        "no_editorializing": 10
+      },
+      "raw_output": "Atlassian is laying off about 1,600 employees, or 10% of its workforce, and replacing its chief technology officer to invest further in artificial intelligence. The restructuring affects over 900 roles in software R&D, with impacted employees in North America, Australia, India, and other regions.",
+      "judge_reasoning": "The summary is factually accurate, capturing the layoff numbers, percentage, CTO replacement, AI investment, and regional breakdown. It is concise at two sentences. It leads with the core news. It includes specific numbers (1,600, 10%, 900) and regions, though it omits the share price movement and the co-founder's name. It contains no editorializing.",
+      "errors": []
+    },
+    {
+      "sample_id": "e1cc0bc0-905a-416b-b1e4-13e849df740c",
+      "scores": {
+        "factual": 9,
+        "conciseness": 9,
+        "lead_quality": 10,
+        "specificity": 9,
+        "no_editorializing": 10
+      },
+      "raw_output": "Adobe CEO and chair Shantanu Narayen is stepping down after 18 years, with the company beginning a search for his replacement. Less than two months ago, Adobe granted Narayen a stock award vesting in 2028, indicating the board did not anticipate his imminent departure.",
+      "judge_reasoning": "Summary is highly accurate, capturing the core facts (CEO stepping down, 18-year tenure, recent stock grant) without hallucination. It is concise at two sentences, leading directly with the most newsworthy fact. It includes specific details (name, tenure length, 2028 vesting date) and avoids any editorializing or speculation present in the original article.",
+      "errors": []
+    },
+    {
+      "sample_id": "56405814-2e65-4614-a4a8-3b7f4daae141",
+      "scores": {
+        "factual": 9,
+        "conciseness": 10,
+        "lead_quality": 8,
+        "specificity": 7,
+        "no_editorializing": 10
+      },
+      "raw_output": "LocalAI is a free, open-source drop-in replacement for the OpenAI API, created and maintained by Ettore Di Giacinto. It allows users to run LLMs, generate images and audio locally on consumer-grade hardware without requiring a GPU.",
+      "judge_reasoning": "Summary accurately captures core facts (open-source, drop-in replacement, local execution, no GPU, creator) without hallucination. It is concise at 2 sentences. Lead quality is good but could be slightly more direct. Specificity is decent (names hardware type) but lacks some details like supported model families or API compatibility breadth. No editorializing is perfect.",
+      "errors": []
+    },
+    {
+      "sample_id": "fe30e419-334f-468e-94b1-faeb5fe77e44",
+      "scores": {
+        "factual": 9,
+        "conciseness": 9,
+        "lead_quality": 8,
+        "specificity": 8,
+        "no_editorializing": 10
+      },
+      "raw_output": "Researchers present ComFree-Sim, a GPU-parallelized analytical contact physics engine for robotics simulation. The engine uses complementarity-free modeling to achieve near-linear scaling and delivers 2-3 times higher throughput than MuJoCo Warp in dense contact scenes.",
+      "judge_reasoning": "Summary accurately captures core technical contributions (GPU-parallelized, complementarity-free, near-linear scaling) and performance claim vs. MuJoCo Warp without hallucination. It is concise (2 sentences) and leads with the key innovation. Specific details (2-3x throughput, MuJoCo Warp) are included. No editorializing present. Minor deduction for not mentioning 'analytical' from title and slightly compressing the scaling claim.",
+      "errors": []
+    },
+    {
+      "sample_id": "1cc31ea4-a913-4334-856e-6fa2aaaa9a2e",
+      "scores": {
+        "factual": 7,
+        "conciseness": 8,
+        "lead_quality": 9,
+        "specificity": 6,
+        "no_editorializing": 9
+      },
+      "raw_output": "Facebook Marketplace is adding new AI-powered tools from Meta AI. The features include an auto-reply option for \"Is this still available?\" messages, AI-assisted listing creation using photos to suggest details and prices, and AI-generated seller profile summaries showing account age, friend count, and Marketplace activity.",
+      "judge_reasoning": "The summary accurately captures the core facts from the article (auto-replies, listing help) but adds an unverified detail about 'AI-generated seller profile summaries' not present in the provided text, lowering the factual score. It is concise and leads well with the main news. Specificity is moderate—it names Meta AI and features but lacks concrete examples from the article like the editable response example. It avoids editorializing effectively.",
+      "errors": []
+    }
+  ],
+  "failure_count": 0
+}

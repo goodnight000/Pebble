@@ -58,8 +58,8 @@ WEIGHTS_GITHUB = {
 
 BASE_IMPORTANCE = {
     "MODEL_RELEASE": 44.0,
-    "SECURITY_INCIDENT": 42.0,
-    "CHIP_HARDWARE": 40.0,
+    "SECURITY_INCIDENT": 32.0,   # Was 42 — routine advisories were over-scored
+    "CHIP_HARDWARE": 32.0,       # Was 40 — minor driver updates were over-scored
     "BIG_TECH_ANNOUNCEMENT": 36.0,
     "GOVERNMENT_ACTION": 34.0,
     "POLICY_REGULATION": 34.0,

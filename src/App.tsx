@@ -141,12 +141,6 @@ const App: React.FC = () => {
   const currentDigest = digest;
   const hasDigest = Boolean(currentDigest);
 
-  const activeCopy = currentDigest?.digests?.[contentFilter] ?? {
-    headline: currentDigest?.headline ?? 'Daily Pebble',
-    executiveSummary: currentDigest?.executiveSummary ?? 'Distilled AI updates from the last 24 hours.',
-    llmAuthored: currentDigest?.llmAuthored ?? false,
-  };
-
   const filteredItems = currentDigest
     ? contentFilter === 'all'
       ? currentDigest.items
@@ -305,52 +299,7 @@ const App: React.FC = () => {
                           );
                         })}
                       </div>
-
-                      <div className="wf-panel relative overflow-hidden p-6 md:p-8">
-                        <div
-                          className="absolute left-0 right-0 top-0 h-1 rounded-t-2xl transition-colors duration-300"
-                          style={{ background: CONTENT_TABS.find((tab) => tab.id === contentFilter)?.color ?? 'var(--accent)' }}
-                        />
-                        <div className="wf-deco-circles">
-                          <div className="circle circle-1" />
-                          <div className="circle circle-2" />
-                          <div className="circle circle-3" />
-                        </div>
-
-                        <div className="relative z-10 pt-2">
-                          <div className="wf-digest-meta">
-                            <span className="wf-digest-kicker">{getUiText(language, 'todaysBriefing')}</span>
-                            <span className="wf-digest-meta__item">
-                              {`${CONTENT_TYPE_LABELS[contentFilter][language]} ${getUiText(language, 'feedSuffix')}`}
-                            </span>
-                            <span className="wf-digest-meta__item">
-                              {`${filteredItems.length} ${getUiText(language, 'storiesSuffix')}`}
-                            </span>
-                            <span className="wf-digest-meta__item">
-                              {`${getUiText(language, 'updatedAt')} ${formatClock(lastUpdated)}`}
-                            </span>
-                          </div>
-                          <h1 className={`wf-digest-title ${language === 'en' ? 'text-4xl leading-[0.95] md:text-6xl' : 'text-3xl leading-[1.1] md:text-5xl'}`}>
-                            {activeCopy.headline}
-                          </h1>
-                          <p className="wf-digest-summary mt-4">{activeCopy.executiveSummary}</p>
-                          <div className="wf-digest-chips mt-5">
-                            <span className="ct-meta-badge">
-                              {activeCopy.llmAuthored ? getUiText(language, 'llmAuthored') : getUiText(language, 'llmOffline')}
-                            </span>
-                            <span className="ct-meta-badge">
-                              {getUiText(language, 'verifiedRecencyToday')}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
                     </section>
-
-                    {language === 'zh' && currentDigest?.translationStatus === 'unavailable' && (
-                      <div className="wf-panel p-4 text-sm text-[var(--muted)]">
-                        {getUiText(language, 'localeUnavailable')}
-                      </div>
-                    )}
 
                     {showBreaking && currentDigest.breakingAlert && (
                       <div className="wf-reveal" style={{ '--delay': '120ms' } as React.CSSProperties}>

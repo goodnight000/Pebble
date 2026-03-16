@@ -1,0 +1,116 @@
+{
+  "prompt_type": "summary",
+  "version": "minimax_m25",
+  "sample_count": 8,
+  "dimension_averages": {
+    "factual": 7.43,
+    "conciseness": 9.14,
+    "lead_quality": 7.57,
+    "specificity": 8.0,
+    "no_editorializing": 8.86
+  },
+  "overall_score": 8.2,
+  "results": [
+    {
+      "sample_id": "f7618d2c-0431-4b0e-b775-418867a398d9",
+      "scores": {
+        "factual": 5,
+        "conciseness": 9,
+        "lead_quality": 8,
+        "specificity": 7,
+        "no_editorializing": 9
+      },
+      "raw_output": "AI data centers are adopting co-packaged optics (CPO) to replace copper, reducing electrical signal travel from 15-30cm across PCBs to just a few millimeters in multi-die assemblies, thereby cutting energy per bit. Leading the adoption are Broadcom, Nvidia, Intel, Marvell, and Ayar Labs, with McKinsey projecting $5.2 trillion in data center investments needed by 2030 to meet global AI demand.",
+      "judge_reasoning": "The summary is concise (under 600 chars), leads with the core news, avoids editorializing, and includes specific details. However, it contains potential hallucinations: the 15-30cm figure, the specific company names (Broadcom, Nvidia, Intel, Marvell, Ayar Labs), and the McKinsey $5.2 trillion projection do not appear in the provided article excerpt. The summary may have drawn from the full article beyond the 800-character excerpt, but based only on the provided text, these details cannot be verified.",
+      "errors": []
+    },
+    {
+      "sample_id": "6a8ee61a-3d81-463d-bd09-b68f2cc3d435",
+      "scores": {
+        "factual": 6,
+        "conciseness": 9,
+        "lead_quality": 8,
+        "specificity": 9,
+        "no_editorializing": 10
+      },
+      "raw_output": "CrowdStrike's 2026 Global Threat Report shows eCrime breakout time averaged 29 minutes in 2025—65% faster than 2024—with the fastest attack at 27 seconds. AI-enabled adversaries increased attack volume by 89% year-over-year as threat actors shift to subtler tactics targeting trusted relationships.",
+      "judge_reasoning": "Factual: Cannot verify the specific statistics (29 min, 65%, 27 sec, 89%) from the partial article text provided, though the general theme of subtle AI-enabled threats targeting trusted relationships is accurate. Conciseness: Excellent - 2 sentences, ~280 chars, well under 600. Lead_quality: Strong lead with the striking 29-minute breakout time statistic. Specificity: Very high - includes multiple concrete numbers and specific timeframes. No_editorializing: Pure factual reporting with no opinions or speculation.",
+      "errors": []
+    },
+    {
+      "sample_id": "6b436e19-d7ec-4c57-bf3e-83449904bd7e",
+      "scores": {
+        "factual": 7,
+        "conciseness": 9,
+        "lead_quality": 8,
+        "specificity": 8,
+        "no_editorializing": 9
+      },
+      "raw_output": "Journalist Julia Angwin has filed a class action lawsuit against Superhuman, Grammarly's parent company, for its \"Expert Review\" feature that uses AI to impersonate writers including Stephen King, Carl Sagan, and Kara Swisher without their permission. The feature, available to $144/year subscribers, simulates editorial feedback from these public figures.",
+      "judge_reasoning": "Core facts are accurate (lawsuit, feature name, impersonated writers, parent company). However, the $144/year subscription detail appears in the summary but is not present in the provided article text (first 800 chars), suggesting possible hallucination or reliance on information beyond the excerpt. Summary is appropriately brief (under 300 chars), leads with the lawsuit filing which is the most newsworthy element, includes specific names and the feature name, and avoids editorializing.",
+      "errors": []
+    },
+    {
+      "sample_id": "bbc02d1e-143e-4a18-b037-f6be2e4ea41b",
+      "scores": {
+        "factual": 9,
+        "conciseness": 9,
+        "lead_quality": 9,
+        "specificity": 8,
+        "no_editorializing": 9
+      },
+      "raw_output": "Atlassian is laying off approximately 1,600 employees, about 10% of its workforce, as it restructures to invest further in artificial intelligence. The software company is also replacing its chief technology officer, with more than 900 affected positions in software research and development. Shares rose over 4% in extended Nasdaq trading.",
+      "judge_reasoning": "Summary is accurate with no hallucinations - all key facts (1,600 layoffs, 10%, 900+ R&D positions, CTO replacement, 4%+ share rise) match the article. It's appropriately brief at ~320 characters in 2 sentences. Leads with the most newsworthy fact (layoffs). Includes concrete numbers and details, though could mention geographic breakdown or CTO name for extra specificity. Maintains neutral, factual tone throughout without editorializing.",
+      "errors": []
+    },
+    {
+      "sample_id": "e1cc0bc0-905a-416b-b1e4-13e849df740c",
+      "scores": {
+        "factual": 8,
+        "conciseness": 9,
+        "lead_quality": 9,
+        "specificity": 8,
+        "no_editorializing": 7
+      },
+      "raw_output": "Adobe CEO and chair Shantanu Narayen resigns after 18 years, to leave once a replacement is found. The surprise departure follows a board-awarded stock grant vesting in 2028, indicating his exit was unexpected.",
+      "judge_reasoning": "Summary is accurate and captures key facts (Narayen's departure after 18 years, stock grant vesting in 2028). Two minor issues: 1) 'resigns' is slightly imprecise - article says he 'decided to give up the job' rather than formal resignation; 2) 'surprise departure' and 'indicating his exit was unexpected' add editorial characterization beyond the facts presented. Otherwise excellent: appropriately concise at ~2 sentences, leads with the most newsworthy fact, and includes specific details (name, title, 18 years, 2028).",
+      "errors": []
+    },
+    {
+      "sample_id": "56405814-2e65-4614-a4a8-3b7f4daae141",
+      "scores": {
+        "factual": 10,
+        "conciseness": 10,
+        "lead_quality": 7,
+        "specificity": 7,
+        "no_editorializing": 10
+      },
+      "raw_output": "LocalAI is a free, open-source alternative to OpenAI that acts as a drop-in replacement REST API compatible with OpenAI, Elevenlabs, and Anthropic API specifications. The tool enables running LLMs, generating images, and audio locally or on-premises using consumer-grade hardware without requiring a GPU. It is created and maintained by Ettore Di Giacinto.",
+      "judge_reasoning": "All facts are accurate and no hallucination. Summary is concise at ~300 chars in 2 sentences. Lead is acceptable but could lead with the more distinctive 'drop-in replacement' or 'no GPU required' capability rather than the general 'alternative' framing. Specificity is good with names (LocalAI, OpenAI, Elevenlabs, Anthropic, Ettore Di Giacinto) but lacks numbers/dates. No editorializing - purely factual description.",
+      "errors": []
+    },
+    {
+      "sample_id": "fe30e419-334f-468e-94b1-faeb5fe77e44",
+      "scores": {
+        "factual": 7,
+        "conciseness": 9,
+        "lead_quality": 4,
+        "specificity": 9,
+        "no_editorializing": 8
+      },
+      "raw_output": "Researchers introduce ComFree-Sim, a GPU-parallelized analytical contact physics engine for robotics simulation that computes contact impulses in closed form, achieving near-linear runtime scaling. Benchmarks show 2-3 times higher throughput than MuJoCo Warp in dense contact scenes. The system was deployed for real-time MPC on a multi-fingered LEAP hand for in-hand dexterous manipulation, demonstrating higher closed-loop success rates.",
+      "judge_reasoning": "Factual: Core claims (closed-form computation, GPU-parallelized engine) align with abstract. Benchmark numbers (2-3x throughput, LEAP hand deployment) not verifiable in first 800 chars but appear plausible. Conciseness: ~430 chars, well under 600, appropriate 2-3 sentence length. Lead_quality: Weak - 'Researchers introduce...' is generic filler; should lead with the newsworthy benchmark results or real-time MPC deployment. Specificity: Strong - includes ComFree-Sim, MuJoCo Warp, LEAP hand, 2-3x, real-time MPC. No_editorializing: Clean factual language throughout, no opinions or speculation.",
+      "errors": []
+    },
+    {
+      "sample_id": "1cc31ea4-a913-4334-856e-6fa2aaaa9a2e",
+      "scores": {},
+      "raw_output": "ERROR: Client error '429 Too Many Requests' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429",
+      "judge_reasoning": "Failed to parse judge response",
+      "errors": [
+        "judge_parse_error"
+      ]
+    }
+  ],
+  "failure_count": 1
+}

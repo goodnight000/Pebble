@@ -20,28 +20,35 @@ RELATIONSHIP_LABELS = frozenset({"follow-up", "reaction", "competing", "unrelate
 BATCH_SIZE = 15  # pairs per LLM call
 
 _SYSTEM_PROMPT = (
-    "You classify relationships between pairs of AI news clusters. "
-    "Return strict JSON only — an array of objects."
+    "You are an AI news analyst classifying narrative relationships between clusters of related articles. "
+    "You MUST return a single JSON array (starting with [ and ending with ]). "
+    "Do NOT return separate JSON objects — return ONE array containing all results."
 )
 
 _USER_PROMPT_TEMPLATE = """\
-For each numbered pair of news clusters, classify the relationship.
+For each numbered pair of AI news clusters below, classify the narrative relationship.
 
 Labels (pick exactly one per pair):
-- follow-up: B is a continuation, consequence, or next chapter of A's story
-- reaction: B is a market, industry, public, or regulatory response to A
-- competing: A and B are rival products, approaches, or announcements aimed at the same space
-- unrelated: no meaningful narrative relationship
+- follow-up: B is a direct continuation, consequence, or next chapter of A's story (same actors, same topic thread)
+- reaction: B is a response to A from a different actor — market reaction, industry counter-move, regulatory response, or public backlash
+- competing: A and B describe rival products, approaches, or announcements targeting the same capability or market
+- unrelated: no meaningful narrative connection (merely sharing a broad topic like "AI" is not enough)
 
 {pairs_block}
 
-Return a JSON array:
-[{{"pair": 1, "label": "follow-up", "confidence": 0.85, "explanation": "one sentence"}}]
+You MUST return a single JSON array with one object per pair. Format:
+[
+  {{"pair": 1, "label": "follow-up", "confidence": 0.85, "explanation": "B announces benchmarks for the model A released"}},
+  {{"pair": 2, "label": "unrelated", "confidence": 0.2, "explanation": "No narrative connection beyond both being AI-related"}}
+]
 
 Rules:
-- confidence is 0.0-1.0
-- explanation must be one short sentence
-- if unsure, label as "unrelated" with low confidence"""
+- Return EXACTLY ONE JSON array containing ALL pair results — not separate objects
+- confidence: 0.0-1.0. Use >= 0.8 only when the connection is clear and specific
+- explanation: one concise sentence describing the specific connection
+- Default to "unrelated" with confidence <= 0.3 when the relationship is ambiguous
+- Two clusters about different companies doing similar things are "competing", not "follow-up"
+- Include one entry for every pair — do not skip any"""
 
 
 # ---------------------------------------------------------------------------
