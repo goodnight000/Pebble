@@ -4,7 +4,7 @@
 
 **AI news intelligence that cuts through the noise.**
 
-An open-source news aggregation engine that ingests, scores, clusters, and visualizes AI-related news from 30+ sources — delivering a personalized daily digest instead of an endless feed.
+An open-source news aggregation engine that ingests, scores, clusters, and visualizes AI-related news from 1,000+ configured feeds across 15 connector types — delivering a personalized daily digest instead of an endless feed.
 
 [Getting Started](#getting-started) · [How It Works](#how-it-works) · [Features](#features) · [Architecture](#architecture) · [Configuration](#configuration)
 
@@ -14,11 +14,12 @@ An open-source news aggregation engine that ingests, scores, clusters, and visua
 
 ## What is Pebble?
 
-Pebble is a full-stack application that monitors the AI landscape in real time. It pulls from RSS feeds, HackerNews, Reddit, GitHub, ArXiv, HuggingFace, Bluesky, and more — then applies a multi-signal scoring algorithm to surface the stories that actually matter.
+Pebble is a full-stack application that monitors the AI landscape in real time. It pulls from RSS feeds, HackerNews, Reddit, GitHub, ArXiv, HuggingFace, Twitter/X, Bluesky, and more — then applies a multi-signal scoring pipeline with LLM-augmented verification to surface the stories that actually matter.
 
 Instead of scrolling through hundreds of links, you get:
-- A **daily digest** with the 12-15 most significant stories, ranked and summarized
-- A **Signal Map** that visualizes how stories cluster and relate to each other
+- A **longform daily digest** — an LLM-authored briefing covering the day's most significant developments, with an archive of past digests
+- A **live feed** with the top 12-15 stories, ranked and scored in real time
+- A **Relationship Graph** that visualizes how story clusters connect through shared entities, event chains, and market adjacency
 - **Breaking alerts** for genuinely important events (score 85+)
 - **Bilingual support** (English/Chinese) with LLM-powered translation
 
@@ -47,6 +48,8 @@ npm run dev
 
 `npm run dev` handles the rest automatically — creates a Python venv, installs backend dependencies, runs database migrations, and starts both the Vite frontend (port 3000) and FastAPI backend (port 8000).
 
+The dev script rejects SQLite `DATABASE_URL` values — Supabase Postgres is required.
+
 ### Other Commands
 
 | Command | Description |
@@ -62,7 +65,7 @@ npm run dev
 Every ingestion cycle follows this flow:
 
 ```
-Sources (RSS, HN, Reddit, GitHub, ArXiv, ...)
+Sources (RSS, HN, Reddit, GitHub, ArXiv, Twitter, Sitemap, ...)
   │
   ▼
 RawItem (deduplicated by content hash)
@@ -76,16 +79,23 @@ Feature extraction
   ├── Event type classification (12 types)
   ├── Topic probabilities (12 topics)
   ├── Named entity extraction with tier lookup
+  ├── Entity resolution & canonicalization
   └── Funding amount parsing
   │
   ▼
 Global scoring (11 weighted signals → 0-100)
   │
   ▼
+Verification & trust labeling
+  │
+  ▼
 FAISS clustering (cosine similarity ≥ 0.86)
   │
   ▼
-User-personalized scoring → Digest
+Relationship inference (LLM-augmented edge classification)
+  │
+  ▼
+User-personalized scoring → Daily Digest
 ```
 
 ### Scoring: How Articles Get Ranked
@@ -108,6 +118,12 @@ Every article receives a **global score** (0-100) computed from 11 weighted sign
 
 Bonus multipliers kick in for official sources (+10%), well-corroborated stories (+12%), and large funding rounds (+8%).
 
+Additional scoring modules layer on top of the base score:
+- **LLM Judge** — optional LLM-based re-scoring for borderline articles
+- **Verification** — trust state assessment (confirmation level, freshness, evidence quality)
+- **Time Decay** — per-event-type decay curves with configurable half-lives
+- **User Score** — personalization adjustments based on user preferences
+
 ### Trust Labels
 
 Each story gets a trust assessment based on source authority, corroboration, official confirmation, claim quality, and primary documentation:
@@ -120,6 +136,8 @@ Each story gets a trust assessment based on source authority, corroboration, off
 | **Developing** | Less than 6 hours old, still emerging |
 | **Unverified** | Score below 40 |
 | **Disputed** | Conflicting signals detected |
+
+Articles also carry verification metadata: `verification_state`, `verification_confidence`, and `verification_signals` for more granular trust tracking.
 
 ### Personalization
 
@@ -135,32 +153,39 @@ Each user can configure preferences that adjust their personal score:
 
 ## Features
 
-### Daily Digest
+### Daily Digest (Default View)
 
-The main view shows today's top 12-15 stories with:
+The landing page shows an LLM-authored longform daily briefing:
+- Narrative-style coverage of the day's most significant AI developments
+- Organized into thematic sections with inline source links
+- Archive navigation with prev/next buttons and a date picker
+- Generated daily at 6:00 AM UTC (with catch-up on server restart if missed)
+- Can be manually triggered via `POST /v1/admin/digest/generate`
+
+### Live Feed
+
+A real-time scored feed with:
 - Significance score and trust badge per story
 - Category labels (Research, Product, Company, Funding, Policy, Open Source, Hardware, Security)
 - Content type filters (All / News / Research / GitHub)
-- LLM-generated headline and executive summary (when enabled)
+- LLM-generated headline and executive summary per content type
 - Weekly digest view (top stories over 7 days)
 
-### Signal Map
+### Relationship Graph
 
-A 2D visualization of the current news landscape:
+A force-directed visualization of the current news landscape showing how story clusters relate:
 
-- **Map mode** — D3-powered scatter plot where each bubble is a story cluster. Position comes from PCA projection of 384D embeddings. Size reflects coverage count. Pulsing indicates high velocity.
-- **Graph mode** — Force-directed relationship graph showing how clusters connect. Three edge types:
+- **Edge types:**
   - *Shared Entity* (solid) — clusters mention the same companies/people
-  - *Event Chain* (dashed) — causal or temporal sequence
+  - *Event Chain* (dashed) — causal or temporal sequence (follow-up, reaction)
   - *Market Adjacency* (dotted) — competitive or alternative relationship
-- **Topic Sidebar** — 7-day heatmap across 12 topics (LLMs, multimodal, agents, robotics, vision, audio/speech, hardware, open source, startups, enterprise, safety/policy, research methods)
-- **Cluster Drawer** — click any cluster for details: headline, trust label, key entities with tier badges, 7-day sparkline trend, and sortable article list
-
-On mobile, the map degrades gracefully to a ranked list view.
+  - *Embedding Similarity* — semantically related clusters
+- **LLM-augmented inference** — relationship labels are classified by LLM (follow-up, reaction, competing, unrelated) with batch processing and caching
+- **Cluster details** — click any node for headline, trust label, key entities with tier badges, and article list
 
 ### Breaking Alerts
 
-When an article scores 85+ with 2+ independent sources and is less than 6 hours old, it triggers a breaking alert — a prominent banner with pulsing animation and diagonal stripe background. Only shows for trusted items (official/confirmed/likely).
+When an article scores 85+ with 2+ independent sources and is less than 6 hours old, it triggers a breaking alert — a prominent banner with pulsing animation. Only shows for trusted items (official/confirmed/likely).
 
 ### Real-Time Updates
 
@@ -169,6 +194,10 @@ Two mechanisms for live updates:
 2. **Supabase Realtime** — optional WebSocket channels for urgent updates, new clusters, and digest refreshes
 
 The frontend tries Realtime first and falls back to SSE automatically.
+
+### Entity Resolution
+
+Automatic deduplication and canonicalization of named entities across articles. Entity resolution runs periodically and on each digest generation, grouping aliases (e.g., "Google DeepMind" / "DeepMind") into canonical forms stored in `EntityCanonMap`.
 
 ### Bilingual Support
 
@@ -181,78 +210,94 @@ Full English/Chinese interface with:
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│  Frontend (React 19 + TypeScript + Vite)    │
-│                                             │
-│  App.tsx                                    │
-│  ├── NewsCard (scored articles)             │
-│  ├── BreakingAlert (urgent items)           │
-│  ├── SignalMap                              │
-│  │   ├── SignalMapCanvas (D3 scatter)       │
-│  │   ├── RelationshipGraphCanvasV2 (D3)     │
-│  │   ├── TopicSidebar (7-day heatmap)       │
-│  │   └── ClusterDrawer (detail panel)       │
-│  └── i18n (EN/ZH)                          │
-│                                             │
-│  Services:                                  │
-│  ├── aiService.ts (API client + SSE)        │
-│  └── realtimeService.ts (Supabase WS)      │
-└──────────────┬──────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│  Frontend (React 19 + TypeScript + Vite)     │
+│                                              │
+│  App.tsx (tabs: digest, live, weekly,        │
+│           history, map)                      │
+│  ├── DailyDigestPage (default view)          │
+│  ├── NewsCard (scored articles)              │
+│  ├── BreakingAlert (urgent items)            │
+│  ├── RelationshipGraph                       │
+│  │   ├── RelationshipGraphCanvasV2 (D3)      │
+│  │   └── RelationshipGraphPanel (details)    │
+│  └── i18n/ (EN/ZH)                          │
+│                                              │
+│  Services:                                   │
+│  ├── aiService.ts (API client + SSE)         │
+│  └── realtimeService.ts (Supabase WS)        │
+└──────────────┬───────────────────────────────┘
                │ HTTP / SSE / WebSocket
-┌──────────────▼──────────────────────────────┐
-│  Backend (Python FastAPI)                   │
-│                                             │
-│  API Layer:                                 │
-│  ├── /v1/news/today     (daily digest)      │
-│  ├── /v1/news/weekly    (weekly digest)     │
-│  ├── /v1/signal-map     (cluster data)      │
-│  ├── /v1/signal-map/topics (topic trends)   │
-│  ├── /api/stream        (SSE)               │
-│  └── /api/translate     (LLM translation)   │
-│                                             │
-│  Processing:                                │
-│  ├── Ingestion (16+ source connectors)      │
-│  ├── Scraping (trafilatura + Playwright)    │
-│  ├── Features (entities, topics, events)    │
-│  ├── Embeddings (sentence-transformers)     │
-│  ├── Clustering (FAISS IVFFlat)             │
-│  ├── Scoring (11-signal + user prefs)       │
-│  └── LLM (digest summaries, translation)   │
-│                                             │
-│  Tasks:                                     │
-│  ├── Pipeline (ingest → score → cluster)    │
-│  ├── Daily Digest (generate + store)        │
-│  └── Urgent Monitor (alert on score ≥ 85)   │
-└──────────────┬──────────────────────────────┘
+┌──────────────▼───────────────────────────────┐
+│  Backend (Python FastAPI)                    │
+│                                              │
+│  API Layer:                                  │
+│  ├── /api/digest/today    (card-style)       │
+│  ├── /api/digest/daily    (longform)         │
+│  ├── /api/digest/archive  (date list)        │
+│  ├── /api/news            (live feed)        │
+│  ├── /api/news/weekly     (weekly digest)    │
+│  ├── /api/stream          (SSE)              │
+│  ├── /api/translate       (LLM translation)  │
+│  ├── /v1/graph/*          (cluster graph)    │
+│  └── /v1/admin/*          (admin triggers)   │
+│                                              │
+│  Processing:                                 │
+│  ├── Ingestion (15 connector types)          │
+│  ├── Scraping (trafilatura + Playwright)     │
+│  ├── Features (entities, topics, events)     │
+│  ├── Entity Resolution (canonicalization)    │
+│  ├── Embeddings (sentence-transformers)      │
+│  ├── Clustering (FAISS IVFFlat)              │
+│  ├── Relationship Inference (LLM-augmented)  │
+│  ├── Scoring (11-signal + verification)      │
+│  └── LLM (digests, translation, judging)     │
+│                                              │
+│  Tasks:                                      │
+│  ├── Pipeline (ingest → score → cluster)     │
+│  ├── Daily Digest (longform + per-type)      │
+│  ├── Urgent Monitor (alert on score ≥ 85)    │
+│  ├── Relationship Inference (hourly)         │
+│  └── Entity Resolution (periodic)            │
+│                                              │
+│  Scheduling:                                 │
+│  ├── Celery Beat (production)                │
+│  └── Inline Scheduler (dev, with catch-up)   │
+└──────────────┬───────────────────────────────┘
                │
-┌──────────────▼──────────────────────────────┐
-│  PostgreSQL (Supabase)                      │
-│  Sources · RawItems · Articles · Clusters   │
-│  Users · UserPrefs · DailyDigests           │
-│                                             │
-│  Optional:                                  │
-│  ├── Supabase Storage (digest artifacts)    │
-│  ├── Supabase Realtime (WebSocket events)   │
-│  ├── Redis (caching + Celery broker)        │
-│  └── Celery (production task queue)         │
-└─────────────────────────────────────────────┘
+┌──────────────▼───────────────────────────────┐
+│  PostgreSQL (Supabase)                       │
+│  Sources · RawItems · Articles · Clusters    │
+│  Users · UserPrefs · DailyDigests            │
+│  EntityCanonMaps                             │
+│                                              │
+│  Optional:                                   │
+│  ├── Supabase Storage (digest artifacts)     │
+│  ├── Supabase Realtime (WebSocket events)    │
+│  ├── Redis (caching + Celery broker)         │
+│  └── Celery (production task queue)          │
+└──────────────────────────────────────────────┘
 ```
 
 ### Data Sources
 
-Pebble ingests from 30+ configured sources across these connector types:
+Pebble ingests from 1,000+ configured feeds across 15 connector types:
 
-| Connector | Sources | Examples |
-|-----------|---------|---------|
-| RSS | 20+ feeds | OpenAI, Anthropic, Google DeepMind, Meta AI, NVIDIA, Microsoft, Cloudflare |
+| Connector | Description | Examples |
+|-----------|-------------|---------|
+| RSS | 1,000+ feeds | OpenAI, Anthropic, Google DeepMind, Meta AI, NVIDIA, Microsoft, MIT News, etc. |
 | HackerNews | Top + new stories | Via HN API |
 | Reddit | AI-related subreddits | Via PRAW |
 | GitHub | Trending repos + releases | Via GitHub API |
+| GitHub Trending | Daily trending repositories | Language-filtered |
 | ArXiv | Research papers | CS.AI, CS.CL, CS.LG |
 | HuggingFace | Daily papers | Via HF API |
 | Semantic Scholar | Academic papers | Citation-enriched |
+| Twitter/X | AI community posts | Via Twitter API |
 | Bluesky | AI community posts | Via AT Protocol |
 | Mastodon | Fediverse AI discussion | Via Mastodon.py |
+| Sitemap | Site-wide crawling | XML sitemap discovery |
+| Wayback | Historical fallback | Internet Archive lookups |
 | NVD | Security vulnerabilities | CVE feeds |
 | Congress | AI-related legislation | Via Congress API |
 
@@ -264,7 +309,7 @@ Each source has a configured authority score (0-1), rate limit, and optional pri
 
 | Variable | Description |
 |----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string (Supabase format) |
+| `DATABASE_URL` | PostgreSQL connection string (Supabase format, no SQLite) |
 
 ### LLM (Optional but recommended)
 
@@ -301,11 +346,11 @@ For production environments:
 1. Set `DATABASE_URL` to your Supabase PostgreSQL target
 2. Run `alembic upgrade head` before starting the app
 3. Enable Supabase Storage and Realtime after migration is verified
-4. Optionally configure Celery with Redis for background task processing
+4. Configure Celery with Redis for background task processing (`CELERY_BROKER_URL`, `REDIS_URL`)
 
 ## Tech Stack
 
-**Frontend:** React 19, TypeScript, Vite, D3.js, Lucide icons, Supabase JS SDK
+**Frontend:** React 19, TypeScript, Vite, D3.js, DOMPurify, Lucide icons, Supabase JS SDK
 
 **Backend:** FastAPI, SQLAlchemy 2.0, sentence-transformers, FAISS, trafilatura, Playwright, Alembic
 
