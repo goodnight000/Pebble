@@ -10,6 +10,8 @@ from typing import Any
 import numpy as np
 import yaml
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import defer
 
 from app.common.time import utcnow
 from app.db import get_db
@@ -179,7 +181,7 @@ def get_signal_map(
     cache_key = f"api_signal_map:{hours}:{locale}:{bucket}"
     cached = get_cached(cache_key)
     if cached:
-        return cached
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
 
     cutoff = now - timedelta(hours=hours)
 
@@ -203,6 +205,7 @@ def get_signal_map(
         .join(Article, ClusterMember.article_id == Article.id)
         .join(RawItem, Article.raw_item_id == RawItem.id)
         .join(Source, RawItem.source_id == Source.id)
+        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
         .filter(ClusterMember.cluster_id.in_(cluster_ids))
         .all()
     )
@@ -374,7 +377,7 @@ def get_signal_map(
         "translation_status": translation_status,
     }
     set_cached(cache_key, response, ttl=60 * 5)  # 5-min TTL
-    return response
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
 
 
 @router.get("/topic-trends")

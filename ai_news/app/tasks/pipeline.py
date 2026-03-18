@@ -53,6 +53,7 @@ from app.tasks.celery_app import celery_app
 
 
 INGEST_RUN_LOCK = threading.Lock()
+_LAST_RELATIONSHIP_FINGERPRINT: str | None = None
 
 
 def _content_type_for(source_kind: str, event_type: str) -> str:
@@ -909,9 +910,18 @@ def run_social_poll():
 
 @celery_app.task(name="app.tasks.pipeline.rebuild_faiss_index")
 def rebuild_faiss_index():
-    from app.clustering.cluster import rebuild_index
+    from app.clustering.cluster import LAST_BUILT_AT, LAST_CLUSTER_COUNT, rebuild_index
 
     with session_scope() as session:
+        # Skip rebuild if indexable cluster count hasn't changed since last build
+        cutoff = utcnow() - timedelta(days=7)
+        current_count = (
+            session.query(Cluster)
+            .filter(Cluster.last_seen_at >= cutoff, Cluster.centroid_embedding.isnot(None))
+            .count()
+        )
+        if LAST_BUILT_AT is not None and current_count == LAST_CLUSTER_COUNT:
+            return  # No new indexable clusters, skip rebuild
         rebuild_index(session, lookback_days=7)
 
 
@@ -1353,6 +1363,18 @@ def run_relationship_inference() -> None:
             log.info("run_relationship_inference: fewer than 2 clusters, skipping")
             return
 
+        # Skip if no cluster changes since last run (tracks IDs + membership counts + last update)
+        import hashlib
+        cluster_fingerprint = hashlib.md5(
+            ",".join(
+                sorted(f"{c.id}:{c.coverage_count}:{c.last_seen_at}" for c in clusters)
+            ).encode()
+        ).hexdigest()
+        global _LAST_RELATIONSHIP_FINGERPRINT
+        if cluster_fingerprint == _LAST_RELATIONSHIP_FINGERPRINT:
+            log.info("run_relationship_inference: no cluster changes, skipping")
+            return
+
         cluster_ids = [c.id for c in clusters]
 
         # Batch-load member articles (same logic as routes_graph.py)
@@ -1462,3 +1484,4 @@ def run_relationship_inference() -> None:
             non_unrelated,
             len(llm_candidates),
         )
+        _LAST_RELATIONSHIP_FINGERPRINT = cluster_fingerprint

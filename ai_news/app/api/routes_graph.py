@@ -10,6 +10,7 @@ from typing import Any
 import numpy as np
 import yaml
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import JSONResponse
 
 from app.clustering.relationships import compute_cluster_relationships
 from app.common.time import utcnow
@@ -188,7 +189,7 @@ def get_graph(
     cache_key = f"api_graph:{hours}:{locale}:{bucket}"
     cached = get_cached(cache_key)
     if cached:
-        return cached
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
 
     cutoff = now - timedelta(hours=hours)
 
@@ -445,7 +446,7 @@ def get_graph(
         "translation_status": translation_status,
     }
     set_cached(cache_key, response, ttl=60 * 15)  # 15-min TTL
-    return response
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
 
 
 @router.get("/topic-trends")

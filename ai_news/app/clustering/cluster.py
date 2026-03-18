@@ -14,6 +14,7 @@ from app.models import Article, Cluster, ClusterMember, RawItem, Source
 
 INDEX = FaissClusterIndex(dim=384)
 LAST_BUILT_AT: datetime | None = None
+LAST_CLUSTER_COUNT: int = 0
 
 
 def bytes_to_vector(data: bytes) -> np.ndarray:
@@ -47,6 +48,8 @@ def rebuild_index(session, lookback_days: int = 7) -> None:
     else:
         emb_matrix = np.zeros((0, 384), dtype=np.float32)
     INDEX.rebuild(emb_matrix, ids)
+    global LAST_CLUSTER_COUNT
+    LAST_CLUSTER_COUNT = len(ids)
     LAST_BUILT_AT = utcnow()
 
 

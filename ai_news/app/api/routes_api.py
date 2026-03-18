@@ -9,6 +9,7 @@ import numpy as np
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import defer
+from fastapi.responses import JSONResponse
 from starlette.responses import StreamingResponse
 
 from app.common.mmr import mmr_select
@@ -17,7 +18,7 @@ from app.common.url_filters import is_evergreen_or_directory_url
 from app.config import get_settings
 from app.api.card_taxonomy import CATEGORY_PRIORITY, Category, build_topic_chips, category_for
 from app.api.source_labels import build_grounding_source
-from app.db import get_db
+from app.db import get_db, session_scope
 from app.integrations.supabase import get_realtime_channel_map
 from app.llm.cache import get_cached, set_cached, delete_by_prefix
 from app.llm.client import LLMClient
@@ -273,7 +274,7 @@ def _select_articles(
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
-        .options(defer(Article.html), defer(Article.llm_reasoning))
+        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
         .filter(_freshness_filter(cutoff))
     )
     if content_type:
@@ -344,7 +345,7 @@ def _select_articles(
             continue
         rank_score = _compute_rank_score(user_score, age_hours, prefs.recency_bias, half_life_base)
 
-        summary = article.summary or raw.snippet or article.text[:240]
+        summary = article.summary or raw.snippet or ""
         category: Category = category_for(article.event_type, topics)
         tags = build_topic_chips(
             category,
@@ -354,10 +355,6 @@ def _select_articles(
             summary=summary,
             source_name=source.name,
         )
-        embedding = _decode_embedding_or_none(article.embedding)
-        if embedding is None:
-            continue
-
         effective_score = article.final_score if article.final_score is not None else article.global_score
         score_int = int(round(user_score if user_score is not None else effective_score or 0))
         score_int = max(0, min(100, score_int))
@@ -381,7 +378,7 @@ def _select_articles(
             "editorialRank": editorial_rank,
             "urgent": bool(article.urgent),
             "_rank_score": float(rank_score),
-            "_embedding": embedding,
+            "_article_id": article.id,
         }
         if user_score < min_score:
             low_score_items.append(payload)
@@ -389,7 +386,29 @@ def _select_articles(
             items.append(payload)
 
     items_sorted = sorted(items, key=lambda x: x["_rank_score"], reverse=True)
-    selected = _safe_mmr_select(items_sorted, limit=limit, score_key="_rank_score")
+
+    # Lazy-load embeddings for top-N candidates only
+    mmr_candidate_count = min(len(items_sorted), limit * 2)
+    mmr_candidates = items_sorted[:mmr_candidate_count]
+    if mmr_candidates:
+        candidate_article_ids = [item["_article_id"] for item in mmr_candidates]
+        embedding_rows = (
+            db.query(Article.id, Article.embedding)
+            .filter(Article.id.in_(candidate_article_ids))
+            .all()
+        )
+        embedding_map = {}
+        for art_id, raw_emb in embedding_rows:
+            emb = _decode_embedding_or_none(raw_emb)
+            if emb is not None:
+                embedding_map[str(art_id)] = emb
+
+        # Attach embeddings to candidates; drop any without valid embedding
+        for item in mmr_candidates:
+            item["_embedding"] = embedding_map.get(item["id"])
+        mmr_candidates = [item for item in mmr_candidates if item["_embedding"] is not None]
+
+    selected = _safe_mmr_select(mmr_candidates, limit=limit, score_key="_rank_score")
 
     # Serendipity: reintroduce some high-global-score items not selected.
     if prefs.serendipity > 0 and items_sorted:
@@ -406,6 +425,7 @@ def _select_articles(
     for item in selected:
         item.pop("_embedding", None)
         item.pop("_rank_score", None)
+        item.pop("_article_id", None)
     return selected[:limit]
 
 
@@ -427,7 +447,7 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
-        .options(defer(Article.html), defer(Article.llm_reasoning))
+        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
         .filter(Article.id.in_(article_ids))
         .filter(func.coalesce(Article.final_score, Article.global_score) >= 1)
         .all()
@@ -482,7 +502,7 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
             continue
         rank_score = _compute_rank_score(user_score, age_hours, prefs.recency_bias, 72)
 
-        summary = article.summary or raw.snippet or article.text[:240]
+        summary = article.summary or raw.snippet or ""
         category: Category = category_for(article.event_type, topics)
         tags = build_topic_chips(
             category,
@@ -492,10 +512,6 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
             summary=summary,
             source_name=source.name,
         )
-        embedding = _decode_embedding_or_none(article.embedding)
-        if embedding is None:
-            continue
-
         effective_score = article.final_score if article.final_score is not None else article.global_score
         score_int = int(round(user_score if user_score is not None else effective_score or 0))
         score_int = max(0, min(100, score_int))
@@ -519,7 +535,7 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
             "editorialRank": editorial_rank,
             "urgent": bool(article.urgent),
             "_rank_score": float(rank_score),
-            "_embedding": embedding,
+            "_article_id": article.id,
         }
         if user_score < prefs.min_show_score:
             low_score_items.append(payload)
@@ -527,13 +543,36 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
             items.append(payload)
 
     items_sorted = sorted(items, key=lambda x: x["_rank_score"], reverse=True)
-    selected = _safe_mmr_select(items_sorted, limit=limit, score_key="_rank_score")
+
+    # Lazy-load embeddings for top-N candidates only
+    mmr_candidate_count = min(len(items_sorted), limit * 2)
+    mmr_candidates = items_sorted[:mmr_candidate_count]
+    if mmr_candidates:
+        candidate_article_ids = [item["_article_id"] for item in mmr_candidates]
+        embedding_rows = (
+            db.query(Article.id, Article.embedding)
+            .filter(Article.id.in_(candidate_article_ids))
+            .all()
+        )
+        embedding_map = {}
+        for art_id, raw_emb in embedding_rows:
+            emb = _decode_embedding_or_none(raw_emb)
+            if emb is not None:
+                embedding_map[str(art_id)] = emb
+
+        # Attach embeddings to candidates; drop any without valid embedding
+        for item in mmr_candidates:
+            item["_embedding"] = embedding_map.get(item["id"])
+        mmr_candidates = [item for item in mmr_candidates if item["_embedding"] is not None]
+
+    selected = _safe_mmr_select(mmr_candidates, limit=limit, score_key="_rank_score")
     selected = _soft_cap_by_source(selected, limit=limit, max_per_source=3)
     selected = _backfill_with_low_score(selected, low_score_items, limit=limit)
 
     for item in selected:
         item.pop("_embedding", None)
         item.pop("_rank_score", None)
+        item.pop("_article_id", None)
     return selected[:limit]
 
 
@@ -556,15 +595,22 @@ def compat_news(limit: int = 30, locale: str = Query("en", pattern="^(en|zh)$"),
 @router.get("/news/weekly")
 def compat_news_weekly(limit: int = 10, locale: str = Query("en", pattern="^(en|zh)$"), db=Depends(get_db)):
     settings = get_settings()
+    cache_key = f"api_news_weekly:{settings.public_user_id}:{limit}:{locale}"
+    cached = get_cached(cache_key)
+    if cached:
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
+
     items = _select_weekly_top(db, user_id=settings.public_user_id, limit=limit)
     llm = LLMClient()
     localized_items, translation_status = _localize_news_items(items, locale, llm)
-    return {
+    response = {
         "items": localized_items,
         "locale": locale,
         "sourceLocale": "en",
         "translationStatus": translation_status,
     }
+    set_cached(cache_key, response, ttl=60 * 30)  # 30min TTL
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
 
 
 @router.get("/digest/today")
@@ -573,10 +619,10 @@ def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depen
     now = _naive_utc(utcnow())
 
     # Check response cache (keyed by date + locale, invalidated on digest generation)
-    cache_key = f"api_digest_today:{now.date().isoformat()}:{locale}"
+    cache_key = f"api_digest_today:{settings.public_user_id}:{now.date().isoformat()}:{locale}"
     cached = get_cached(cache_key)
     if cached:
-        return cached
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
 
     cutoff = now - timedelta(hours=24)
     candidates = _select_articles(db, user_id=settings.public_user_id, cutoff=cutoff, half_life_base=18, limit=30)
@@ -600,6 +646,7 @@ def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depen
     content_types = ["all", "news", "research", "github"]
     stored_rows = (
         db.query(DailyDigest)
+        .options(defer(DailyDigest.longform_html))
         .filter(
             DailyDigest.user_id == settings.public_user_id,
             func.date(DailyDigest.date) == now.date(),
@@ -666,7 +713,7 @@ def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depen
         "translationStatus": translation_status,
     }
     set_cached(cache_key, response, ttl=60 * 60 * 2)  # 2h TTL, invalidated by digest task
-    return response
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
 
 
 @router.get("/digest/archive")
@@ -678,7 +725,7 @@ def digest_archive(
     cache_key = f"api_digest_archive:{limit}"
     cached = get_cached(cache_key)
     if cached:
-        return cached
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
 
     settings = get_settings()
     rows = (
@@ -707,7 +754,7 @@ def digest_archive(
         ]
     }
     set_cached(cache_key, response, ttl=60 * 60)  # 1h TTL
-    return response
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
 
 
 @router.get("/digest/daily")
@@ -817,7 +864,7 @@ def compat_realtime_config():
 
 
 @router.get("/stream")
-async def compat_stream(request: Request, db=Depends(get_db)):
+async def compat_stream(request: Request):
     settings = get_settings()
 
     async def event_generator():
@@ -827,96 +874,101 @@ async def compat_stream(request: Request, db=Depends(get_db)):
 
         # Only stream newly-created articles after the connection is established.
         last_seen = _naive_utc(utcnow())
-        prefs, entity_weights, topic_weights, source_weights = _load_user_context(db, settings.public_user_id)
 
         while True:
             if await request.is_disconnected():
                 return
 
+            # Open/close a DB session each cycle to avoid holding a connection
+            # for the entire SSE stream lifetime.
+            matches = []
             try:
-                rows = (
-                    db.query(Article, RawItem, Source, Cluster)
-                    .join(RawItem, Article.raw_item_id == RawItem.id)
-                    .join(Source, RawItem.source_id == Source.id)
-                    .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
-                    .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
-                    .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
-                    .filter(Article.created_at > last_seen)
-                    .order_by(Article.created_at.asc())
-                    .limit(25)
-                    .all()
-                )
+                with session_scope() as db:
+                    prefs, entity_weights, topic_weights, source_weights = _load_user_context(db, settings.public_user_id)
+                    rows = (
+                        db.query(Article, RawItem, Source, Cluster)
+                        .join(RawItem, Article.raw_item_id == RawItem.id)
+                        .join(Source, RawItem.source_id == Source.id)
+                        .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
+                        .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
+                        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
+                        .filter(Article.created_at > last_seen)
+                        .order_by(Article.created_at.asc())
+                        .limit(25)
+                        .all()
+                    )
+
+                    if rows:
+                        last_seen = max((article.created_at for article, _raw, _source, _cluster in rows if article.created_at), default=last_seen)
+
+                    now = _naive_utc(utcnow())
+                    for article, raw, source, cluster in rows:
+                        if is_evergreen_or_directory_url(article.final_url):
+                            continue
+                        ts = _event_time(raw, source)
+                        if ts is None:
+                            continue
+                        age_hours = (now - ts).total_seconds() / 3600
+                        if age_hours < 0 or age_hours > LIVE_MAX_AGE_HOURS:
+                            continue
+                        sources_count = cluster.sources_count if cluster else 1
+                        coverage_score = log_norm(sources_count, 8)
+                        social_score = log_norm(raw.social_hn_points or 0, 500)
+                        social_score = max(social_score, log_norm(raw.social_reddit_upvotes or 0, 5000))
+                        social_score = max(social_score, log_norm(raw.social_github_stars or 0, 5000))
+                        base_score = article.final_score if article.final_score is not None else article.global_score
+                        user_score = compute_user_score(
+                            global_score=base_score,
+                            event_type=article.event_type,
+                            topics=article.topics,
+                            entities=article.entities,
+                            source_id=str(source.id),
+                            source_authority=source.authority,
+                            coverage_score=coverage_score,
+                            social_score=social_score,
+                            final_url=article.final_url,
+                            user_pref=prefs,
+                            user_entity_weights=entity_weights,
+                            user_topic_weights=topic_weights,
+                            user_source_weights=source_weights,
+                        )
+                        if user_score < prefs.min_show_score:
+                            continue
+
+                        category: Category = category_for(article.event_type, article.topics)
+                        summary = article.summary or raw.snippet or ""
+                        effective_score = article.final_score if article.final_score is not None else article.global_score
+                        matches.append({
+                            "id": str(article.id),
+                            "title": raw.title,
+                            "summary": summary,
+                            "significanceScore": int(round(user_score if user_score is not None else effective_score or 0)),
+                            "category": category,
+                            "contentType": _content_type_for(source.kind, article.event_type),
+                            "timestamp": _to_iso(ts),
+                            "tags": build_topic_chips(
+                                category,
+                                article.event_type,
+                                _normalized_mapping(article.topics),
+                                title=raw.title,
+                                summary=summary,
+                                source_name=source.name,
+                            ),
+                            "sources": [build_grounding_source(source=source, url=article.final_url)],
+                            "trustLabel": article.trust_label,
+                            "trustComponents": article.trust_components,
+                            "verificationState": getattr(article, "verification_state", None),
+                            "verificationConfidence": getattr(article, "verification_confidence", None),
+                            "freshnessState": getattr(article, "freshness_state", None),
+                            "finalScore": article.final_score or article.global_score,
+                        })
             except Exception:
-                rows = []
+                matches = []
 
-            if rows:
-                last_seen = max((article.created_at for article, _raw, _source, _cluster in rows if article.created_at), default=last_seen)
-
-            # Map each new row into the same payload as /api/news.
-            now = _naive_utc(utcnow())
-            for article, raw, source, cluster in rows:
-                if is_evergreen_or_directory_url(article.final_url):
-                    continue
-                ts = _event_time(raw, source)
-                if ts is None:
-                    continue
-                age_hours = (now - ts).total_seconds() / 3600
-                if age_hours < 0 or age_hours > LIVE_MAX_AGE_HOURS:
-                    continue
-                sources_count = cluster.sources_count if cluster else 1
-                coverage_score = log_norm(sources_count, 8)
-                social_score = log_norm(raw.social_hn_points or 0, 500)
-                social_score = max(social_score, log_norm(raw.social_reddit_upvotes or 0, 5000))
-                social_score = max(social_score, log_norm(raw.social_github_stars or 0, 5000))
-                base_score = article.final_score if article.final_score is not None else article.global_score
-                user_score = compute_user_score(
-                    global_score=base_score,
-                    event_type=article.event_type,
-                    topics=article.topics,
-                    entities=article.entities,
-                    source_id=str(source.id),
-                    source_authority=source.authority,
-                    coverage_score=coverage_score,
-                    social_score=social_score,
-                    final_url=article.final_url,
-                    user_pref=prefs,
-                    user_entity_weights=entity_weights,
-                    user_topic_weights=topic_weights,
-                    user_source_weights=source_weights,
-                )
-                if user_score < prefs.min_show_score:
-                    continue
-
-                category: Category = category_for(article.event_type, article.topics)
-                summary = article.summary or raw.snippet or article.text[:240]
-                effective_score = article.final_score if article.final_score is not None else article.global_score
-                match = {
-                    "id": str(article.id),
-                    "title": raw.title,
-                    "summary": summary,
-                    "significanceScore": int(round(user_score if user_score is not None else effective_score or 0)),
-                    "category": category,
-                    "contentType": _content_type_for(source.kind, article.event_type),
-                    "timestamp": _to_iso(ts),
-                    "tags": build_topic_chips(
-                        category,
-                        article.event_type,
-                        _normalized_mapping(article.topics),
-                        title=raw.title,
-                        summary=summary,
-                        source_name=source.name,
-                    ),
-                    "sources": [build_grounding_source(source=source, url=article.final_url)],
-                    "trustLabel": article.trust_label,
-                    "trustComponents": article.trust_components,
-                    "verificationState": getattr(article, "verification_state", None),
-                    "verificationConfidence": getattr(article, "verification_confidence", None),
-                    "freshnessState": getattr(article, "freshness_state", None),
-                    "finalScore": article.final_score or article.global_score,
-                }
+            for match in matches:
                 yield "event: news\n"
                 yield f"data: {json.dumps(match)}\n\n"
 
-            await asyncio.sleep(15)
+            await asyncio.sleep(60)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

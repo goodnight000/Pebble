@@ -148,7 +148,7 @@ def get_today(user_id: str, db=Depends(get_db)):
 
     rows = (
         db.query(Article, RawItem, Source, Cluster)
-        .options(defer(Article.html), defer(Article.llm_reasoning))
+        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
         .join(RawItem, Article.raw_item_id == RawItem.id)
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
@@ -173,9 +173,6 @@ def get_today(user_id: str, db=Depends(get_db)):
         social_score = max(social_score, log_norm(raw.social_github_stars or 0, 5000))
         topics = _normalized_mapping(article.topics)
         entities = _normalized_mapping(article.entities)
-        embedding = _decode_embedding_or_none(article.embedding)
-        if embedding is None:
-            continue
         base_score = article.final_score if article.final_score is not None else article.global_score
         user_score = compute_user_score(
             global_score=base_score,
@@ -202,11 +199,33 @@ def get_today(user_id: str, db=Depends(get_db)):
             continue
         rank_score = _compute_rank_score(user_score, age_hours, prefs.recency_bias, 18)
         payload = _article_payload(article, raw, source, user_score, rank_score)
-        payload["_embedding"] = embedding
+        payload["_article_id"] = str(article.id)
         items.append(payload)
 
     items_sorted = sorted(items, key=lambda x: x["rank_score"], reverse=True)
-    selected = _safe_mmr_select(items_sorted, limit=30)
+
+    # Lazy-load embeddings for top-N candidates only
+    mmr_candidate_count = min(len(items_sorted), 30 * 2)
+    mmr_candidates = items_sorted[:mmr_candidate_count]
+    if mmr_candidates:
+        candidate_article_ids = [item["_article_id"] for item in mmr_candidates]
+        embedding_rows = (
+            db.query(Article.id, Article.embedding)
+            .filter(Article.id.in_(candidate_article_ids))
+            .all()
+        )
+        embedding_map = {}
+        for art_id, raw_emb in embedding_rows:
+            emb = _decode_embedding_or_none(raw_emb)
+            if emb is not None:
+                embedding_map[str(art_id)] = emb
+
+        # Attach embeddings to candidates; drop any without valid embedding
+        for item in mmr_candidates:
+            item["_embedding"] = embedding_map.get(item["id"])
+        mmr_candidates = [item for item in mmr_candidates if item["_embedding"] is not None]
+
+    selected = _safe_mmr_select(mmr_candidates, limit=30)
 
     if prefs.serendipity > 0 and items_sorted:
         n = max(1, round(prefs.serendipity * len(selected)))
@@ -216,6 +235,7 @@ def get_today(user_id: str, db=Depends(get_db)):
 
     for item in selected:
         item.pop("_embedding", None)
+        item.pop("_article_id", None)
     return {"items": selected[:30]}
 
 
@@ -240,7 +260,7 @@ def get_week(user_id: str, db=Depends(get_db)):
 
     rows = (
         db.query(Article, RawItem, Source, Cluster)
-        .options(defer(Article.html), defer(Article.llm_reasoning))
+        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
         .join(RawItem, Article.raw_item_id == RawItem.id)
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
@@ -264,9 +284,6 @@ def get_week(user_id: str, db=Depends(get_db)):
         social_score = max(social_score, log_norm(raw.social_github_stars or 0, 5000))
         topics = _normalized_mapping(article.topics)
         entities = _normalized_mapping(article.entities)
-        embedding = _decode_embedding_or_none(article.embedding)
-        if embedding is None:
-            continue
         base_score = article.final_score if article.final_score is not None else article.global_score
         user_score = compute_user_score(
             global_score=base_score,
@@ -293,11 +310,33 @@ def get_week(user_id: str, db=Depends(get_db)):
             continue
         rank_score = _compute_rank_score(user_score, age_hours, prefs.recency_bias, 72)
         payload = _article_payload(article, raw, source, user_score, rank_score)
-        payload["_embedding"] = embedding
+        payload["_article_id"] = str(article.id)
         items.append(payload)
 
     items_sorted = sorted(items, key=lambda x: x["rank_score"], reverse=True)
-    selected = _safe_mmr_select(items_sorted, limit=50)
+
+    # Lazy-load embeddings for top-N candidates only
+    mmr_candidate_count = min(len(items_sorted), 50 * 2)
+    mmr_candidates = items_sorted[:mmr_candidate_count]
+    if mmr_candidates:
+        candidate_article_ids = [item["_article_id"] for item in mmr_candidates]
+        embedding_rows = (
+            db.query(Article.id, Article.embedding)
+            .filter(Article.id.in_(candidate_article_ids))
+            .all()
+        )
+        embedding_map = {}
+        for art_id, raw_emb in embedding_rows:
+            emb = _decode_embedding_or_none(raw_emb)
+            if emb is not None:
+                embedding_map[str(art_id)] = emb
+
+        # Attach embeddings to candidates; drop any without valid embedding
+        for item in mmr_candidates:
+            item["_embedding"] = embedding_map.get(item["id"])
+        mmr_candidates = [item for item in mmr_candidates if item["_embedding"] is not None]
+
+    selected = _safe_mmr_select(mmr_candidates, limit=50)
 
     if prefs.serendipity > 0 and items_sorted:
         n = max(1, round(prefs.serendipity * len(selected)))
@@ -307,6 +346,7 @@ def get_week(user_id: str, db=Depends(get_db)):
 
     for item in selected:
         item.pop("_embedding", None)
+        item.pop("_article_id", None)
     return {"items": selected[:50]}
 
 

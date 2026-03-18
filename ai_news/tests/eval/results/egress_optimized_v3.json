@@ -1,0 +1,199 @@
+{
+  "version": "optimized_v3",
+  "endpoint_results": [
+    {
+      "endpoint": "digest_today",
+      "status_code": 200,
+      "response_bytes": 46481,
+      "response_ms": 26490.5,
+      "item_count": 19,
+      "bytes_per_item": 2446.4,
+      "has_cache_control": true,
+      "cache_hit": true,
+      "second_request_ms": 4.1,
+      "scores": {
+        "size": 9,
+        "time": 1,
+        "bytes_per_item": 9,
+        "cache": 10
+      },
+      "errors": []
+    },
+    {
+      "endpoint": "news_weekly",
+      "status_code": 200,
+      "response_bytes": 7354,
+      "response_ms": 2.2,
+      "item_count": 6,
+      "bytes_per_item": 1225.7,
+      "has_cache_control": true,
+      "cache_hit": false,
+      "second_request_ms": 1.6,
+      "scores": {
+        "size": 10,
+        "time": 10,
+        "bytes_per_item": 10,
+        "cache": 10
+      },
+      "errors": []
+    },
+    {
+      "endpoint": "digest_archive",
+      "status_code": 200,
+      "response_bytes": 632,
+      "response_ms": 232.8,
+      "item_count": 3,
+      "bytes_per_item": 210.7,
+      "has_cache_control": true,
+      "cache_hit": true,
+      "second_request_ms": 2.1,
+      "scores": {
+        "size": 10,
+        "time": 9,
+        "bytes_per_item": 10,
+        "cache": 10
+      },
+      "errors": []
+    },
+    {
+      "endpoint": "digest_daily",
+      "status_code": 200,
+      "response_bytes": 125,
+      "response_ms": 254.9,
+      "item_count": 1,
+      "bytes_per_item": 125.0,
+      "has_cache_control": false,
+      "cache_hit": false,
+      "second_request_ms": 250.2,
+      "scores": {
+        "size": 10,
+        "time": 10,
+        "cache": 0
+      },
+      "errors": []
+    },
+    {
+      "endpoint": "signal_map",
+      "status_code": 200,
+      "response_bytes": 127127,
+      "response_ms": 736.4,
+      "item_count": 80,
+      "bytes_per_item": 1589.1,
+      "has_cache_control": true,
+      "cache_hit": true,
+      "second_request_ms": 3.5,
+      "scores": {
+        "size": 7,
+        "time": 10,
+        "bytes_per_item": 7,
+        "cache": 10
+      },
+      "errors": []
+    },
+    {
+      "endpoint": "graph",
+      "status_code": 200,
+      "response_bytes": 127127,
+      "response_ms": 2.8,
+      "item_count": 109,
+      "bytes_per_item": 1166.3,
+      "has_cache_control": true,
+      "cache_hit": false,
+      "second_request_ms": 2.5,
+      "scores": {
+        "size": 5,
+        "time": 10,
+        "bytes_per_item": 7,
+        "cache": 10
+      },
+      "errors": []
+    },
+    {
+      "endpoint": "health",
+      "status_code": 200,
+      "response_bytes": 62,
+      "response_ms": 1.2,
+      "item_count": 1,
+      "bytes_per_item": 62.0,
+      "has_cache_control": true,
+      "cache_hit": false,
+      "second_request_ms": 0.9,
+      "scores": {
+        "size": 9,
+        "time": 10,
+        "cache": 10
+      },
+      "errors": []
+    }
+  ],
+  "dimension_averages": {
+    "size": 8.57,
+    "time": 8.57,
+    "bytes_per_item": 8.6,
+    "cache": 8.57
+  },
+  "overall_score": 8.58,
+  "daily_egress_bytes": 14419009,
+  "daily_egress_mb": 13.75,
+  "monthly_egress_gb": 0.4,
+  "egress_breakdown": [
+    {
+      "endpoint": "digest_today",
+      "response_bytes": 46481,
+      "requests_per_day": 288,
+      "daily_bytes": 13386528,
+      "budget_daily_bytes": 29491200,
+      "within_budget": true
+    },
+    {
+      "endpoint": "news_weekly",
+      "response_bytes": 7354,
+      "requests_per_day": 2,
+      "daily_bytes": 14708,
+      "budget_daily_bytes": 61440,
+      "within_budget": true
+    },
+    {
+      "endpoint": "digest_archive",
+      "response_bytes": 632,
+      "requests_per_day": 1,
+      "daily_bytes": 632,
+      "budget_daily_bytes": 10240,
+      "within_budget": true
+    },
+    {
+      "endpoint": "digest_daily",
+      "response_bytes": 125,
+      "requests_per_day": 1,
+      "daily_bytes": 125,
+      "budget_daily_bytes": 512000,
+      "within_budget": true
+    },
+    {
+      "endpoint": "signal_map",
+      "response_bytes": 127127,
+      "requests_per_day": 4,
+      "daily_bytes": 508508,
+      "budget_daily_bytes": 819200,
+      "within_budget": true
+    },
+    {
+      "endpoint": "graph",
+      "response_bytes": 127127,
+      "requests_per_day": 4,
+      "daily_bytes": 508508,
+      "budget_daily_bytes": 614400,
+      "within_budget": true
+    },
+    {
+      "endpoint": "health",
+      "response_bytes": 62,
+      "requests_per_day": 0,
+      "daily_bytes": 0,
+      "budget_daily_bytes": 0,
+      "within_budget": true
+    }
+  ],
+  "baseline_daily_gb": 10.0,
+  "reduction_pct": 99.9
+}

@@ -27,7 +27,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 
-const DIGEST_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
+const DIGEST_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 type AppTab = 'digest' | 'live' | 'weekly' | 'history' | 'map';
 
@@ -125,12 +125,24 @@ const App: React.FC = () => {
 
   useEffect(() => {
     void loadNewsForLocale(language);
+
+    const unsubscribe = aiService.subscribe((event) => {
+      if (event.type === 'digest') {
+        setDigest(event.data);
+        setLastUpdated(new Date());
+      }
+    });
+
+    // Fallback polling in case realtime and SSE both fail silently
     const intervalId = window.setInterval(() => {
       void loadNewsForLocale(language);
     }, DIGEST_REFRESH_INTERVAL_MS);
 
-    return () => window.clearInterval(intervalId);
-  }, [language, loadNewsForLocale]);
+    return () => {
+      unsubscribe();
+      window.clearInterval(intervalId);
+    };
+  }, [language, loadNewsForLocale, aiService]);
 
   useEffect(() => {
     if (activeTab === 'weekly' && weeklyTop.length === 0) {

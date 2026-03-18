@@ -17,10 +17,27 @@ from app.scoring.time_decay import rank_score as compute_rank_score
 from app.scoring.user_score import compute_user_score
 from app.tasks.celery_app import celery_app
 from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import defer
 
 
 FETCHED_AT_FALLBACK_KINDS = {"hn", "reddit", "twitter", "mastodon", "bluesky", "github", "github_trending", "congress"}
 FETCHED_AT_PREFERRED_KINDS = {"github", "github_trending"}
+
+
+def _warm_digest_cache():
+    """Pre-populate the digest/today API cache after generation."""
+    import logging
+    log = logging.getLogger(__name__)
+    try:
+        from urllib.request import urlopen, Request
+        req = Request("http://127.0.0.1:8000/api/digest/today?locale=en", headers={"Accept": "application/json"})
+        resp = urlopen(req, timeout=60)
+        if resp.status == 200:
+            log.info("Warmed digest/today cache successfully")
+        else:
+            log.warning("Warming digest/today cache returned status %s", resp.status)
+    except Exception as exc:
+        log.warning("Failed to warm digest/today cache: %s", exc)
 
 
 def _event_time(raw, source):
@@ -313,6 +330,7 @@ def run_daily_digest():
                 # Upsert: check for existing digest for this user/date/content_type
                 existing = (
                     session.query(DailyDigest)
+                    .options(defer(DailyDigest.longform_html))
                     .filter(
                         DailyDigest.user_id == user.id,
                         func.date(DailyDigest.date) == now.date(),
@@ -426,6 +444,10 @@ def run_daily_digest():
     delete_by_prefix("api_digest_today:")
     delete_by_prefix("api_digest_daily:")
     delete_by_prefix("api_digest_archive:")
+    delete_by_prefix("api_news_weekly:")
 
     for payload in pending_realtime_events:
         publish_realtime_event("digests", "digest_refresh", payload)
+
+    # Warm the API cache so the first user request is instant
+    _warm_digest_cache()
