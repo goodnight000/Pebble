@@ -37,6 +37,7 @@ _ROUTES_SIGNAL_MAP = _read_source("ai_news/app/api/routes_signal_map.py")
 _PIPELINE = _read_source("ai_news/app/tasks/pipeline.py")
 _INLINE_SCHEDULER = _read_source("ai_news/app/tasks/inline_scheduler.py")
 _APP_TSX = _read_source("src/App.tsx")
+_DAILY_DIGEST_PAGE = _read_source("src/components/DailyDigestPage.tsx")
 
 
 # ===================================================================
@@ -48,44 +49,50 @@ class TestDeferredColumns(unittest.TestCase):
     """Verify that SQLAlchemy defer() calls target the right columns in the
     right query sites."""
 
-    def test_select_articles_defers_html_text_reasoning(self):
-        """_select_articles must defer html, text, and llm_reasoning."""
-        # Look for the .options(...) block inside _select_articles
+    def test_select_articles_uses_load_only(self):
+        """_select_articles must use load_only() to whitelist columns,
+        which implicitly excludes html, text, embedding, and llm_reasoning."""
+        select_fn = _ROUTES_API[_ROUTES_API.index("def _select_articles"):]
+        select_fn = select_fn[:select_fn.index("\ndef _select_weekly_top")]
         self.assertIn(
-            "defer(Article.html)",
-            _ROUTES_API,
-            "routes_api._select_articles should defer Article.html",
+            "load_only(",
+            select_fn,
+            "routes_api._select_articles should use load_only()",
         )
-        self.assertIn(
-            "defer(Article.text)",
-            _ROUTES_API,
-            "routes_api._select_articles should defer Article.text",
-        )
-        self.assertIn(
-            "defer(Article.llm_reasoning)",
-            _ROUTES_API,
-            "routes_api._select_articles should defer Article.llm_reasoning",
-        )
-
-    def test_select_articles_defers_embedding(self):
-        """Phase 2 added defer(Article.embedding) to the initial query;
-        embeddings are lazy-loaded separately for MMR candidates only."""
-        self.assertIn(
-            "defer(Article.embedding)",
-            _ROUTES_API,
-            "routes_api._select_articles should defer Article.embedding (Phase 2 lazy-load)",
-        )
-
-    def test_sse_endpoint_defers_all_large_cols(self):
-        """The SSE /stream endpoint must defer html, text, embedding, and
-        llm_reasoning."""
-        # The SSE event_generator has its own query; verify its .options() line.
-        sse_section = _ROUTES_API[_ROUTES_API.index("async def compat_stream"):]
-        for col in ("Article.html", "Article.text", "Article.embedding", "Article.llm_reasoning"):
+        # Verify key columns are included in the .options() block
+        options_start = select_fn.index(".options(")
+        options_end = select_fn.index(".filter(", options_start)
+        options_block = select_fn[options_start:options_end]
+        for col in ("Article.id", "Article.final_url", "Article.summary",
+                     "Article.event_type", "Article.topics", "Article.entities"):
             self.assertIn(
-                f"defer({col})",
+                col,
+                options_block,
+                f"routes_api._select_articles load_only must include {col}",
+            )
+        # Verify large columns are NOT in load_only options block
+        for col in ("Article.html", "Article.text", "Article.embedding", "Article.llm_reasoning"):
+            self.assertNotIn(
+                col,
+                options_block,
+                f"routes_api._select_articles options must NOT include {col}",
+            )
+
+    def test_sse_endpoint_uses_load_only(self):
+        """The SSE /stream endpoint must use load_only() to whitelist columns."""
+        sse_section = _ROUTES_API[_ROUTES_API.index("async def compat_stream"):]
+        self.assertIn(
+            "load_only(",
+            sse_section,
+            "SSE endpoint query must use load_only()",
+        )
+        # Verify large columns are NOT referenced in the SSE query options
+        # (they should be excluded by load_only whitelist)
+        for col in ("Article.html", "Article.text", "Article.embedding", "Article.llm_reasoning"):
+            self.assertNotIn(
+                col,
                 sse_section,
-                f"SSE endpoint query must defer {col}",
+                f"SSE endpoint must NOT include {col} in load_only",
             )
 
     def test_signal_map_defers_all_large_cols(self):
@@ -123,24 +130,39 @@ class TestDeferredColumns(unittest.TestCase):
             "/digest/daily must NOT defer DailyDigest.longform_html (it reads it)",
         )
 
-    def test_compat_select_articles_defers_all_large_cols(self):
-        """routes_compat._select_articles must also defer html, text,
-        embedding, and llm_reasoning."""
+    def test_compat_select_articles_uses_load_only(self):
+        """routes_compat._select_articles must use load_only() to whitelist columns."""
+        select_fn = _ROUTES_COMPAT[_ROUTES_COMPAT.index("def _select_articles"):]
+        select_fn = select_fn[:select_fn.index("\ndef _select_weekly_top")]
+        self.assertIn(
+            "load_only(",
+            select_fn,
+            "routes_compat._select_articles should use load_only()",
+        )
+        # Scope to the .options() block only (lazy-load query uses Article.embedding separately)
+        options_start = select_fn.index(".options(")
+        options_end = select_fn.index(".filter(", options_start)
+        options_block = select_fn[options_start:options_end]
         for col in ("Article.html", "Article.text", "Article.embedding", "Article.llm_reasoning"):
-            self.assertIn(
-                f"defer({col})",
-                _ROUTES_COMPAT,
-                f"routes_compat._select_articles must defer {col}",
+            self.assertNotIn(
+                col,
+                options_block,
+                f"routes_compat._select_articles options must NOT include {col}",
             )
 
-    def test_compat_sse_defers_all_large_cols(self):
-        """routes_compat SSE endpoint must also defer all large columns."""
+    def test_compat_sse_uses_load_only(self):
+        """routes_compat SSE endpoint must use load_only() to whitelist columns."""
         sse_section = _ROUTES_COMPAT[_ROUTES_COMPAT.index("async def compat_stream"):]
+        self.assertIn(
+            "load_only(",
+            sse_section,
+            "routes_compat SSE endpoint must use load_only()",
+        )
         for col in ("Article.html", "Article.text", "Article.embedding", "Article.llm_reasoning"):
-            self.assertIn(
-                f"defer({col})",
+            self.assertNotIn(
+                col,
                 sse_section,
-                f"routes_compat SSE endpoint must defer {col}",
+                f"routes_compat SSE endpoint must NOT include {col} in load_only",
             )
 
 
@@ -314,12 +336,12 @@ class TestBackgroundTaskIntervals(unittest.TestCase):
             'social-poll interval must be 3600.0 seconds',
         )
 
-    def test_rebuild_faiss_interval_is_3600(self):
-        """FAISS index rebuild should run every 3600 seconds (1 hour)."""
+    def test_rebuild_faiss_interval_is_21600(self):
+        """pgvector backfill should run every 21600 seconds (6 hours)."""
         self.assertRegex(
             _INLINE_SCHEDULER,
-            r'"rebuild-faiss"\s*,\s*3600\.0',
-            'rebuild-faiss interval must be 3600.0 seconds',
+            r'"rebuild-faiss"\s*,\s*21600\.0',
+            'rebuild-faiss interval must be 21600.0 seconds',
         )
 
     def test_relationship_inference_interval_is_10800(self):
@@ -433,20 +455,32 @@ class TestCacheControlHeaders(unittest.TestCase):
         )
 
     def test_digest_archive_has_cache_control(self):
-        """/digest/archive must also return Cache-Control with max-age=300."""
+        """/digest/archive must also return Cache-Control with max-age."""
         archive_section = _ROUTES_API[_ROUTES_API.index("def digest_archive"):]
         next_route = archive_section.find("\n@router.", 1)
         if next_route != -1:
             archive_section = archive_section[:next_route]
         self.assertIn(
-            'max-age=300',
+            'max-age=3600',
             archive_section,
-            "/digest/archive must include Cache-Control max-age=300",
+            "/digest/archive must include Cache-Control max-age=3600",
         )
         self.assertIn(
             "Cache-Control",
             archive_section,
             "/digest/archive must set the Cache-Control header",
+        )
+
+    def test_digest_daily_has_cache_control(self):
+        """/digest/daily should return Cache-Control because longform is stable per day."""
+        digest_daily_section = _ROUTES_API[_ROUTES_API.index("def digest_daily"):]
+        next_route = digest_daily_section.find("\ndef ", 1)
+        if next_route != -1:
+            digest_daily_section = digest_daily_section[:next_route]
+        self.assertIn(
+            "Cache-Control",
+            digest_daily_section,
+            "/digest/daily must set the Cache-Control header",
         )
 
 
@@ -473,6 +507,83 @@ class TestFrontendPolling(unittest.TestCase):
             "aiService.subscribe(",
             _APP_TSX,
             "App.tsx must call aiService.subscribe() for realtime updates",
+        )
+
+
+# ===================================================================
+# 10. Startup path should avoid longform digest fetches
+# ===================================================================
+
+
+class TestFrontendStartupPath(unittest.TestCase):
+    """Verify the default app path avoids the expensive longform digest."""
+
+    def test_default_tab_is_live(self):
+        """App should land on the live feed, not the longform digest tab."""
+        self.assertIn(
+            "const [activeTab, setActiveTab] = useState<AppTab>('live')",
+            _APP_TSX,
+            "App.tsx should default activeTab to 'live' to avoid startup longform fetches",
+        )
+
+    def test_daily_digest_archive_is_not_refetched_on_date_change(self):
+        """Archive metadata should not refetch on every selectedDate change."""
+        archive_effect_section = _DAILY_DIGEST_PAGE[_DAILY_DIGEST_PAGE.index("useEffect(() => {"):]
+        archive_effect_section = archive_effect_section[archive_effect_section.index("aiService.fetchDigestArchive()"):]
+        archive_effect_section = archive_effect_section[:archive_effect_section.index(");", archive_effect_section.index("}, [")) + 3]
+        self.assertNotIn(
+            "selectedDate",
+            archive_effect_section,
+            "DailyDigestPage archive fetch should not depend on selectedDate",
+        )
+
+    def test_load_news_for_locale_does_not_eagerly_fetch_weekly(self):
+        """The live hot path should not preload weekly data on every digest refresh."""
+        load_news_section = _APP_TSX[_APP_TSX.index("const loadNewsForLocale"):]
+        load_news_section = load_news_section[:load_news_section.index("const refreshNews")]
+        self.assertNotIn(
+            "loadWeeklyTop(locale)",
+            load_news_section,
+            "loadNewsForLocale should not eagerly fetch weekly data",
+        )
+
+
+# ===================================================================
+# 11. Relationship inference should defer heavy article columns
+# ===================================================================
+
+
+class TestRelationshipInferenceEgress(unittest.TestCase):
+    """Verify relationship inference avoids loading large article blobs."""
+
+    def test_relationship_inference_defers_heavy_article_columns(self):
+        relationship_section = _PIPELINE[_PIPELINE.index("def run_relationship_inference"):]
+        relationship_section = relationship_section[:relationship_section.index("if not llm_candidates:")]
+        for col in ("Article.html", "Article.text", "Article.embedding", "Article.llm_reasoning"):
+            self.assertIn(
+                f"defer({col})",
+                relationship_section,
+                f"run_relationship_inference must defer {col}",
+            )
+
+
+class TestLongformArtifactPath(unittest.TestCase):
+    """Verify longform digest reads can avoid Postgres HTML blobs."""
+
+    def test_digest_daily_uses_storage_path_when_present(self):
+        digest_daily_section = _ROUTES_API[_ROUTES_API.index("def digest_daily"):]
+        next_route = digest_daily_section.find("\ndef ", 1)
+        if next_route != -1:
+            digest_daily_section = digest_daily_section[:next_route]
+        self.assertIn(
+            "row.storage_path",
+            digest_daily_section,
+            "/digest/daily should check for a storage-backed longform artifact",
+        )
+        self.assertIn(
+            "load_longform_digest_artifact",
+            digest_daily_section,
+            "/digest/daily should load longform content from artifact storage before DB fallback",
         )
 
 

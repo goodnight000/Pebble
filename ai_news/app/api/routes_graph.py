@@ -189,7 +189,7 @@ def get_graph(
     cache_key = f"api_graph:{hours}:{locale}:{bucket}"
     cached = get_cached(cache_key)
     if cached:
-        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=900"})
 
     cutoff = now - timedelta(hours=hours)
 
@@ -446,7 +446,7 @@ def get_graph(
         "translation_status": translation_status,
     }
     set_cached(cache_key, response, ttl=60 * 15)  # 15-min TTL
-    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=900"})
 
 
 @router.get("/topic-trends")

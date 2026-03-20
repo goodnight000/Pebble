@@ -15,7 +15,6 @@ import DailyDigestPage from '@/components/DailyDigestPage';
 import {
   RefreshCcw,
   Calendar,
-  BarChart3,
   Compass,
   BrainCircuit,
   Network,
@@ -29,7 +28,7 @@ import {
 
 const DIGEST_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
-type AppTab = 'digest' | 'live' | 'weekly' | 'history' | 'map';
+type AppTab = 'digest' | 'live' | 'weekly' | 'map';
 
 interface NavDef {
   id: AppTab;
@@ -41,7 +40,6 @@ const NAV_ITEMS: NavDef[] = [
   { id: 'digest', icon: <BookOpen className="w-4 h-4" />, color: '#ff6a00' },
   { id: 'live', icon: <Compass className="w-4 h-4" />, color: '#10b981' },
   { id: 'weekly', icon: <Calendar className="w-4 h-4" />, color: '#8b5cf6' },
-  { id: 'history', icon: <BarChart3 className="w-4 h-4" />, color: '#e67e22' },
   { id: 'map', icon: <Network className="w-4 h-4" />, color: '#3b82f6' },
 ];
 
@@ -61,7 +59,7 @@ const App: React.FC = () => {
   const [language, setLanguage] = useState<Language>(() => readStoredLanguage());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [weeklyTop, setWeeklyTop] = useState<NewsItem[]>([]);
-  const [activeTab, setActiveTab] = useState<AppTab>('digest');
+  const [activeTab, setActiveTab] = useState<AppTab>('live');
   const [contentFilter, setContentFilter] = useState<ContentType>('all');
 
   const aiService = React.useMemo(() => new AIService(), []);
@@ -86,21 +84,23 @@ const App: React.FC = () => {
       setDigest(data);
       hasDigestRef.current = true;
       setLastUpdated(new Date());
-      try {
-        await loadWeeklyTop(locale);
-      } catch (error) {
-        console.error(refresh ? 'Failed to load weekly items during refresh' : 'Failed to load weekly items during initial load', error);
-      }
       setStatus(AppStatus.READY);
     } catch (error) {
       console.error(refresh ? 'Failed to load intelligence:' : 'Failed to load initial intelligence:', error);
       setStatus(hasDigestRef.current ? AppStatus.READY : AppStatus.ERROR);
     }
-  }, [aiService, loadWeeklyTop]);
+  }, [aiService]);
 
   const refreshNews = useCallback(async () => {
     await loadNewsForLocale(language, { refresh: true });
-  }, [language, loadNewsForLocale]);
+    if (activeTab === 'weekly') {
+      try {
+        await loadWeeklyTop(language);
+      } catch (error) {
+        console.error('Failed to refresh weekly items', error);
+      }
+    }
+  }, [activeTab, language, loadNewsForLocale, loadWeeklyTop]);
 
   const loadWeekly = useCallback(async () => {
     try {
@@ -154,9 +154,10 @@ const App: React.FC = () => {
   const hasDigest = Boolean(currentDigest);
 
   const filteredItems = currentDigest
-    ? contentFilter === 'all'
-      ? currentDigest.items
+    ? (contentFilter === 'all'
+      ? [...currentDigest.items]
       : currentDigest.items.filter((item) => item.contentType === contentFilter)
+    ).sort((a, b) => b.significanceScore - a.significanceScore)
     : [];
 
   const showBreaking = contentFilter === 'all' || contentFilter === 'news';
@@ -332,8 +333,8 @@ const App: React.FC = () => {
                       {filteredItems.length === 0 && (
                         <div className="col-span-2 wf-panel p-6 text-center text-[var(--muted)]">
                           {language === 'en'
-                            ? `No ${contentFilter} items in today's digest.`
-                            : `今日简报中没有${CONTENT_TYPE_LABELS[contentFilter][language]}内容。`}
+                            ? 'No significant news today.'
+                            : '今日暂无重要新闻。'}
                         </div>
                       )}
                     </div>

@@ -54,7 +54,7 @@ const DailyDigestPage: React.FC<DailyDigestPageProps> = ({ aiService, language }
     aiService.fetchDigestArchive().then(setArchive).catch((err) => {
       console.error('Failed to load archive', err);
     });
-  }, [aiService, selectedDate]);
+  }, [aiService]);
 
   // Build a navigable date list: archive dates plus selectedDate if missing
   const navDates = React.useMemo(() => {

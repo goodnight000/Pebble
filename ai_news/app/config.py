@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     app_env: str = Field(default="dev", alias="APP_ENV")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
+    egress_debug_token: str | None = Field(default=None, alias="EGRESS_DEBUG_TOKEN")
 
     database_url: str = Field(..., alias="DATABASE_URL")
     redis_url: str = Field(default="", alias="REDIS_URL")

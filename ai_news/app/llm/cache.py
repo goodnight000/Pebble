@@ -29,30 +29,41 @@ def _redis_client():
 
 
 def get_cached(key: str):
+    from app.observability.egress import note_cache_event
+
     client = _redis_client()
     if client is not None:
         value = client.get(key)
         if not value:
+            note_cache_event("miss", key)
             return None
+        note_cache_event("hit", key)
         return json.loads(value)
 
     entry = _memory_cache.get(key)
     if not entry:
+        note_cache_event("miss", key)
         return None
     expires_at, payload = entry
     if expires_at is not None and time.time() > expires_at:
         _memory_cache.pop(key, None)
+        note_cache_event("miss", key)
         return None
+    note_cache_event("hit", key)
     return payload
 
 
 def set_cached(key: str, payload: dict, ttl: int = 60 * 60 * 24 * 7):
+    from app.observability.egress import note_cache_event
+
     client = _redis_client()
     if client is not None:
         client.set(key, json.dumps(payload), ex=ttl)
+        note_cache_event("set", key)
         return
     expires_at = time.time() + ttl if ttl else None
     _memory_cache[key] = (expires_at, payload)
+    note_cache_event("set", key)
 
 
 def delete_cached(key: str):

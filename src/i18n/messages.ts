@@ -12,7 +12,6 @@ export const NAV_LABELS = {
   digest: { en: 'Daily Digest', zh: '每日简报' },
   live: { en: 'Live Intelligence', zh: '实时情报' },
   weekly: { en: 'Weekly Signal', zh: '周度信号' },
-  history: { en: 'History', zh: '历史存档' },
   map: { en: 'Relationship Graph', zh: '关系图谱' },
 } as const;
 
@@ -143,6 +142,10 @@ export const UI_MESSAGES = {
   sourcesSuffix: { en: 'sources', zh: '个来源' },
   velocity: { en: 'Velocity', zh: '速率' },
   age: { en: 'Age', zh: '时长' },
+  score: { en: 'Score', zh: '评分' },
+  connections: { en: 'Connections', zh: '关联' },
+  published: { en: 'Published', zh: '发布时间' },
+  avgSimilarity: { en: 'Avg Similarity', zh: '平均相似度' },
   keyEntities: { en: 'KEY ENTITIES', zh: '关键实体' },
   sevenDayTrend: { en: '7-DAY TREND', zh: '7 日趋势' },
   coverageWithCount: { en: 'COVERAGE', zh: '报道' },

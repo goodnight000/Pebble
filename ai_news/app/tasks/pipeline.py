@@ -6,8 +6,9 @@ from datetime import timedelta
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 import numpy as np
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, text
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import defer
 
 from app.clustering.cluster import attach_or_create_cluster, bytes_to_vector, update_cluster_stats
 from app.common.embeddings import embed_text, embed_texts
@@ -183,21 +184,32 @@ def _find_existing_raw_by_url(session, url: str) -> RawItem | None:
         domain = domain[4:]
     if not domain:
         return None
-    rows = (
-        session.query(RawItem)
+    recent_cutoff = utcnow() - timedelta(days=30)
+    scan_rows = (
+        session.query(RawItem.id, RawItem.url)
         .filter(RawItem.url.contains(domain))
+        .filter(func.coalesce(RawItem.published_at, RawItem.fetched_at) >= recent_cutoff)
         .order_by(func.coalesce(RawItem.published_at, RawItem.fetched_at).desc())
-        .limit(200)
+        .limit(50)
         .all()
     )
-    for raw in rows:
-        if _normalize_article_url(raw.url) == normalized:
-            return raw
+    matched_id = None
+    for rid, rurl in scan_rows:
+        if _normalize_article_url(rurl) == normalized:
+            matched_id = rid
+            break
+    if matched_id is not None:
+        return session.query(RawItem).filter(RawItem.id == matched_id).first()
     return None
 
 
-def _find_existing_article_by_url(session, url: str) -> Article | None:
-    exact = session.query(Article).filter(Article.final_url == url).first()
+def _find_existing_article_by_url(session, url: str):
+    """Return a lightweight projection (id, final_url, raw_item_id) or None."""
+    exact = (
+        session.query(Article.id, Article.final_url, Article.raw_item_id)
+        .filter(Article.final_url == url)
+        .first()
+    )
     if exact:
         return exact
     normalized = _normalize_article_url(url)
@@ -208,19 +220,21 @@ def _find_existing_article_by_url(session, url: str) -> Article | None:
         domain = domain[4:]
     if not domain:
         return None
+    recent_cutoff = utcnow() - timedelta(days=30)
     rows = (
-        session.query(Article, RawItem)
+        session.query(Article.id, Article.final_url, Article.raw_item_id, RawItem.url)
         .join(RawItem, Article.raw_item_id == RawItem.id)
         .filter(or_(Article.final_url.contains(domain), RawItem.url.contains(domain)))
+        .filter(func.coalesce(RawItem.published_at, RawItem.fetched_at) >= recent_cutoff)
         .order_by(func.coalesce(RawItem.published_at, RawItem.fetched_at).desc())
-        .limit(200)
+        .limit(50)
         .all()
     )
-    for article, raw in rows:
-        if _normalize_article_url(article.final_url) == normalized:
-            return article
-        if _normalize_article_url(raw.url) == normalized:
-            return article
+    for row in rows:
+        if _normalize_article_url(row.final_url) == normalized:
+            return row  # named tuple with .id, .final_url, .raw_item_id
+        if _normalize_article_url(row[3]) == normalized:  # RawItem.url
+            return row
     return None
 
 
@@ -382,7 +396,7 @@ def _scrape_decision(raw: RawItem, source: Source) -> tuple[str, str]:
     return "skip", "below_threshold_skip"
 
 
-def _upsert_raw_item(session, candidate: dict, seen_keys: set, seen_hashes: set) -> None:
+def _upsert_raw_item(session, candidate: dict, seen_keys: set, seen_hashes: set, *, existing_hashes: set | None = None) -> None:
     if not is_news_candidate_url(candidate.get("url")):
         return
 
@@ -399,11 +413,10 @@ def _upsert_raw_item(session, candidate: dict, seen_keys: set, seen_hashes: set)
         if existing_raw is None:
             existing_raw = _find_existing_raw_by_url(session, candidate.get("url", ""))
         if existing_raw:
-            changed = _merge_social_signals(existing_raw, candidate)
-            if changed and existing_raw.article:
-                source = session.query(Source).filter(Source.id == existing_raw.source_id).first()
-                if source:
-                    _refresh_existing_article_scores(session, existing_raw.article, existing_raw, source)
+            _merge_social_signals(existing_raw, candidate)
+            # Skip inline rescoring — social signal changes will be picked
+            # up by the periodic rescore_recent_articles pass.  Rescoring
+            # here caused long-held transactions and cluster lock contention.
             return
 
     key = (str(candidate["source_id"]), candidate["external_id"])
@@ -417,7 +430,10 @@ def _upsert_raw_item(session, candidate: dict, seen_keys: set, seen_hashes: set)
     seen_hashes.add(canonical)
 
     # Skip if canonical hash already exists in DB (global dedup)
-    if session.query(RawItem.id).filter(RawItem.canonical_hash == canonical).first():
+    if existing_hashes is not None:
+        if canonical in existing_hashes:
+            return
+    elif session.query(RawItem.id).filter(RawItem.canonical_hash == canonical).first():
         return
 
     existing = (
@@ -506,21 +522,47 @@ def _connector_for_source(source: Source):
 
 
 def _max_similarity_recent(session, embedding: np.ndarray, lookback_days: int, exclude_cluster_id: str | None) -> float:
+    from app.clustering.cluster import _pgvector_available, _vector_to_pgvector_literal
+
     cutoff = utcnow() - timedelta(days=lookback_days)
-    query = session.query(Cluster).filter(Cluster.last_seen_at >= cutoff)
+
+    if _pgvector_available(session):
+        vec_literal = _vector_to_pgvector_literal(embedding)
+        sql = """
+            SELECT 1 - (centroid_vec <=> :vec::vector) AS similarity
+            FROM clusters
+            WHERE last_seen_at >= :cutoff
+              AND centroid_vec IS NOT NULL
+        """
+        params: dict = {"vec": vec_literal, "cutoff": cutoff}
+
+        if exclude_cluster_id:
+            sql += " AND id != :exclude_id"
+            params["exclude_id"] = str(exclude_cluster_id)
+
+        sql += " ORDER BY centroid_vec <=> :vec::vector LIMIT 1"
+
+        row = session.execute(text(sql), params).first()
+        return float(row.similarity) if row else 0.0
+
+    # Fallback: in-memory numpy cosine-similarity search
+    query = session.query(Cluster.id, Cluster.centroid_embedding).filter(Cluster.last_seen_at >= cutoff)
     if exclude_cluster_id:
         query = query.filter(Cluster.id != exclude_cluster_id)
-    clusters = query.all()
-    if not clusters:
+    rows = query.all()
+    if not rows:
         return 0.0
+    # Normalize the query vector so dot-product == cosine similarity
+    emb_norm = np.linalg.norm(embedding)
+    emb_normed = embedding / emb_norm if emb_norm > 0 else embedding
     sims = []
-    for cluster in clusters:
-        if not cluster.centroid_embedding:
+    for _cluster_id, centroid_embedding in rows:
+        if not centroid_embedding:
             continue
-        vec = bytes_to_vector(cluster.centroid_embedding)
+        vec = bytes_to_vector(centroid_embedding)
         if vec.size == 0:
             continue
-        sims.append(float(vec @ embedding))
+        sims.append(float(vec @ emb_normed))
     return max(sims) if sims else 0.0
 
 
@@ -660,8 +702,11 @@ def _score_article(
             .join(RawItem, Article.raw_item_id == RawItem.id)
             .join(Source, RawItem.source_id == Source.id)
             .filter(ClusterMember.cluster_id == cluster_id)
+            .options(defer(Article.html), defer(Article.embedding), defer(Article.llm_reasoning))
             .all()
         )
+        # Note: Article.text is NOT deferred here because estimate_independent_sources
+        # and compute_verification read .text on cluster articles for trust analysis.
         cluster_articles = [art for art, _sname in rows]
         source_names = [sname for _art, sname in rows]
 
@@ -1036,7 +1081,7 @@ def _process_scrape_targets(raw_ids: list[str]) -> None:
                 # global_score was computed with the stale values.
                 if reclassified:
                     _refresh_existing_article_scores(session, article, raw, source)
-                if article.global_score >= 70 and article.summary is None:
+                if article.global_score >= 55 and article.summary is None:
                     summary = llm.summarize(raw.title, article.text)
                     if summary:
                         article.summary = summary
@@ -1123,15 +1168,25 @@ def _run_poll(priority_only: bool):
             })
 
     # ── Phase 1c: Write candidates + pre-score (short write transaction) ──
+    source_by_id = {str(s.id): s for s in sources}
     with session_scope() as session:
+        # Batch-query existing canonical hashes to avoid per-candidate lookups
+        candidate_hashes = {c["canonical_hash"] for c in all_candidates if c.get("canonical_hash")}
+        existing_hashes: set[str] = set()
+        hash_list = list(candidate_hashes)
+        for i in range(0, len(hash_list), 500):
+            chunk = hash_list[i:i + 500]
+            rows = session.query(RawItem.canonical_hash).filter(RawItem.canonical_hash.in_(chunk)).all()
+            existing_hashes.update(row[0] for row in rows)
+
         seen_keys: set = set()
         seen_hashes: set = set()
         for candidate in all_candidates:
-            _upsert_raw_item(session, candidate, seen_keys, seen_hashes)
+            _upsert_raw_item(session, candidate, seen_keys, seen_hashes, existing_hashes=existing_hashes)
 
         raw_items = session.query(RawItem).filter(RawItem.pre_score.is_(None)).all()
         for raw in raw_items:
-            source = session.query(Source).filter(Source.id == raw.source_id).first()
+            source = source_by_id.get(str(raw.source_id))
             if source is None:
                 continue
             raw.pre_score = _compute_pre_score(raw, source)
@@ -1220,18 +1275,28 @@ def _run_special(kind: str, window_hours: int):
             })
 
     # ── Phase 1c: Write candidates + pre-score for this kind ──
+    source_by_id = {str(s.id): s for s in sources}
     with session_scope() as session:
+        # Batch-query existing canonical hashes to avoid per-candidate lookups
+        candidate_hashes = {c["canonical_hash"] for c in all_candidates if c.get("canonical_hash")}
+        existing_hashes: set[str] = set()
+        hash_list = list(candidate_hashes)
+        for i in range(0, len(hash_list), 500):
+            chunk = hash_list[i:i + 500]
+            rows = session.query(RawItem.canonical_hash).filter(RawItem.canonical_hash.in_(chunk)).all()
+            existing_hashes.update(row[0] for row in rows)
+
         seen_keys: set = set()
         seen_hashes: set = set()
         for candidate in all_candidates:
-            _upsert_raw_item(session, candidate, seen_keys, seen_hashes)
+            _upsert_raw_item(session, candidate, seen_keys, seen_hashes, existing_hashes=existing_hashes)
 
         raw_items = session.query(RawItem).filter(
             RawItem.pre_score.is_(None),
             RawItem.source_id.in_(source_ids),
         ).all()
         for raw in raw_items:
-            source = session.query(Source).filter(Source.id == raw.source_id).first()
+            source = source_by_id.get(str(raw.source_id))
             if source is None:
                 continue
             raw.pre_score = _compute_pre_score(raw, source)
@@ -1294,22 +1359,16 @@ def run_entity_resolution() -> None:
 
     with session_scope() as session:
         cutoff = utcnow() - timedelta(days=7)
-        recent_articles = (
-            session.query(Article)
-            .join(RawItem, Article.raw_item_id == RawItem.id)
-            .filter(
-                or_(
-                    RawItem.published_at >= cutoff,
-                    RawItem.fetched_at >= cutoff,
-                )
-            )
-            .all()
-        )
-
-        all_entity_names: set[str] = set()
-        for art in recent_articles:
-            if isinstance(art.entities, dict):
-                all_entity_names.update(art.entities.keys())
+        rows = session.execute(text("""
+            SELECT DISTINCT k
+            FROM articles a
+            JOIN raw_items r ON a.raw_item_id = r.id
+            CROSS JOIN LATERAL jsonb_object_keys(a.entities) AS k
+            WHERE (r.published_at >= :cutoff OR r.fetched_at >= :cutoff)
+              AND a.entities IS NOT NULL
+              AND jsonb_typeof(a.entities) = 'object'
+        """), {"cutoff": cutoff}).fetchall()
+        all_entity_names: set[str] = {row[0] for row in rows}
 
         if not all_entity_names:
             log.info("run_entity_resolution: no entities found in recent articles")
@@ -1382,6 +1441,7 @@ def run_relationship_inference() -> None:
             session.query(ClusterMember, Article, RawItem)
             .join(Article, ClusterMember.article_id == Article.id)
             .join(RawItem, Article.raw_item_id == RawItem.id)
+            .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
             .filter(ClusterMember.cluster_id.in_(cluster_ids))
             .all()
         )

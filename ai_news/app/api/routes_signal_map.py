@@ -181,7 +181,7 @@ def get_signal_map(
     cache_key = f"api_signal_map:{hours}:{locale}:{bucket}"
     cached = get_cached(cache_key)
     if cached:
-        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=900"})
 
     cutoff = now - timedelta(hours=hours)
 
@@ -377,7 +377,7 @@ def get_signal_map(
         "translation_status": translation_status,
     }
     set_cached(cache_key, response, ttl=60 * 5)  # 5-min TTL
-    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=900"})
 
 
 @router.get("/topic-trends")

@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import numpy as np
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from sqlalchemy import and_, func, or_
-from sqlalchemy.orm import defer
+from sqlalchemy.orm import defer, load_only
 from fastapi.responses import JSONResponse
 from starlette.responses import StreamingResponse
 
@@ -26,6 +26,7 @@ from app.models import Article, Cluster, ClusterMember, DailyDigest, RawItem, So
 from app.scoring.signals import log_norm
 from app.scoring.editorial_rank import compute_editorial_rank
 from app.scoring.user_score import compute_user_score
+from app.services.digest_storage import load_longform_digest_artifact
 from app.tasks.pipeline import run_refresh
 
 
@@ -274,7 +275,28 @@ def _select_articles(
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
-        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
+        .options(
+            load_only(
+                Article.id, Article.final_url, Article.summary, Article.event_type,
+                Article.topics, Article.entities, Article.content_type,
+                Article.final_score, Article.global_score, Article.urgent,
+                Article.trust_label, Article.trust_components,
+                Article.verification_state, Article.verification_confidence,
+                Article.freshness_state,
+            ),
+            load_only(
+                RawItem.id, RawItem.title, RawItem.snippet,
+                RawItem.published_at, RawItem.fetched_at,
+                RawItem.social_hn_points, RawItem.social_reddit_upvotes,
+                RawItem.social_github_stars, RawItem.source_id,
+            ),
+            load_only(Source.id, Source.name, Source.kind, Source.authority),
+            load_only(
+                Cluster.id, Cluster.sources_count, Cluster.max_global_score,
+                Cluster.coverage_count, Cluster.independent_sources_count,
+                Cluster.has_official_confirmation, Cluster.cluster_trust_score,
+            ),
+        )
         .filter(_freshness_filter(cutoff))
     )
     if content_type:
@@ -434,8 +456,12 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
     cutoff = now - timedelta(days=7)
     max_age_hours = WEEKLY_MAX_AGE_HOURS
 
-    clusters = db.query(Cluster).filter(Cluster.last_seen_at >= cutoff).all()
-    article_ids = [cluster.top_article_id for cluster in clusters if cluster.top_article_id]
+    article_ids = [
+        row[0] for row in
+        db.query(Cluster.top_article_id)
+        .filter(Cluster.last_seen_at >= cutoff, Cluster.top_article_id.isnot(None))
+        .all()
+    ]
     if not article_ids:
         return []
 
@@ -447,9 +473,32 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
-        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
+        .options(
+            load_only(
+                Article.id, Article.final_url, Article.summary, Article.event_type,
+                Article.topics, Article.entities, Article.content_type,
+                Article.final_score, Article.global_score, Article.urgent,
+                Article.trust_label, Article.trust_components,
+                Article.verification_state, Article.verification_confidence,
+                Article.freshness_state,
+            ),
+            load_only(
+                RawItem.id, RawItem.title, RawItem.snippet,
+                RawItem.published_at, RawItem.fetched_at,
+                RawItem.social_hn_points, RawItem.social_reddit_upvotes,
+                RawItem.social_github_stars, RawItem.source_id,
+            ),
+            load_only(Source.id, Source.name, Source.kind, Source.authority),
+            load_only(
+                Cluster.id, Cluster.sources_count, Cluster.max_global_score,
+                Cluster.coverage_count, Cluster.independent_sources_count,
+                Cluster.has_official_confirmation, Cluster.cluster_trust_score,
+            ),
+        )
         .filter(Article.id.in_(article_ids))
-        .filter(func.coalesce(Article.final_score, Article.global_score) >= 1)
+        .filter(func.coalesce(Article.final_score, Article.global_score) >= 30)
+        .order_by(func.coalesce(Article.final_score, Article.global_score).desc())
+        .limit(200)
         .all()
     )
     has_real = any(source.name != "Local Sample Feed" for _article, _raw, source, _cluster in rows)
@@ -598,7 +647,28 @@ def compat_news_weekly(limit: int = 10, locale: str = Query("en", pattern="^(en|
     cache_key = f"api_news_weekly:{settings.public_user_id}:{limit}:{locale}"
     cached = get_cached(cache_key)
     if cached:
-        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=600, stale-while-revalidate=1800"})
+
+    # Try loading from stored artifact (only for en locale; zh still needs translation)
+    if locale == "en":
+        try:
+            from app.services.digest_storage import load_weekly_artifact
+
+            now = _naive_utc(utcnow())
+            artifact = load_weekly_artifact(user_id=settings.public_user_id, date=now, settings=settings)
+            if artifact:
+                artifact_items = artifact.get("items", [])
+                if artifact_items:
+                    response = {
+                        "items": artifact_items[:limit],
+                        "locale": "en",
+                        "sourceLocale": "en",
+                        "translationStatus": "original",
+                    }
+                    set_cached(cache_key, response, ttl=60 * 30)
+                    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=600, stale-while-revalidate=1800"})
+        except Exception:
+            pass  # fall through to live pipeline
 
     items = _select_weekly_top(db, user_id=settings.public_user_id, limit=limit)
     llm = LLMClient()
@@ -610,7 +680,7 @@ def compat_news_weekly(limit: int = 10, locale: str = Query("en", pattern="^(en|
         "translationStatus": translation_status,
     }
     set_cached(cache_key, response, ttl=60 * 30)  # 30min TTL
-    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=600, stale-while-revalidate=1800"})
 
 
 @router.get("/digest/today")
@@ -622,7 +692,61 @@ def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depen
     cache_key = f"api_digest_today:{settings.public_user_id}:{now.date().isoformat()}:{locale}"
     cached = get_cached(cache_key)
     if cached:
-        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=3600"})
+
+    # Try loading pre-built response from Supabase Storage artifact
+    if settings.supabase_storage_enabled:
+        try:
+            from app.services.digest_storage import load_today_response_artifact
+
+            artifact_data = load_today_response_artifact(
+                user_id=settings.public_user_id,
+                date=now,
+                settings=settings,
+            )
+            if artifact_data is not None:
+                if locale != "en":
+                    # Translate the cached English artifact on the fly
+                    llm = LLMClient()
+                    localized_items, items_status = _localize_news_items(
+                        artifact_data.get("items", []), locale, llm,
+                    )
+                    localized_digests, digests_status = _localize_digest_sections(
+                        artifact_data.get("digests", {}), locale, llm,
+                    )
+                    breaking = artifact_data.get("breakingAlert")
+                    if breaking:
+                        localized_breaking_candidates, breaking_status = _localize_news_items(
+                            [breaking], locale, llm,
+                        )
+                        localized_breaking = (
+                            localized_breaking_candidates[0]
+                            if localized_breaking_candidates
+                            else breaking
+                        )
+                    else:
+                        localized_breaking = None
+                        breaking_status = "ready"
+                    translation_status = _merge_translation_status(
+                        items_status, digests_status, breaking_status,
+                    )
+                    artifact_data = {
+                        **artifact_data,
+                        "items": localized_items,
+                        "digests": localized_digests,
+                        "headline": localized_digests.get("all", {}).get("headline", artifact_data.get("headline")),
+                        "executiveSummary": localized_digests.get("all", {}).get("executiveSummary", artifact_data.get("executiveSummary")),
+                        "breakingAlert": localized_breaking,
+                        "locale": locale,
+                        "translationStatus": translation_status,
+                    }
+                set_cached(cache_key, artifact_data, ttl=60 * 60 * 2)
+                return JSONResponse(
+                    content=artifact_data,
+                    headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=3600"},
+                )
+        except Exception:
+            pass  # fall through to live pipeline
 
     cutoff = now - timedelta(hours=24)
     candidates = _select_articles(db, user_id=settings.public_user_id, cutoff=cutoff, half_life_base=18, limit=30)
@@ -713,7 +837,7 @@ def compat_digest_today(locale: str = Query("en", pattern="^(en|zh)$"), db=Depen
         "translationStatus": translation_status,
     }
     set_cached(cache_key, response, ttl=60 * 60 * 2)  # 2h TTL, invalidated by digest task
-    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=3600"})
 
 
 @router.get("/digest/archive")
@@ -725,7 +849,7 @@ def digest_archive(
     cache_key = f"api_digest_archive:{limit}"
     cached = get_cached(cache_key)
     if cached:
-        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=300"})
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=3600, stale-while-revalidate=3600"})
 
     settings = get_settings()
     rows = (
@@ -737,7 +861,7 @@ def digest_archive(
         .filter(
             DailyDigest.user_id == settings.public_user_id,
             DailyDigest.content_type == "longform",
-            DailyDigest.longform_html.isnot(None),
+            or_(DailyDigest.longform_html.isnot(None), DailyDigest.storage_path.isnot(None)),
         )
         .order_by(func.date(DailyDigest.date).desc())
         .limit(limit)
@@ -754,7 +878,7 @@ def digest_archive(
         ]
     }
     set_cached(cache_key, response, ttl=60 * 60)  # 1h TTL
-    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300"})
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=3600, stale-while-revalidate=3600"})
 
 
 @router.get("/digest/daily")
@@ -779,7 +903,7 @@ def digest_daily(
     cache_key = f"api_digest_daily:{target_date.isoformat()}:{locale}"
     cached = get_cached(cache_key)
     if cached:
-        return cached
+        return JSONResponse(content=cached, headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=86400, immutable"})
 
     row = (
         db.query(DailyDigest)
@@ -791,8 +915,27 @@ def digest_daily(
         .first()
     )
 
-    if not row or not row.longform_html:
-        return {
+    html = None
+    headline = row.headline if row else None
+    subtitle = row.executive_summary if row else None
+    llm_authored = bool(row.llm_authored) if row else False
+
+    if row and settings.supabase_storage_enabled and row.storage_bucket and row.storage_path:
+        try:
+            artifact = load_longform_digest_artifact(row.storage_bucket, row.storage_path, settings=settings)
+        except Exception:
+            artifact = None
+        if artifact:
+            html = artifact.get("longform_html") or artifact.get("html")
+            headline = artifact.get("headline") or headline
+            subtitle = artifact.get("subtitle") or subtitle
+            llm_authored = bool(artifact.get("llm_authored", llm_authored))
+
+    if html is None and row:
+        html = row.longform_html
+
+    if not row or not html:
+        response = {
             "date": str(target_date),
             "headline": None,
             "subtitle": None,
@@ -801,10 +944,8 @@ def digest_daily(
             "locale": locale,
             "available": False,
         }
-
-    html = row.longform_html
-    headline = row.headline
-    subtitle = row.executive_summary
+        set_cached(cache_key, response, ttl=60 * 5)
+        return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=600"})
 
     if locale == "zh":
         llm = LLMClient()
@@ -829,22 +970,30 @@ def digest_daily(
         "headline": headline,
         "subtitle": subtitle,
         "longformHtml": html,
-        "llmAuthored": True,
+        "llmAuthored": llm_authored,
         "locale": locale,
         "available": True,
     }
     # Longform is stable once generated — cache for 24h
     set_cached(cache_key, response, ttl=60 * 60 * 24)
-    return response
+    return JSONResponse(content=response, headers={"Cache-Control": "public, max-age=86400, stale-while-revalidate=86400, immutable"})
+
+
+def _run_refresh_and_clear_cache():
+    run_refresh()
+    delete_by_prefix("api_digest_today:")
 
 
 @router.post("/refresh")
 async def compat_refresh(background_tasks: BackgroundTasks):
+    # Invalidate digest cache immediately so the next fetchDigest returns
+    # fresh data instead of a stale cached response.
+    delete_by_prefix("api_digest_today:")
     # Kick off refresh in the background so the endpoint returns immediately.
     # In production, Celery beat/worker should drive polling instead.
     import os
     if not os.environ.get("DISABLE_SCHEDULER"):
-        background_tasks.add_task(run_refresh)
+        background_tasks.add_task(_run_refresh_and_clear_cache)
     return {"status": "ok"}
 
 
@@ -891,7 +1040,28 @@ async def compat_stream(request: Request):
                         .join(Source, RawItem.source_id == Source.id)
                         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
                         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
-                        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
+                        .options(
+                            load_only(
+                                Article.id, Article.final_url, Article.summary, Article.event_type,
+                                Article.topics, Article.entities, Article.content_type,
+                                Article.final_score, Article.global_score, Article.urgent,
+                                Article.trust_label, Article.trust_components,
+                                Article.verification_state, Article.verification_confidence,
+                                Article.freshness_state, Article.created_at,
+                            ),
+                            load_only(
+                                RawItem.id, RawItem.title, RawItem.snippet,
+                                RawItem.published_at, RawItem.fetched_at,
+                                RawItem.social_hn_points, RawItem.social_reddit_upvotes,
+                                RawItem.social_github_stars, RawItem.source_id,
+                            ),
+                            load_only(Source.id, Source.name, Source.kind, Source.authority),
+                            load_only(
+                                Cluster.id, Cluster.sources_count, Cluster.max_global_score,
+                                Cluster.coverage_count, Cluster.independent_sources_count,
+                                Cluster.has_official_confirmation, Cluster.cluster_trust_score,
+                            ),
+                        )
                         .filter(Article.created_at > last_seen)
                         .order_by(Article.created_at.asc())
                         .limit(25)

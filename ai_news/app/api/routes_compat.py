@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import numpy as np
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, Request
 from sqlalchemy import and_, func, or_
-from sqlalchemy.orm import defer
+from sqlalchemy.orm import defer, load_only
 from starlette.responses import StreamingResponse
 
 from app.common.mmr import mmr_select
@@ -274,7 +274,28 @@ def _select_articles(
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
-        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
+        .options(
+            load_only(
+                Article.id, Article.final_url, Article.summary, Article.event_type,
+                Article.topics, Article.entities, Article.content_type,
+                Article.final_score, Article.global_score, Article.urgent,
+                Article.trust_label, Article.trust_components,
+                Article.verification_state, Article.verification_confidence,
+                Article.freshness_state,
+            ),
+            load_only(
+                RawItem.id, RawItem.title, RawItem.snippet,
+                RawItem.published_at, RawItem.fetched_at,
+                RawItem.social_hn_points, RawItem.social_reddit_upvotes,
+                RawItem.social_github_stars, RawItem.source_id,
+            ),
+            load_only(Source.id, Source.name, Source.kind, Source.authority),
+            load_only(
+                Cluster.id, Cluster.sources_count, Cluster.max_global_score,
+                Cluster.coverage_count, Cluster.independent_sources_count,
+                Cluster.has_official_confirmation, Cluster.cluster_trust_score,
+            ),
+        )
         .filter(_freshness_filter(cutoff))
     )
     if content_type:
@@ -415,8 +436,12 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
     cutoff = now - timedelta(days=7)
     max_age_hours = WEEKLY_MAX_AGE_HOURS
 
-    clusters = db.query(Cluster).filter(Cluster.last_seen_at >= cutoff).all()
-    article_ids = [cluster.top_article_id for cluster in clusters if cluster.top_article_id]
+    article_ids = [
+        row[0] for row in
+        db.query(Cluster.top_article_id)
+        .filter(Cluster.last_seen_at >= cutoff, Cluster.top_article_id.isnot(None))
+        .all()
+    ]
     if not article_ids:
         return []
 
@@ -428,8 +453,32 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
-        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
+        .options(
+            load_only(
+                Article.id, Article.final_url, Article.summary, Article.event_type,
+                Article.topics, Article.entities, Article.content_type,
+                Article.final_score, Article.global_score, Article.urgent,
+                Article.trust_label, Article.trust_components,
+                Article.verification_state, Article.verification_confidence,
+                Article.freshness_state,
+            ),
+            load_only(
+                RawItem.id, RawItem.title, RawItem.snippet,
+                RawItem.published_at, RawItem.fetched_at,
+                RawItem.social_hn_points, RawItem.social_reddit_upvotes,
+                RawItem.social_github_stars, RawItem.source_id,
+            ),
+            load_only(Source.id, Source.name, Source.kind, Source.authority),
+            load_only(
+                Cluster.id, Cluster.sources_count, Cluster.max_global_score,
+                Cluster.coverage_count, Cluster.independent_sources_count,
+                Cluster.has_official_confirmation, Cluster.cluster_trust_score,
+            ),
+        )
         .filter(Article.id.in_(article_ids))
+        .filter(func.coalesce(Article.final_score, Article.global_score) >= 30)
+        .order_by(func.coalesce(Article.final_score, Article.global_score).desc())
+        .limit(200)
         .all()
     )
     has_real = any(source.name != "Local Sample Feed" for _article, _raw, source, _cluster in rows)
@@ -717,7 +766,28 @@ async def compat_stream(request: Request):
                         .join(Source, RawItem.source_id == Source.id)
                         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
                         .outerjoin(Cluster, Cluster.id == ClusterMember.cluster_id)
-                        .options(defer(Article.html), defer(Article.text), defer(Article.embedding), defer(Article.llm_reasoning))
+                        .options(
+                            load_only(
+                                Article.id, Article.final_url, Article.summary, Article.event_type,
+                                Article.topics, Article.entities, Article.content_type,
+                                Article.final_score, Article.global_score, Article.urgent,
+                                Article.trust_label, Article.trust_components,
+                                Article.verification_state, Article.verification_confidence,
+                                Article.freshness_state, Article.created_at,
+                            ),
+                            load_only(
+                                RawItem.id, RawItem.title, RawItem.snippet,
+                                RawItem.published_at, RawItem.fetched_at,
+                                RawItem.social_hn_points, RawItem.social_reddit_upvotes,
+                                RawItem.social_github_stars, RawItem.source_id,
+                            ),
+                            load_only(Source.id, Source.name, Source.kind, Source.authority),
+                            load_only(
+                                Cluster.id, Cluster.sources_count, Cluster.max_global_score,
+                                Cluster.coverage_count, Cluster.independent_sources_count,
+                                Cluster.has_official_confirmation, Cluster.cluster_trust_score,
+                            ),
+                        )
                         .filter(Article.created_at > last_seen)
                         .order_by(Article.created_at.asc())
                         .limit(25)

@@ -4,15 +4,13 @@ from datetime import datetime, timedelta
 from typing import Tuple
 
 import numpy as np
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 
-from app.clustering.faiss_index import FaissClusterIndex
 from app.common.time import utcnow
 from app.db import session_scope
 from app.models import Article, Cluster, ClusterMember, RawItem, Source
 
 
-INDEX = FaissClusterIndex(dim=384)
 LAST_BUILT_AT: datetime | None = None
 LAST_CLUSTER_COUNT: int = 0
 
@@ -25,95 +23,150 @@ def vector_to_bytes(vec: np.ndarray) -> bytes:
     return vec.astype(np.float32).tobytes()
 
 
-def rebuild_index(session, lookback_days: int = 7) -> None:
-    global LAST_BUILT_AT
-    cutoff = utcnow() - timedelta(days=lookback_days)
-    clusters = (
-        session.query(Cluster)
-        .filter(Cluster.last_seen_at >= cutoff)
-        .all()
+def _vector_to_pgvector_literal(vec: np.ndarray) -> str:
+    """Convert numpy array to pgvector literal string '[0.1,0.2,...]'."""
+    return '[' + ','.join(f'{float(v):.8f}' for v in vec) + ']'
+
+
+def _set_centroid_vec(session, cluster_id, vec: np.ndarray) -> None:
+    """Write centroid_vec via raw SQL (avoids pgvector Python dependency)."""
+    session.execute(
+        text("UPDATE clusters SET centroid_vec = :vec::vector WHERE id = :cid"),
+        {"vec": _vector_to_pgvector_literal(vec), "cid": str(cluster_id)},
     )
-    embeddings = []
-    ids = []
-    for cluster in clusters:
-        if cluster.centroid_embedding is None:
-            continue
-        vec = bytes_to_vector(cluster.centroid_embedding)
+
+
+def rebuild_index(session, lookback_days: int = 7) -> None:
+    """Backfill centroid_vec from centroid_embedding for clusters missing the vector column."""
+    global LAST_BUILT_AT, LAST_CLUSTER_COUNT
+
+    cutoff = utcnow() - timedelta(days=lookback_days)
+
+    # Check if centroid_vec column exists (graceful fallback for envs without pgvector)
+    try:
+        session.execute(text("SELECT centroid_vec FROM clusters LIMIT 0"))
+    except Exception:
+        session.rollback()
+        LAST_BUILT_AT = utcnow()
+        return
+
+    # Find clusters with bytea but no vector
+    rows = session.execute(
+        text("""
+            SELECT id, centroid_embedding
+            FROM clusters
+            WHERE last_seen_at >= :cutoff
+              AND centroid_embedding IS NOT NULL
+              AND centroid_vec IS NULL
+        """),
+        {"cutoff": cutoff},
+    ).fetchall()
+
+    for row in rows:
+        cluster_id = row[0]
+        centroid_embedding = row[1]
+        vec = bytes_to_vector(centroid_embedding)
         if vec.size == 0:
             continue
-        embeddings.append(vec)
-        ids.append(str(cluster.id))
-    if embeddings:
-        emb_matrix = np.vstack(embeddings)
-    else:
-        emb_matrix = np.zeros((0, 384), dtype=np.float32)
-    INDEX.rebuild(emb_matrix, ids)
-    global LAST_CLUSTER_COUNT
-    LAST_CLUSTER_COUNT = len(ids)
+        _set_centroid_vec(session, cluster_id, vec)
+
+    if rows:
+        session.flush()
+
+    # Update count of indexable clusters for the skip guard
+    count_row = session.execute(
+        text("""
+            SELECT COUNT(*) FROM clusters
+            WHERE last_seen_at >= :cutoff AND centroid_embedding IS NOT NULL
+        """),
+        {"cutoff": cutoff},
+    ).scalar()
+    LAST_CLUSTER_COUNT = count_row or 0
     LAST_BUILT_AT = utcnow()
 
 
-def ensure_index(session, lookback_days: int = 7) -> None:
-    if INDEX is None or LAST_BUILT_AT is None:
-        rebuild_index(session, lookback_days=lookback_days)
-
-
 def update_cluster_stats(session, cluster_id) -> None:
-    # coverage_count
-    coverage_count = session.query(ClusterMember).filter(ClusterMember.cluster_id == cluster_id).count()
+    # Use a savepoint so a timeout/lock failure here doesn't roll back the
+    # entire outer transaction (e.g. the article insert that called us).
+    nested = session.begin_nested()
+    try:
+        _update_cluster_stats_inner(session, cluster_id)
+        nested.commit()
+    except Exception as exc:
+        nested.rollback()
+        print(f"[clustering] update_cluster_stats failed for {cluster_id}: {exc}")
 
-    # sources_count
-    sources_count = (
-        session.query(Source.id)
-        .join(RawItem, RawItem.source_id == Source.id)
-        .join(Article, Article.raw_item_id == RawItem.id)
-        .join(ClusterMember, ClusterMember.article_id == Article.id)
-        .filter(ClusterMember.cluster_id == cluster_id)
-        .distinct()
-        .count()
-    )
 
-    # max_global_score and headline
-    row = (
-        session.query(Article, RawItem, Source)
-        .join(RawItem, Article.raw_item_id == RawItem.id)
-        .join(Source, RawItem.source_id == Source.id)
-        .join(ClusterMember, ClusterMember.article_id == Article.id)
-        .filter(ClusterMember.cluster_id == cluster_id)
-        .order_by(Article.global_score.desc(), Source.authority.desc())
-        .first()
+_CLUSTER_STATS_SQL = text("""
+    WITH stats AS (
+        SELECT
+            COUNT(*)                                          AS coverage_count,
+            COUNT(DISTINCT s.id)                              AS sources_count,
+            MIN(r.published_at)                               AS first_seen,
+            MAX(COALESCE(r.published_at, r.fetched_at))       AS last_seen
+        FROM cluster_members cm
+        JOIN articles  a ON cm.article_id  = a.id
+        JOIN raw_items r ON a.raw_item_id  = r.id
+        JOIN sources   s ON r.source_id    = s.id
+        WHERE cm.cluster_id = :cid
+    ),
+    top AS (
+        SELECT a.id AS article_id, a.global_score, r.title
+        FROM cluster_members cm
+        JOIN articles  a ON cm.article_id  = a.id
+        JOIN raw_items r ON a.raw_item_id  = r.id
+        JOIN sources   s ON r.source_id    = s.id
+        WHERE cm.cluster_id = :cid
+        ORDER BY a.global_score DESC NULLS LAST,
+                 s.authority    DESC NULLS LAST
+        LIMIT 1
     )
-    if row:
-        article_row, raw_row, _source_row = row
-        headline = raw_row.title
-        max_global_score = article_row.global_score
-        top_article_id = article_row.id
-    else:
-        headline = ""
-        max_global_score = 0
-        top_article_id = None
+    SELECT s.coverage_count, s.sources_count,
+           s.first_seen,     s.last_seen,
+           t.article_id,     t.global_score, t.title
+    FROM stats s, top t
+""")
 
-    # first/last seen
-    times = (
-        session.query(func.min(RawItem.published_at), func.max(func.coalesce(RawItem.published_at, RawItem.fetched_at)))
-        .join(Article, Article.raw_item_id == RawItem.id)
-        .join(ClusterMember, ClusterMember.article_id == Article.id)
-        .filter(ClusterMember.cluster_id == cluster_id)
-        .first()
-    )
-    first_seen, last_seen = times if times else (None, None)
+
+def _update_cluster_stats_inner(session, cluster_id) -> None:
+    row = session.execute(_CLUSTER_STATS_SQL, {"cid": str(cluster_id)}).first()
+
+    if not row:
+        # Cluster has 0 members — nothing to update.
+        return
 
     session.query(Cluster).filter(Cluster.id == cluster_id).update(
         {
-            "coverage_count": coverage_count,
-            "sources_count": sources_count,
-            "headline": headline,
-            "max_global_score": max_global_score,
-            "top_article_id": top_article_id,
-            "first_seen_at": first_seen,
-            "last_seen_at": last_seen,
+            "coverage_count": row.coverage_count,
+            "sources_count": row.sources_count,
+            "headline": row.title or "",
+            "max_global_score": row.global_score or 0,
+            "top_article_id": row.article_id,
+            "first_seen_at": row.first_seen,
+            "last_seen_at": row.last_seen,
         }
     )
+
+
+_PGVECTOR_AVAILABLE: bool | None = None
+
+
+def _pgvector_available(session) -> bool:
+    """Return True if the centroid_vec column exists on clusters.
+
+    The result is cached at module level so the probe query only runs once,
+    avoiding transaction-aborting errors inside live sessions.
+    """
+    global _PGVECTOR_AVAILABLE
+    if _PGVECTOR_AVAILABLE is not None:
+        return _PGVECTOR_AVAILABLE
+    try:
+        session.execute(text("SELECT centroid_vec FROM clusters LIMIT 0"))
+        _PGVECTOR_AVAILABLE = True
+    except Exception:
+        session.rollback()
+        _PGVECTOR_AVAILABLE = False
+    return _PGVECTOR_AVAILABLE
 
 
 def attach_or_create_cluster(
@@ -123,8 +176,58 @@ def attach_or_create_cluster(
     similarity_threshold: float = 0.86,
     lookback_days: int = 7,
 ) -> Tuple[str, float]:
-    ensure_index(session, lookback_days=lookback_days)
-    cluster_id, similarity = INDEX.search(embedding, k=5)
+    cutoff = utcnow() - timedelta(days=lookback_days)
+    vec_literal = _vector_to_pgvector_literal(embedding)
+
+    cluster_id = None
+    similarity = 0.0
+
+    # Try pgvector server-side search first
+    use_pgvector = _pgvector_available(session)
+
+    if use_pgvector:
+        row = session.execute(
+            text("""
+                SELECT id, 1 - (centroid_vec <=> :vec::vector) AS similarity
+                FROM clusters
+                WHERE last_seen_at >= :cutoff
+                  AND centroid_vec IS NOT NULL
+                ORDER BY centroid_vec <=> :vec::vector
+                LIMIT 1
+            """),
+            {"vec": vec_literal, "cutoff": cutoff},
+        ).first()
+
+        if row and row.similarity >= similarity_threshold:
+            cluster_id = str(row.id)
+            similarity = float(row.similarity)
+    else:
+        # Fallback: in-memory numpy search (no FAISS dependency needed)
+        rows = (
+            session.query(Cluster.id, Cluster.centroid_embedding)
+            .filter(Cluster.last_seen_at >= cutoff, Cluster.centroid_embedding.isnot(None))
+            .all()
+        )
+        best_id = None
+        best_sim = 0.0
+        emb_norm = np.linalg.norm(embedding)
+        if emb_norm > 0:
+            emb_normed = embedding / emb_norm
+        else:
+            emb_normed = embedding
+        for cid, centroid_bytes in rows:
+            if not centroid_bytes:
+                continue
+            vec = bytes_to_vector(centroid_bytes)
+            if vec.size == 0:
+                continue
+            sim = float(vec @ emb_normed)
+            if sim > best_sim:
+                best_sim = sim
+                best_id = str(cid)
+        if best_id and best_sim >= similarity_threshold:
+            cluster_id = best_id
+            similarity = best_sim
 
     if cluster_id and similarity >= similarity_threshold:
         existing_member = (
@@ -149,6 +252,9 @@ def attach_or_create_cluster(
             new_vec = (old_vec * n + embedding) / (n + 1)
             new_vec = new_vec / np.linalg.norm(new_vec)
             cluster.centroid_embedding = vector_to_bytes(new_vec)
+            # Also update pgvector column
+            if use_pgvector:
+                _set_centroid_vec(session, cluster_id, new_vec)
         update_cluster_stats(session, cluster_id)
         return cluster_id, similarity
 
@@ -165,6 +271,9 @@ def attach_or_create_cluster(
     )
     session.add(new_cluster)
     session.flush()
+    # Set pgvector column for the new cluster
+    if use_pgvector:
+        _set_centroid_vec(session, new_cluster.id, embedding)
     session.add(ClusterMember(cluster_id=new_cluster.id, article_id=article.id, similarity=1.0))
     session.flush()
     update_cluster_stats(session, new_cluster.id)

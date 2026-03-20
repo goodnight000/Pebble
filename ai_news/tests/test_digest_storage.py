@@ -5,16 +5,12 @@ from datetime import datetime, timezone
 from unittest import mock
 
 import orjson
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://postgres:postgres@127.0.0.1:5432/postgres")
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 sys.path.insert(0, os.path.abspath("ai_news"))
 
 from app import config as config_module
-from app.db import Base
-from app.models import DailyDigest, User
 
 
 class DigestStorageTests(unittest.TestCase):
@@ -72,29 +68,49 @@ class DigestStorageTests(unittest.TestCase):
             },
         )
 
-    def test_daily_digest_model_accepts_storage_reference_fields(self):
-        engine = create_engine("sqlite:///:memory:")
-        Base.metadata.create_all(bind=engine)
-        session = sessionmaker(bind=engine, autoflush=False, autocommit=False)()
-        user = User()
-        session.add(user)
-        session.flush()
+    def test_build_longform_digest_artifact_serializes_html_payload(self):
+        from app.services.digest_storage import build_longform_digest_artifact
 
-        digest = DailyDigest(
-            user_id=user.id,
+        artifact = build_longform_digest_artifact(
+            user_id="user-123",
             date=datetime(2026, 3, 11, 6, 0, tzinfo=timezone.utc),
-            article_ids=["article-1"],
-            content_type="all",
-            storage_bucket="digests",
-            storage_path="daily-digests/user-123/2026-03-11/all.json",
+            headline="Digest Title",
+            subtitle="Digest Subtitle",
+            longform_html="<h1>Hello</h1>",
+            llm_authored=True,
         )
-        session.add(digest)
-        session.commit()
 
-        row = session.query(DailyDigest).first()
-        self.assertEqual(row.storage_bucket, "digests")
-        self.assertEqual(row.storage_path, "daily-digests/user-123/2026-03-11/all.json")
+        self.assertEqual(artifact.bucket, "digests")
+        self.assertEqual(artifact.path, "daily-digests/user-123/2026-03-11/longform.json")
+        payload = orjson.loads(artifact.body)
+        self.assertEqual(payload["headline"], "Digest Title")
+        self.assertEqual(payload["subtitle"], "Digest Subtitle")
+        self.assertEqual(payload["longform_html"], "<h1>Hello</h1>")
+        self.assertTrue(payload["llm_authored"])
 
+    def test_load_longform_digest_artifact_parses_storage_payload(self):
+        from app.services.digest_storage import load_longform_digest_artifact
+
+        artifact_payload = orjson.dumps(
+            {
+                "headline": "Digest Title",
+                "subtitle": "Digest Subtitle",
+                "longform_html": "<p>Body</p>",
+                "llm_authored": True,
+            }
+        )
+        bucket_client = mock.Mock()
+        bucket_client.download.return_value = artifact_payload
+        client = mock.Mock()
+        client.storage.from_.return_value = bucket_client
+
+        payload = load_longform_digest_artifact("digests", "daily-digests/user-123/2026-03-11/longform.json", client=client)
+
+        client.storage.from_.assert_called_once_with("digests")
+        bucket_client.download.assert_called_once_with("daily-digests/user-123/2026-03-11/longform.json")
+        self.assertEqual(payload["headline"], "Digest Title")
+        self.assertEqual(payload["subtitle"], "Digest Subtitle")
+        self.assertEqual(payload["longform_html"], "<p>Body</p>")
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,7 +4,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 
 from app.config import get_settings
-from app.tasks.daily_digest import run_daily_digest
+from app.tasks.daily_digest import generate_weekly_artifact, run_daily_digest
 from app.tasks.pipeline import (
     rebuild_faiss_index,
     run_arxiv_poll,
@@ -26,7 +26,16 @@ async def _run_periodic(name: str, interval_seconds: float, fn, initial_delay: f
         await asyncio.sleep(initial_delay)
     while True:
         try:
-            await asyncio.to_thread(fn)
+            def _wrapped():
+                from app.observability.pg_egress import clear_task_context, set_task_context
+
+                set_task_context(name)
+                try:
+                    fn()
+                finally:
+                    clear_task_context()
+
+            await asyncio.to_thread(_wrapped)
         except Exception as exc:
             print(f"[inline-scheduler] {name} failed: {exc}")
         await asyncio.sleep(interval_seconds)
@@ -54,6 +63,15 @@ def _digest_exists_for_today() -> bool:
 
 
 async def _run_daily(name: str, hour_utc: int, minute_utc: int, fn, catch_up: bool = False) -> None:
+    def _wrapped():
+        from app.observability.pg_egress import clear_task_context, set_task_context
+
+        set_task_context(name)
+        try:
+            fn()
+        finally:
+            clear_task_context()
+
     # If catch_up is enabled and scheduled time already passed today, run immediately
     if catch_up:
         now = datetime.now(timezone.utc)
@@ -66,7 +84,7 @@ async def _run_daily(name: str, hour_utc: int, minute_utc: int, fn, catch_up: bo
             if needs_run:
                 print(f"[inline-scheduler] {name} catch-up: scheduled time already passed, running now")
                 try:
-                    await asyncio.to_thread(fn)
+                    await asyncio.to_thread(_wrapped)
                 except Exception as exc:
                     print(f"[inline-scheduler] {name} catch-up failed: {exc}")
 
@@ -77,7 +95,7 @@ async def _run_daily(name: str, hour_utc: int, minute_utc: int, fn, catch_up: bo
             target += timedelta(days=1)
         await asyncio.sleep((target - now).total_seconds())
         try:
-            await asyncio.to_thread(fn)
+            await asyncio.to_thread(_wrapped)
         except Exception as exc:
             print(f"[inline-scheduler] {name} failed: {exc}")
 
@@ -106,8 +124,9 @@ def maybe_start_inline_scheduler() -> None:
     loop.create_task(_run_periodic("twitter-poll", 10800.0, run_twitter_poll, initial_delay=105))
     loop.create_task(_run_periodic("social-poll", 3600.0, run_social_poll, initial_delay=135))
     loop.create_task(_run_daily("gov-api-poll", 8, 0, run_gov_api_poll))
-    loop.create_task(_run_periodic("rebuild-faiss", 3600.0, rebuild_faiss_index, initial_delay=15))
+    loop.create_task(_run_periodic("rebuild-faiss", 21600.0, rebuild_faiss_index, initial_delay=15))
     loop.create_task(_run_periodic("urgent-notify", 300.0, notify_urgent, initial_delay=10))
     loop.create_task(_run_periodic("entity-resolution", 21600.0, run_entity_resolution, initial_delay=180))
     loop.create_task(_run_periodic("relationship-inference", 10800.0, run_relationship_inference, initial_delay=210))
+    loop.create_task(_run_periodic("weekly-artifact", 1800.0, generate_weekly_artifact, initial_delay=45))
     loop.create_task(_run_daily("daily-digest", 6, 0, run_daily_digest, catch_up=True))

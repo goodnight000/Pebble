@@ -9,11 +9,13 @@ from app.api.routes_graph import router as graph_router
 from app.config import get_settings
 from app.db import session_scope
 from app.models import User, UserPref
+from app.observability.egress import EgressMetricsMiddleware
 from app.scripts.seed_sources import seed_sources
 from app.tasks.inline_scheduler import maybe_start_inline_scheduler
 
 
 app = FastAPI(title="AI News API")
+app.add_middleware(EgressMetricsMiddleware)
 
 app.include_router(admin_router)
 app.include_router(api_router)

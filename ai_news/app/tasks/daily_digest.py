@@ -9,7 +9,13 @@ from app.common.mmr import mmr_select
 from app.common.time import utcnow
 from app.config import get_settings
 from app.db import session_scope
-from app.services.digest_storage import build_digest_artifact, store_digest_artifact
+from app.services.digest_storage import (
+    build_digest_artifact,
+    build_longform_digest_artifact,
+    build_today_response_artifact,
+    build_weekly_artifact,
+    store_digest_artifact,
+)
 from app.services.realtime_events import build_digest_refresh_event, publish_realtime_event
 from app.models import Article, Cluster, ClusterMember, DailyDigest, EntityCanonMap, RawItem, Source, User, UserEntityWeight, UserPref, UserSourceWeight, UserTopicWeight
 from app.scoring.signals import log_norm
@@ -25,19 +31,44 @@ FETCHED_AT_PREFERRED_KINDS = {"github", "github_trending"}
 
 
 def _warm_digest_cache():
-    """Pre-populate the digest/today API cache after generation."""
+    """Pre-populate the digest/today API cache and store a Storage artifact.
+
+    Calls the live endpoint for locale=en, caches the response, and persists
+    it as a Supabase Storage artifact so future requests can bypass the DB.
+    """
+    import json
     import logging
+
     log = logging.getLogger(__name__)
+    response_data: dict | None = None
     try:
         from urllib.request import urlopen, Request
         req = Request("http://127.0.0.1:8000/api/digest/today?locale=en", headers={"Accept": "application/json"})
         resp = urlopen(req, timeout=60)
         if resp.status == 200:
+            response_data = json.loads(resp.read())
             log.info("Warmed digest/today cache successfully")
         else:
             log.warning("Warming digest/today cache returned status %s", resp.status)
     except Exception as exc:
         log.warning("Failed to warm digest/today cache: %s", exc)
+
+    # Store the full response as a Supabase Storage artifact
+    if response_data is not None:
+        try:
+            settings = get_settings()
+            now = utcnow()
+            artifact = build_today_response_artifact(
+                user_id=settings.public_user_id,
+                date=now,
+                response_data=response_data,
+                settings=settings,
+            )
+            if artifact is not None:
+                store_digest_artifact(artifact, settings=settings)
+                log.info("Stored today_response artifact at %s", artifact.path)
+        except Exception as exc:
+            log.warning("Failed to store today_response artifact: %s", exc)
 
 
 def _event_time(raw, source):
@@ -79,6 +110,7 @@ def _build_today_for_user(db, user_id: str) -> list[dict]:
 
     rows = (
         db.query(Article, RawItem, Source, Cluster)
+        .options(defer(Article.html), defer(Article.text), defer(Article.llm_reasoning))
         .join(RawItem, Article.raw_item_id == RawItem.id)
         .join(Source, RawItem.source_id == Source.id)
         .outerjoin(ClusterMember, ClusterMember.article_id == Article.id)
@@ -96,8 +128,13 @@ def _build_today_for_user(db, user_id: str) -> list[dict]:
                     Source.kind.in_(tuple(FETCHED_AT_PREFERRED_KINDS)),
                     RawItem.fetched_at >= cutoff,
                 ),
-            )
+            ),
+            or_(
+                Article.final_score >= 30,
+                Article.global_score >= 30,
+            ),
         )
+        .limit(300)
         .all()
     )
 
@@ -410,6 +447,18 @@ def run_daily_digest():
             longform_result = llm.generate_longform_digest(longform_articles[:30])
             if longform_result:
                 longform_html = _render_longform_html(longform_result)
+                longform_storage_metadata = None
+                if settings.supabase_storage_enabled:
+                    longform_artifact = build_longform_digest_artifact(
+                        user_id=str(user.id),
+                        date=now,
+                        headline=longform_result.get("title"),
+                        subtitle=longform_result.get("subtitle"),
+                        longform_html=longform_html,
+                        llm_authored=True,
+                        settings=settings,
+                    )
+                    longform_storage_metadata = store_digest_artifact(longform_artifact, settings=settings)
 
                 existing_lf = (
                     session.query(DailyDigest)
@@ -426,6 +475,9 @@ def run_daily_digest():
                     existing_lf.executive_summary = longform_result.get("subtitle")
                     existing_lf.longform_html = longform_html
                     existing_lf.llm_authored = True
+                    if longform_storage_metadata:
+                        existing_lf.storage_bucket = longform_storage_metadata["bucket"]
+                        existing_lf.storage_path = longform_storage_metadata["path"]
                 else:
                     lf_digest = DailyDigest(
                         user_id=user.id,
@@ -436,6 +488,8 @@ def run_daily_digest():
                         executive_summary=longform_result.get("subtitle"),
                         longform_html=longform_html,
                         llm_authored=True,
+                        storage_bucket=longform_storage_metadata["bucket"] if longform_storage_metadata else None,
+                        storage_path=longform_storage_metadata["path"] if longform_storage_metadata else None,
                     )
                     session.add(lf_digest)
 
@@ -451,3 +505,41 @@ def run_daily_digest():
 
     # Warm the API cache so the first user request is instant
     _warm_digest_cache()
+
+
+def generate_weekly_artifact() -> None:
+    """Generate and store a weekly-top JSON artifact in Supabase Storage.
+
+    This runs on a schedule so the /api/news/weekly endpoint can serve
+    from the stored artifact instead of running the full scoring pipeline.
+    """
+    import logging
+
+    log = logging.getLogger(__name__)
+    settings = get_settings()
+
+    if not settings.supabase_storage_enabled:
+        return
+
+    now = utcnow()
+
+    with session_scope() as session:
+        from app.api.routes_api import _select_weekly_top
+
+        items = _select_weekly_top(session, user_id=settings.public_user_id, limit=10)
+
+    if not items:
+        log.info("generate_weekly_artifact: no items, skipping")
+        return
+
+    artifact = build_weekly_artifact(
+        user_id=settings.public_user_id,
+        date=now,
+        items=items,
+        settings=settings,
+    )
+    if artifact is None:
+        return
+
+    store_digest_artifact(artifact, settings=settings)
+    log.info("Stored weekly artifact with %d items at %s", len(items), artifact.path)

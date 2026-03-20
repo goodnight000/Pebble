@@ -19,11 +19,14 @@ def seed_sources():
     config = load_source_config()
     sources = dedupe_sources_by_name(config.get("sources", []))
     with session_scope() as session:
+        # Load all existing sources in one query instead of N individual lookups.
+        existing_map = {s.name: s for s in session.query(Source).all()}
         for src in sources:
-            existing = session.query(Source).filter(Source.name == src["name"]).first()
+            existing = existing_map.get(src["name"])
             if not existing:
                 existing = Source(name=src["name"])
                 session.add(existing)
+                existing_map[src["name"]] = existing
             feed_url = src.get("feed_url")
             base_url = src.get("base_url")
             if src.get("kind") == "sitemap":

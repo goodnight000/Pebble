@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
-import { X, ShieldCheck, Shield, ShieldQuestion, ShieldAlert } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { X, Info, ShieldCheck, Shield, ShieldQuestion, ShieldAlert } from 'lucide-react';
 import type {
   Language,
   RelationshipEdgeType,
@@ -40,12 +41,70 @@ const EDGE_TYPE_LABEL_KEY: Record<RelationshipEdgeType, string> = {
   'competing': 'graphCompeting',
 };
 
-function formatAge(ageHours: number): string {
-  if (ageHours < 24) {
-    return `${ageHours.toFixed(1)}h`;
+function formatHoursAgo(hoursAgo: number): string {
+  if (hoursAgo < 1) {
+    return `${Math.round(hoursAgo * 60)}m ago`;
   }
-  return `${(ageHours / 24).toFixed(1)}d`;
+  if (hoursAgo < 24) {
+    return `${hoursAgo.toFixed(1)}h ago`;
+  }
+  return `${(hoursAgo / 24).toFixed(1)}d ago`;
 }
+
+const STAT_DESCRIPTIONS: Record<string, string> = {
+  score:
+    'Significance score (0\u2013100) based on editorial importance, source credibility, and topic relevance. 85+ is urgent, 55+ appears in the feed.',
+  connections:
+    'Number of relationship edges linking this cluster to other stories in the graph — shared entities, event chains, or market adjacency.',
+  published:
+    'How long ago this story was first reported, measured from the earliest article in the cluster to now.',
+  avgSimilarity:
+    'Mean relationship strength across all edges to connected clusters. Higher values mean this story is tightly woven into the broader narrative.',
+};
+
+const StatInfoTip: React.FC<{ statKey: string }> = ({ statKey }) => {
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  const toggle = useCallback(() => {
+    if (visible) {
+      setVisible(false);
+      return;
+    }
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    setPos({ top: rect.top, left: rect.left + rect.width / 2 });
+    setVisible(true);
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) {
+        setVisible(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [visible]);
+
+  const tooltip = visible && pos
+    ? createPortal(
+        <div className="stat-tooltip" style={{ top: pos.top, left: pos.left }}>
+          <p>{STAT_DESCRIPTIONS[statKey]}</p>
+        </div>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <div ref={triggerRef} className="stat-info-tip__trigger" onClick={toggle} role="button" tabIndex={0} aria-label={`Info about ${statKey}`}>
+      <Info size={10} />
+      {tooltip}
+    </div>
+  );
+};
 
 const RelationshipGraphPanel: React.FC<RelationshipGraphPanelProps> = ({
   cluster,
@@ -85,6 +144,21 @@ const RelationshipGraphPanel: React.FC<RelationshipGraphPanelProps> = ({
 
     return groups;
   }, [relatedEdges]);
+
+  const connectionCount = relatedEdges.length;
+
+  const avgEdgeScore = useMemo(() => {
+    if (relatedEdges.length === 0) return 0;
+    const sum = relatedEdges.reduce((acc, edge) => acc + edge.score, 0);
+    return sum / relatedEdges.length;
+  }, [relatedEdges]);
+
+  const publishedHoursAgo = useMemo(() => {
+    if (!cluster?.firstSeenAt) return 0;
+    const firstSeen = new Date(cluster.firstSeenAt).getTime();
+    const now = Date.now();
+    return (now - firstSeen) / (1000 * 60 * 60);
+  }, [cluster?.firstSeenAt]);
 
   const supportingArticles = useMemo(
     () => (
@@ -136,25 +210,23 @@ const RelationshipGraphPanel: React.FC<RelationshipGraphPanelProps> = ({
           {getUiText(language, 'whyThisClusterMatters')}
         </p>
         <p className="relationship-graph-panel__narrative">
-          {`${cluster.coverageCount} ${getUiText(language, 'articlesDetailed')} across ${cluster.sourcesCount} ${getUiText(language, 'sourcesSuffix')} are converging around ${cluster.dominantTopic}. The cluster is moving at ${cluster.velocity.toFixed(1)} articles per hour and sits inside the ${graph.window.toUpperCase()} rolling view.`}
+          {`This ${cluster.dominantTopic} story has a significance score of ${cluster.maxGlobalScore} and connects to ${connectionCount} other ${connectionCount === 1 ? 'cluster' : 'clusters'} in the ${graph.window.toUpperCase()} rolling view.`}
         </p>
         <div className="relationship-graph-panel__stats">
-          <div className="relationship-graph-panel__stat">
-            <span>{getUiText(language, 'coverage')}</span>
-            <strong>{cluster.coverageCount}</strong>
-          </div>
-          <div className="relationship-graph-panel__stat">
-            <span>{getUiText(language, 'sources')}</span>
-            <strong>{cluster.sourcesCount}</strong>
-          </div>
-          <div className="relationship-graph-panel__stat">
-            <span>{getUiText(language, 'velocity')}</span>
-            <strong>{cluster.velocity.toFixed(1)}</strong>
-          </div>
-          <div className="relationship-graph-panel__stat">
-            <span>{getUiText(language, 'age')}</span>
-            <strong>{formatAge(cluster.ageHours)}</strong>
-          </div>
+          {([
+            { key: 'score', label: getUiText(language, 'score'), value: cluster.maxGlobalScore },
+            { key: 'connections', label: getUiText(language, 'connections'), value: connectionCount },
+            { key: 'published', label: getUiText(language, 'published'), value: formatHoursAgo(publishedHoursAgo) },
+            { key: 'avgSimilarity', label: getUiText(language, 'avgSimilarity'), value: connectionCount > 0 ? `${Math.round(avgEdgeScore * 100)}%` : '—' },
+          ] as const).map((stat) => (
+            <div key={stat.key} className="relationship-graph-panel__stat">
+              <span className="stat-label-row">
+                {stat.label}
+                <StatInfoTip statKey={stat.key} />
+              </span>
+              <strong>{stat.value}</strong>
+            </div>
+          ))}
         </div>
       </section>
 
