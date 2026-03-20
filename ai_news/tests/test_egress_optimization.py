@@ -249,8 +249,8 @@ class TestLazyLoadEmbeddings(unittest.TestCase):
 
 
 class TestSummaryFallback(unittest.TestCase):
-    """Verify that summary fallback uses article.summary or raw.snippet,
-    and does NOT access article.text (which is deferred)."""
+    """Verify that display routes use the shared blurb helper and do not
+    lazy-load article.text in API handlers."""
 
     def test_no_article_text_fallback_in_routes_api(self):
         """routes_api.py must not contain article.text[:240] as a summary
@@ -270,19 +270,18 @@ class TestSummaryFallback(unittest.TestCase):
             "routes_compat must not access article.text[:240] (text is deferred)",
         )
 
-    def test_summary_uses_empty_string_fallback(self):
-        """Summary should fall back to article.summary or raw.snippet or
-        empty string."""
-        pattern = 'article.summary or raw.snippet or ""'
+    def test_summary_uses_shared_blurb_helper(self):
+        """Summary fallback should be delegated to build_article_blurb()."""
+        pattern = "build_article_blurb("
         self.assertIn(
             pattern,
             _ROUTES_API,
-            'routes_api summary must use article.summary or raw.snippet or "" pattern',
+            "routes_api summary must use build_article_blurb()",
         )
         self.assertIn(
             pattern,
             _ROUTES_COMPAT,
-            'routes_compat summary must use article.summary or raw.snippet or "" pattern',
+            "routes_compat summary must use build_article_blurb()",
         )
 
 

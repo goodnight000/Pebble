@@ -11,6 +11,7 @@ from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import defer, load_only
 from starlette.responses import StreamingResponse
 
+from app.common.blurbs import build_article_blurb
 from app.common.mmr import mmr_select
 from app.common.time import utcnow
 from app.common.url_filters import is_evergreen_or_directory_url
@@ -349,7 +350,7 @@ def _select_articles(
             continue
         rank_score = _compute_rank_score(user_score, age_hours, prefs.recency_bias, half_life_base)
 
-        summary = article.summary or raw.snippet or ""
+        summary = build_article_blurb(title=raw.title, summary=article.summary, snippet=raw.snippet)
         category: Category = category_for(article.event_type, topics)
         tags = build_topic_chips(
             category,
@@ -521,7 +522,7 @@ def _select_weekly_top(db, *, user_id: str, limit: int) -> List[dict]:
             continue
         rank_score = _compute_rank_score(user_score, age_hours, prefs.recency_bias, 72)
 
-        summary = article.summary or raw.snippet or ""
+        summary = build_article_blurb(title=raw.title, summary=article.summary, snippet=raw.snippet)
         category: Category = category_for(article.event_type, topics)
         tags = build_topic_chips(
             category,
@@ -832,7 +833,7 @@ async def compat_stream(request: Request):
                             continue
 
                         category: Category = category_for(article.event_type, article.topics)
-                        summary = article.summary or raw.snippet or ""
+                        summary = build_article_blurb(title=raw.title, summary=article.summary, snippet=raw.snippet)
                         effective_score = article.final_score if article.final_score is not None else article.global_score
                         matches.append({
                             "id": str(article.id),

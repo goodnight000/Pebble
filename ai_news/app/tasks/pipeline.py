@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import defer
 
 from app.clustering.cluster import attach_or_create_cluster, bytes_to_vector, update_cluster_stats
+from app.common.blurbs import build_article_blurb
 from app.common.embeddings import embed_text, embed_texts
 from app.common.hashing import canonical_hash
 from app.common.time import utcnow
@@ -60,6 +61,31 @@ _LAST_RELATIONSHIP_FINGERPRINT: str | None = None
 def _content_type_for(source_kind: str, event_type: str) -> str:
     from app.common.content_type import content_type_for
     return content_type_for(source_kind, event_type)
+
+
+def _ensure_article_summary(article: Article, raw: RawItem, llm: LLMClient | None = None) -> None:
+    normalized_existing = build_article_blurb(
+        title=raw.title,
+        summary=article.summary,
+        snippet=None,
+        text=None,
+    )
+    if article.summary and normalized_existing:
+        article.summary = normalized_existing
+        return
+
+    llm_summary = None
+    if llm and article.global_score >= 55 and article.text:
+        llm_summary = llm.summarize(raw.title, article.text)
+
+    summary = build_article_blurb(
+        title=raw.title,
+        summary=llm_summary,
+        snippet=raw.snippet,
+        text=article.text,
+    )
+    if summary:
+        article.summary = summary
 
 
 SAMPLE_ITEMS = [
@@ -972,12 +998,18 @@ def rebuild_faiss_index():
 
 def rescore_recent_articles(window_hours: int = 72) -> None:
     cutoff = utcnow() - timedelta(hours=window_hours)
+    llm = LLMClient()
     with session_scope() as session:
         rows = (
             session.query(Article, RawItem, Source)
             .join(RawItem, Article.raw_item_id == RawItem.id)
             .join(Source, RawItem.source_id == Source.id)
-            .filter(func.coalesce(RawItem.fetched_at, Article.created_at) >= cutoff)
+            .filter(
+                or_(
+                    RawItem.fetched_at >= cutoff,
+                    Article.created_at >= cutoff,
+                )
+            )
             .all()
         )
         for article, raw, source in rows:
@@ -995,6 +1027,7 @@ def rescore_recent_articles(window_hours: int = 72) -> None:
             article.entities = entities
             article.funding_amount_usd = funding_amount
             _refresh_existing_article_scores(session, article, raw, source)
+            _ensure_article_summary(article, raw, llm)
 
 
 def run_refresh():
@@ -1081,10 +1114,7 @@ def _process_scrape_targets(raw_ids: list[str]) -> None:
                 # global_score was computed with the stale values.
                 if reclassified:
                     _refresh_existing_article_scores(session, article, raw, source)
-                if article.global_score >= 55 and article.summary is None:
-                    summary = llm.summarize(raw.title, article.text)
-                    if summary:
-                        article.summary = summary
+                _ensure_article_summary(article, raw, llm)
                 cluster = (
                     session.query(Cluster)
                     .join(ClusterMember, ClusterMember.cluster_id == Cluster.id)

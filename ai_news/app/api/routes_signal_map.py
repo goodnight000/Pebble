@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import defer
 
+from app.common.blurbs import build_article_blurb
 from app.common.time import utcnow
 from app.db import get_db
 from app.llm.cache import get_cached, set_cached
@@ -283,7 +284,7 @@ def get_signal_map(
                 "global_score": art.global_score or 0,
                 "trust_label": art.trust_label,
                 "event_type": art.event_type,
-                "summary": art.summary,
+                "summary": build_article_blurb(title=raw.title, summary=art.summary, snippet=raw.snippet),
             })
 
         # Decode centroid embedding for PCA

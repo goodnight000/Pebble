@@ -8,6 +8,8 @@ from typing import Dict
 
 import httpx
 
+from app.common.blurbs import build_article_blurb
+from app.common.text import normalize_whitespace
 from app.config import get_settings
 from app.llm.cache import get_cached, set_cached
 from app.llm.prompts import CLASSIFY_PROMPT, SUMMARY_PROMPT, EVENT_TYPES, TOPICS
@@ -162,20 +164,47 @@ class LLMClient:
         cache_key = f"summary:{_hash_text(title, text)}"
         cached = get_cached(cache_key)
         if cached:
-            return cached.get("summary")
+            cached_summary = normalize_whitespace(cached.get("summary") or "")
+            if cached_summary:
+                return cached_summary
         if not self.enabled:
             return None
         prompt = SUMMARY_PROMPT.format(text=text[:2000])
-        summary = self.chat(
-            [
-                {"role": "system", "content": "You are an AI news editor. Write concise, factual summaries. Return only the summary text, no preamble."},
-                {"role": "user", "content": prompt},
-            ],
-            json_object=False,
-        )
-        summary = summary.strip()
-        set_cached(cache_key, {"summary": summary})
-        return summary
+        summary = ""
+        try:
+            summary = self.chat(
+                [
+                    {"role": "system", "content": "You are an AI news editor. Write concise, factual summaries. Return only the summary text, no preamble."},
+                    {"role": "user", "content": prompt},
+                ],
+                json_object=False,
+            )
+        except Exception:
+            logger.exception("LLM summarize failed")
+
+        normalized_summary = normalize_whitespace(summary)
+        if not normalized_summary:
+            try:
+                structured = self.chat(
+                    [
+                        {"role": "system", "content": "You are an AI news editor. Return strict JSON only with one key: summary. The summary must be concise, factual, and 2-3 sentences maximum."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    json_object=True,
+                )
+                parsed = json.loads(structured or "{}")
+                normalized_summary = normalize_whitespace(parsed.get("summary") or "")
+            except Exception:
+                logger.exception("LLM summarize JSON retry failed")
+
+        if not normalized_summary:
+            return None
+
+        summary_value = build_article_blurb(title=title, summary=normalized_summary)
+        if not summary_value:
+            return None
+        set_cached(cache_key, {"summary": summary_value})
+        return summary_value
 
     _SECTION_PROMPTS = {
         "all": "Synthesize these AI news items into a compelling headline and 2-3 sentence executive summary. Lead with the single most important development, then note 1-2 other key themes.",
